@@ -24,6 +24,7 @@ const routes: Array<RouteRecordRaw> = [
       { path: 'invoices/:id',   component: () => import('@/pages/invoices/InvoiceBuilderPage.vue') },
       { path: 'receipts',       component: () => import('@/pages/receipts/ReceiptsPage.vue') },
       { path: 'receipts/new',   component: () => import('@/pages/receipts/ReceiptBuilderPage.vue') },
+      { path: 'receipts/:id',   component: () => import('@/pages/receipts/ReceiptBuilderPage.vue') },
       { path: 'clients',        component: () => import('@/pages/clients/ClientsPage.vue') },
       { path: 'clients/:id',    component: () => import('@/pages/clients/ClientDetailPage.vue') },
       { path: 'templates',      component: () => import('@/pages/templates/TemplatesPage.vue') },

@@ -103,7 +103,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
 import { IonIcon } from '@ionic/vue'
 import {
@@ -112,10 +112,14 @@ import {
   chevronBackOutline, chevronForwardOutline,
   menuOutline, closeOutline,
 } from 'ionicons/icons'
+import { useBusinessProfileStore } from '@/stores/businessProfile'
 
 const route = useRoute()
 const sidebarCollapsed = ref(false)
 const mobileOpen = ref(false)
+
+const bpStore = useBusinessProfileStore()
+onMounted(() => bpStore.fetch())
 
 const navItems = [
   { path: '/app/dashboard', label: 'Dashboard', icon: gridOutline },

@@ -6,6 +6,10 @@
         <h1 class="page-title">Settings</h1>
         <p class="page-sub">Manage your business profile and preferences</p>
       </div>
+      <button class="btn-primary" @click="saveProfile" :disabled="saving">
+        <span v-if="saving" class="spinner" />
+        {{ saving ? 'Saving…' : 'Save Changes' }}
+      </button>
     </div>
 
     <div class="settings-layout">
@@ -20,60 +24,84 @@
             <p class="card-desc">This info appears on your invoices and receipts.</p>
           </div>
           <div class="card-body">
+
+            <!-- Logo upload -->
+            <div class="logo-section">
+              <div class="logo-preview" @click="triggerLogoUpload">
+                <img v-if="form.logo_url" :src="form.logo_url" alt="Business logo" class="logo-img" />
+                <div v-else class="logo-initials">{{ nameInitials }}</div>
+                <div class="logo-overlay">
+                  <Upload :size="18" />
+                  <span>{{ form.logo_url ? 'Change' : 'Upload' }}</span>
+                </div>
+              </div>
+              <div class="logo-info">
+                <p class="logo-hint">PNG, JPG, or SVG · Max 2 MB</p>
+                <button v-if="form.logo_url" class="logo-remove" @click="form.logo_url = ''">
+                  Remove logo
+                </button>
+              </div>
+              <input
+                ref="logoInput"
+                type="file"
+                accept="image/png,image/jpeg,image/svg+xml,image/webp"
+                style="display:none"
+                @change="handleLogoUpload"
+              />
+            </div>
+
             <div class="field-row">
               <div class="field">
                 <label>Business Name</label>
-                <input v-model="profile.name" placeholder="Acme Co." />
+                <input v-model="form.name" placeholder="Acme Co." />
               </div>
               <div class="field">
                 <label>Email</label>
-                <input type="email" v-model="profile.email" placeholder="hello@acme.com" />
+                <input type="email" v-model="form.email" placeholder="hello@acme.com" />
               </div>
             </div>
+
             <div class="field-row">
               <div class="field">
                 <label>Phone</label>
-                <input v-model="profile.phone" placeholder="+1 (555) 000-0000" />
+                <input v-model="form.phone" placeholder="+60 12-345 6789" />
               </div>
               <div class="field">
-                <label>Website</label>
-                <input v-model="profile.website" placeholder="https://acme.com" />
+                <label>Address</label>
+                <input v-model="form.address" placeholder="123 Main St, City" />
               </div>
-            </div>
-            <div class="field">
-              <label>Address</label>
-              <textarea v-model="profile.address" placeholder="123 Main St, City, Country" rows="2" />
             </div>
           </div>
         </div>
 
-        <!-- Invoice Defaults -->
+        <!-- Invoice & Receipt Defaults -->
         <div class="settings-card">
           <div class="card-header">
-            <h2 class="card-title">Invoice Defaults</h2>
-            <p class="card-desc">Applied automatically when you create new invoices.</p>
+            <h2 class="card-title">Invoice & Receipt Defaults</h2>
+            <p class="card-desc">Applied automatically when you create new documents.</p>
           </div>
           <div class="card-body">
             <div class="field-row">
               <div class="field">
                 <label>Default Currency</label>
-                <UiSelect v-model="profile.default_currency" :options="currencyOptions" />
+                <UiSelect v-model="form.default_currency" :options="currencyOptions" />
               </div>
               <div class="field">
-                <label>Invoice Prefix</label>
-                <input v-model="profile.invoice_prefix" placeholder="INV" />
+                <label>Default Tax Rate (%)</label>
+                <input type="number" v-model="form.default_tax_rate" min="0" max="100" step="0.5" />
               </div>
             </div>
-            <div class="field" style="max-width: 200px;">
-              <label>Default Tax Rate (%)</label>
-              <input type="number" v-model="profile.default_tax_rate" min="0" max="100" step="0.5" />
+            <div class="field-row">
+              <div class="field">
+                <label>Invoice Prefix</label>
+                <input v-model="form.invoice_prefix" placeholder="INV" />
+              </div>
+              <div class="field">
+                <label>Receipt Prefix</label>
+                <input v-model="form.receipt_prefix" placeholder="RCP" />
+              </div>
             </div>
           </div>
-        </div>
-
-        <!-- Save button -->
-        <div class="form-actions">
-          <button class="btn-primary" @click="saveProfile">Save Changes</button>
         </div>
 
       </div>
@@ -81,20 +109,36 @@
       <!-- Right column -->
       <div class="settings-aside">
 
+        <!-- Preview card -->
+        <div class="settings-card">
+          <div class="card-header">
+            <h2 class="card-title">Preview</h2>
+            <p class="card-desc">How your business appears on documents.</p>
+          </div>
+          <div class="preview-body">
+            <div class="preview-logo-wrap">
+              <img v-if="form.logo_url" :src="form.logo_url" alt="logo" class="preview-logo-img" />
+              <div v-else class="preview-logo-initials">{{ nameInitials }}</div>
+            </div>
+            <p class="preview-name">{{ form.name || 'Your Business Name' }}</p>
+            <p class="preview-email">{{ form.email || 'your@email.com' }}</p>
+            <p class="preview-address" v-if="form.address">{{ form.address }}</p>
+          </div>
+        </div>
+
         <!-- Account -->
         <div class="settings-card">
           <div class="card-header">
             <h2 class="card-title">Account</h2>
           </div>
-          <div class="card-body" style="padding-top: 0;">
+          <div class="card-body" style="padding-top:0">
             <button class="danger-btn" @click="logout">
-              <ion-icon :icon="logOutOutline" />
+              <LogOut :size="16" />
               Sign Out
             </button>
           </div>
         </div>
 
-        <!-- Version info -->
         <div class="info-card">
           <p class="info-title">InvoicerPro</p>
           <p class="info-version">Version 0.1.0</p>
@@ -107,27 +151,32 @@
 </template>
 
 <script setup lang="ts">
-import { reactive } from 'vue'
-import { IonIcon } from '@ionic/vue'
-import { logOutOutline } from 'ionicons/icons'
-import { useAuthStore } from '@/stores/auth'
-import { useToast } from '@/composables/useToast'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
+import { Upload, LogOut } from '@lucide/vue'
+import { useAuthStore }            from '@/stores/auth'
+import { useBusinessProfileStore } from '@/stores/businessProfile'
+import { useToast }                from '@/composables/useToast'
 import UiSelect from '@/components/ui/Select.vue'
 
-const auth = useAuthStore()
+const auth          = useAuthStore()
+const bpStore       = useBusinessProfileStore()
 const { showToast } = useToast()
-const router = useRouter()
+const router        = useRouter()
 
-const profile = reactive({
-  name: '',
-  email: '',
-  phone: '',
-  website: '',
-  address: '',
-  default_currency: 'MYR',
-  default_tax_rate: 6,
-  invoice_prefix: 'INV',
+const saving    = ref(false)
+const logoInput = ref<HTMLInputElement | null>(null)
+
+const form = reactive({
+  name:              '',
+  email:             '',
+  phone:             '',
+  address:           '',
+  logo_url:          '',
+  default_currency:  'MYR',
+  default_tax_rate:  6,
+  invoice_prefix:    'INV',
+  receipt_prefix:    'RCP',
 })
 
 const currencyOptions = [
@@ -138,8 +187,72 @@ const currencyOptions = [
   { value: 'GBP', label: 'GBP — British Pound (£)' },
 ]
 
+const nameInitials = computed(() => {
+  const n = form.name.trim()
+  if (!n) return '?'
+  return n.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+})
+
+onMounted(async () => {
+  await bpStore.fetch()
+  const p = bpStore.profile
+  form.name             = p.name             ?? ''
+  form.email            = p.email            ?? ''
+  form.phone            = p.phone            ?? ''
+  form.address          = p.address          ?? ''
+  form.logo_url         = p.logo_url         ?? ''
+  form.default_currency = p.default_currency ?? 'MYR'
+  form.default_tax_rate = p.default_tax_rate ?? 6
+  form.invoice_prefix   = p.invoice_prefix   ?? 'INV'
+  form.receipt_prefix   = p.receipt_prefix   ?? 'RCP'
+})
+
+function triggerLogoUpload() {
+  logoInput.value?.click()
+}
+
+async function handleLogoUpload(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('Logo must be under 2 MB', 'danger')
+    return
+  }
+  saving.value = true
+  try {
+    const url = await bpStore.uploadLogo(file)
+    form.logo_url = url
+    showToast('Logo uploaded!')
+  } catch (err: any) {
+    showToast(err?.message ?? 'Logo upload failed', 'danger')
+  } finally {
+    saving.value = false
+    // Reset so the same file can be re-uploaded if needed
+    if (logoInput.value) logoInput.value.value = ''
+  }
+}
+
 async function saveProfile() {
-  showToast('Profile saved!')
+  if (!form.name.trim()) { showToast('Business name is required', 'danger'); return }
+  saving.value = true
+  try {
+    await bpStore.save({
+      name:             form.name.trim(),
+      email:            form.email.trim(),
+      phone:            form.phone.trim() || undefined,
+      address:          form.address.trim() || undefined,
+      logo_url:         form.logo_url || undefined,
+      default_currency: form.default_currency,
+      default_tax_rate: Number(form.default_tax_rate),
+      invoice_prefix:   form.invoice_prefix.trim() || 'INV',
+      receipt_prefix:   form.receipt_prefix.trim() || 'RCP',
+    } as any)
+    showToast('Profile saved!')
+  } catch (err: any) {
+    showToast(err?.message ?? 'Failed to save profile', 'danger')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function logout() {
@@ -151,98 +264,117 @@ async function logout() {
 <style scoped>
 .page {
   padding: 32px 36px;
-  max-width: 1200px;
+  max-width: 1100px;
   display: flex;
   flex-direction: column;
   gap: 24px;
 }
 
-.page-header { display: flex; align-items: flex-end; justify-content: space-between; }
-.page-title {
-  font-size: 26px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 2px;
-  letter-spacing: -0.5px;
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
 }
-.page-sub { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; }
+.page-title  { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 2px; letter-spacing: -0.5px; }
+.page-sub    { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; }
 
 /* Layout */
 .settings-layout {
   display: grid;
-  grid-template-columns: 1fr 280px;
+  grid-template-columns: 1fr 260px;
   gap: 20px;
   align-items: start;
 }
-
-.settings-main {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-.settings-aside {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
+.settings-main  { display: flex; flex-direction: column; gap: 20px; }
+.settings-aside { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; }
 
 /* Cards */
 .settings-card {
-  background: #ffffff;
+  background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
   overflow: hidden;
 }
+.card-header  { padding: 18px 22px 14px; border-bottom: 1px solid #f1f5f9; }
+.card-title   { font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 2px; }
+.card-desc    { font-size: 12px; color: #94a3b8; margin: 0; }
+.card-body    { padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
 
-.card-header {
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.card-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0 0 2px;
-  letter-spacing: -0.1px;
-}
-
-.card-desc {
-  font-size: 13px;
-  color: #94a3b8;
-  margin: 0;
-}
-
-.card-body {
-  padding: 20px 24px;
+/* Logo upload */
+.logo-section {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 16px;
 }
 
-/* Fields */
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
+.logo-preview {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  border-radius: 14px;
+  border: 2px dashed #e2e8f0;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+  transition: border-color .15s;
+  background: #f8fafc;
+}
+.logo-preview:hover { border-color: #6366f1; }
+.logo-preview:hover .logo-overlay { opacity: 1; }
+
+.logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 4px;
 }
 
-.field {
+.logo-initials {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 22px;
+  color: #6366f1;
+  background: #eef2ff;
+}
+
+.logo-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(99,102,241,.75);
   display: flex;
   flex-direction: column;
-  gap: 6px;
-}
-
-.field label {
-  font-size: 12px;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  color: #fff;
+  font-size: 11px;
   font-weight: 700;
-  color: #64748b;
-  text-transform: uppercase;
-  letter-spacing: 0.4px;
+  opacity: 0;
+  transition: opacity .15s;
 }
 
+.logo-info    { display: flex; flex-direction: column; gap: 4px; }
+.logo-hint    { font-size: 12px; color: #94a3b8; margin: 0; }
+.logo-remove  {
+  background: none; border: none; padding: 0;
+  font-size: 12px; color: #ef4444; cursor: pointer;
+  font-family: inherit; text-align: left;
+}
+.logo-remove:hover { text-decoration: underline; }
+
+/* Fields */
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.field     { display: flex; flex-direction: column; gap: 6px; }
+.field label {
+  font-size: 12px; font-weight: 700; color: #64748b;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
 .field input,
 .field textarea {
   padding: 9px 12px;
@@ -254,76 +386,84 @@ async function logout() {
   outline: none;
   font-family: inherit;
   resize: none;
-  transition: border-color .15s, box-shadow .15s;
+  transition: border-color .15s, box-shadow .15s, background .15s;
 }
 .field input:focus,
 .field textarea:focus {
   border-color: #6366f1;
-  background: #ffffff;
+  background: #fff;
   box-shadow: 0 0 0 3px rgba(99,102,241,.1);
 }
 .field input::placeholder,
 .field textarea::placeholder { color: #94a3b8; }
 
-/* Form actions */
-.form-actions { display: flex; justify-content: flex-end; }
+/* Preview card */
+.preview-body {
+  padding: 16px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+}
+.preview-logo-wrap    { margin-bottom: 4px; }
+.preview-logo-img     { width: 56px; height: 56px; object-fit: contain; border-radius: 10px; border: 1px solid #e2e8f0; padding: 4px; }
+.preview-logo-initials {
+  width: 56px; height: 56px;
+  border-radius: 10px;
+  background: #eef2ff;
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 20px; color: #6366f1;
+}
+.preview-name    { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0; }
+.preview-email   { font-size: 12px; color: #64748b; margin: 0; }
+.preview-address { font-size: 11px; color: #94a3b8; margin: 0; white-space: pre-line; }
 
 /* Buttons */
 .btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
+  display: inline-flex; align-items: center; gap: 7px;
   padding: 10px 24px;
   background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: opacity .15s, transform .1s;
+  color: #fff; border: none; border-radius: 10px;
+  font-size: 14px; font-weight: 600; cursor: pointer;
+  font-family: inherit; transition: opacity .15s;
   box-shadow: 0 2px 10px rgba(99,102,241,.35);
 }
-.btn-primary:hover { opacity: .9; }
-.btn-primary:active { transform: scale(.98); }
+.btn-primary:hover:not(:disabled) { opacity: .9; }
+.btn-primary:disabled { opacity: .6; cursor: not-allowed; }
 
 .danger-btn {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  width: 100%;
-  background: #fff5f5;
-  border: 1.5px solid #fecaca;
-  border-radius: 9px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #ef4444;
-  cursor: pointer;
-  font-family: inherit;
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px; width: 100%;
+  background: #fff5f5; border: 1.5px solid #fecaca;
+  border-radius: 9px; font-size: 14px; font-weight: 600;
+  color: #ef4444; cursor: pointer; font-family: inherit;
   transition: background .12s;
 }
 .danger-btn:hover { background: #fee2e2; }
-.danger-btn ion-icon { font-size: 18px; }
 
-/* Info card */
-.info-card {
-  padding: 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
+.spinner {
+  width: 14px; height: 14px;
+  border: 2px solid rgba(255,255,255,.4);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin .6s linear infinite;
+  display: inline-block;
 }
-.info-title { font-size: 13px; font-weight: 700; color: #374151; margin: 0 0 2px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.info-card    { padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
+.info-title   { font-size: 13px; font-weight: 700; color: #374151; margin: 0 0 2px; }
 .info-version { font-size: 12px; color: #94a3b8; margin: 0; }
 
-/* Responsive */
 @media (max-width: 900px) {
   .settings-layout { grid-template-columns: 1fr; }
+  .settings-aside  { position: static; }
 }
 @media (max-width: 768px) {
-  .page { padding: 20px 16px; }
+  .page       { padding: 20px 16px; }
   .page-title { font-size: 20px; }
-  .field-row { grid-template-columns: 1fr; }
+  .field-row  { grid-template-columns: 1fr; }
+  .page-header { flex-direction: column; align-items: flex-start; }
 }
 </style>

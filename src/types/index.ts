@@ -89,6 +89,15 @@ export interface Receipt {
   created_at: string
 }
 
+/** Extended receipt data used for preview rendering (includes optional invoice line items) */
+export interface ReceiptPreviewData extends Receipt {
+  invoice_number?: string
+  line_items?: LineItem[]
+  subtotal?: number
+  tax_rate?: number
+  tax_amount?: number
+}
+
 // ── Template ──────────────────────────────────────────
 export interface InvoiceTemplate {
   id: string

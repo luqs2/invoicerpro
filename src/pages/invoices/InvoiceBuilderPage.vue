@@ -12,9 +12,13 @@
       </div>
       <div class="header-actions">
         <UiButton variant="outline" @click="saveDraft" :loading="saving === 'draft'">Save Draft</UiButton>
-        <UiButton @click="send" :loading="saving === 'send'">
+        <UiButton @click="saveInvoice" :loading="saving === 'save'">
+          <Save :size="14" />
+          Save Invoice
+        </UiButton>
+        <UiButton variant="outline" @click="send" :loading="saving === 'send'">
           <Send :size="14" />
-          Send Invoice
+          Send
         </UiButton>
       </div>
     </div>
@@ -237,7 +241,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
-import { ArrowLeft, Send, Trash2, Plus, Download } from '@lucide/vue'
+import { ArrowLeft, Send, Trash2, Plus, Download, Save } from '@lucide/vue'
 import { useInvoiceStore } from '@/stores/invoices'
 import { useClientStore } from '@/stores/clients'
 import { useTemplateStore } from '@/stores/templates'
@@ -260,7 +264,7 @@ const { exportToPdf }    = usePdf()
 const { showToast }      = useToast()
 
 const tab    = ref('form')
-const saving = ref<'draft' | 'send' | null>(null)
+const saving = ref<'draft' | 'save' | 'send' | null>(null)
 const isEdit = ref(false)
 
 const currencyOptions = [
@@ -285,6 +289,24 @@ onMounted(async () => {
   await templateStore.fetchAll()
   if (route.params.id) {
     isEdit.value = true
+    // Load existing invoice into store
+    const { data, error } = await import('@/services/invoices').then(m =>
+      m.invoiceService.getById(route.params.id as string)
+    )
+    if (error) { showToast('Failed to load invoice', 'danger'); return }
+    if (data) {
+      // Ensure every line item has an id (Supabase JSONB may strip them)
+      store.current = {
+        ...data,
+        line_items: (data.line_items ?? []).map((li: any) => ({
+          id: li.id ?? crypto.randomUUID(),
+          description: li.description ?? '',
+          quantity:    Number(li.quantity ?? 1),
+          unit_price:  Number(li.unit_price ?? 0),
+          amount:      Number(li.amount ?? 0),
+        })),
+      }
+    }
   } else {
     store.resetCurrent()
   }
@@ -296,6 +318,23 @@ async function saveDraft() {
     store.current.status = 'draft'
     await store.save()
     showToast('Saved as draft')
+  } catch (err: any) {
+    showToast(err?.message ?? 'Failed to save draft', 'danger')
+  } finally {
+    saving.value = null
+  }
+}
+
+async function saveInvoice() {
+  saving.value = 'save'
+  try {
+    // Keep current status (draft stays draft, paid stays paid, etc.)
+    // Only set to draft if it's a brand-new invoice with no status
+    if (!store.current.status) store.current.status = 'draft'
+    await store.save()
+    showToast('Invoice saved!')
+  } catch (err: any) {
+    showToast(err?.message ?? 'Failed to save invoice', 'danger')
   } finally {
     saving.value = null
   }
@@ -306,7 +345,9 @@ async function send() {
   try {
     store.current.status = 'sent'
     await store.save()
-    showToast('Invoice sent!')
+    showToast('Invoice marked as sent!')
+  } catch (err: any) {
+    showToast(err?.message ?? 'Failed to update invoice', 'danger')
   } finally {
     saving.value = null
   }
@@ -424,7 +465,7 @@ async function exportPdf() {
 
 .li-header {
   display: grid;
-  grid-template-columns: 1fr 70px 90px 100px 36px;
+  grid-template-columns: 1fr 60px 100px 110px 36px;
   gap: 0;
   padding: 8px 12px;
   background: #f8fafc;
@@ -438,7 +479,7 @@ async function exportPdf() {
 
 .li-row {
   display: grid;
-  grid-template-columns: 1fr 70px 90px 100px 36px;
+  grid-template-columns: 1fr 60px 100px 110px 36px;
   gap: 0;
   align-items: center;
   border-bottom: 1px solid #f1f5f9;
@@ -454,6 +495,7 @@ async function exportPdf() {
   color: #0f172a;
   background: transparent;
   width: 100%;
+  min-width: 0;
   transition: background .1s;
 }
 .li-input:focus { background: #fafbff; }
@@ -463,11 +505,15 @@ async function exportPdf() {
 
 .li-amount {
   padding: 10px 12px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: #0f172a;
   font-variant-numeric: tabular-nums;
   text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .li-del {

@@ -71,18 +71,23 @@ export const useInvoiceStore = defineStore('invoices', () => {
     const auth = useAuthStore()
     if (!auth.user) return
     loading.value = true
-    const payload = { ...current.value, user_id: auth.user.id }
+    try {
+      const payload = { ...current.value, user_id: auth.user.id }
 
-    if (current.value.id) {
-      const { data } = await invoiceService.update(current.value.id, payload)
-      const idx = invoices.value.findIndex(i => i.id === current.value.id)
-      if (idx > -1 && data) invoices.value[idx] = data
-    } else {
-      const { data } = await invoiceService.create(payload)
-      if (data) invoices.value.unshift(data)
-      current.value.id = data?.id
+      if (current.value.id) {
+        const { data, error } = await invoiceService.update(current.value.id, payload)
+        if (error) throw error
+        const idx = invoices.value.findIndex(i => i.id === current.value.id)
+        if (idx > -1 && data) invoices.value[idx] = data
+      } else {
+        const { data, error } = await invoiceService.create(payload)
+        if (error) throw error
+        if (data) invoices.value.unshift(data)
+        current.value.id = data?.id
+      }
+    } finally {
+      loading.value = false
     }
-    loading.value = false
   }
 
   return {
