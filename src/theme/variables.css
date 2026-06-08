@@ -1,0 +1,97 @@
+/* ============================================================
+   InvoicerPro — Light-only theme  (system dark mode disabled)
+   ============================================================ */
+
+/* Force light mode regardless of OS preference */
+:root {
+  color-scheme: light only;
+}
+
+/* ── Brand palette ─────────────────────────────────────────── */
+:root {
+  --color-brand:        #6366f1;
+  --color-brand-dark:   #4f46e5;
+  --color-brand-light:  #e0e7ff;
+  --color-accent:       #8b5cf6;
+  --color-success:      #10b981;
+  --color-warning:      #f59e0b;
+  --color-danger:       #ef4444;
+
+  --color-bg:           #f8fafc;
+  --color-surface:      #ffffff;
+  --color-surface-2:    #f1f5f9;
+  --color-border:       #e2e8f0;
+  --color-text:         #0f172a;
+  --color-text-muted:   #64748b;
+
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-md:  0 4px 12px rgba(0,0,0,.10), 0 2px 4px rgba(0,0,0,.06);
+}
+
+/* ── Ionic overrides ───────────────────────────────────────── */
+:root {
+  --ion-font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --ion-background-color:         var(--color-bg);
+  --ion-background-color-rgb:     248, 250, 252;
+  --ion-text-color:                var(--color-text);
+  --ion-text-color-rgb:            15, 23, 42;
+
+  --ion-color-primary:             var(--color-brand);
+  --ion-color-primary-rgb:         99, 102, 241;
+  --ion-color-primary-contrast:    #ffffff;
+  --ion-color-primary-shade:       var(--color-brand-dark);
+  --ion-color-primary-tint:        #818cf8;
+
+  --ion-color-secondary:           var(--color-accent);
+  --ion-color-secondary-rgb:       139, 92, 246;
+  --ion-color-secondary-contrast:  #ffffff;
+  --ion-color-secondary-shade:     #7c3aed;
+  --ion-color-secondary-tint:      #a78bfa;
+
+  --ion-color-success:             var(--color-success);
+  --ion-color-success-contrast:    #ffffff;
+  --ion-color-warning:             var(--color-warning);
+  --ion-color-warning-contrast:    #ffffff;
+  --ion-color-danger:              var(--color-danger);
+  --ion-color-danger-contrast:     #ffffff;
+
+  --ion-color-medium:              var(--color-text-muted);
+  --ion-color-medium-contrast:     #ffffff;
+  --ion-color-light:               var(--color-surface-2);
+  --ion-color-light-contrast:      var(--color-text);
+  --ion-color-dark:                var(--color-text);
+  --ion-color-dark-contrast:       #ffffff;
+
+  --ion-toolbar-background:        var(--color-surface);
+  --ion-toolbar-color:             var(--color-text);
+  --ion-toolbar-border-color:      var(--color-border);
+  --ion-item-background:           var(--color-surface);
+  --ion-item-border-color:         var(--color-border);
+  --ion-card-background:           var(--color-surface);
+  --ion-border-color:              var(--color-border);
+}
+
+/* Prevent dark-mode OS override */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: light only;
+    --ion-background-color:        var(--color-bg);
+    --ion-background-color-rgb:    248, 250, 252;
+    --ion-text-color:              var(--color-text);
+    --ion-toolbar-background:      var(--color-surface);
+    --ion-toolbar-color:           var(--color-text);
+    --ion-item-background:         var(--color-surface);
+    --ion-card-background:         var(--color-surface);
+    --ion-border-color:            var(--color-border);
+  }
+}
+
+/* ── App shell reset ───────────────────────────────────────── */
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+* { box-sizing: border-box; }
