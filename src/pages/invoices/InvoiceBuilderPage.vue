@@ -465,9 +465,8 @@ async function exportPdf() {
 
 .li-header {
   display: grid;
-  grid-template-columns: 1fr 60px 100px 110px 36px;
+  grid-template-columns: 1fr 70px 90px 100px 36px;
   gap: 0;
-  padding: 8px 12px;
   background: #f8fafc;
   border-bottom: 1px solid #e2e8f0;
   font-size: 11px;
@@ -477,9 +476,17 @@ async function exportPdf() {
   letter-spacing: 0.5px;
 }
 
+.li-header span {
+  padding: 8px 10px;
+}
+
+.li-header span:first-child {
+  padding-left: 12px;
+}
+
 .li-row {
   display: grid;
-  grid-template-columns: 1fr 60px 100px 110px 36px;
+  grid-template-columns: 1fr 70px 90px 100px 36px;
   gap: 0;
   align-items: center;
   border-bottom: 1px solid #f1f5f9;

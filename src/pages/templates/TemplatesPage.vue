@@ -122,6 +122,7 @@ import UiTabs from '@/components/ui/Tabs.vue'
 import UiSelect from '@/components/ui/Select.vue'
 import UiInput from '@/components/ui/Input.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
+import type { Invoice } from '@/types'
 
 const templateStore = useTemplateStore()
 const { showToast } = useToast()
@@ -152,7 +153,7 @@ const radiusOptions = [
 
 const previewTemplate = computed(() => ({ ...templateStore.active, ...draft } as any))
 
-const sampleInvoice = {
+const sampleInvoice: Partial<Invoice> = {
   invoice_number: 'INV-0001',
   issue_date:     '2026-06-07',
   due_date:       '2026-06-21',
@@ -162,7 +163,14 @@ const sampleInvoice = {
   tax_amount:     90,
   total:          1590,
   notes:          'Thank you!',
-  client: { name: 'Sample Client', email: 'client@email.com', address: 'Kuala Lumpur, Malaysia' },
+  client: {
+    id:         'sample',
+    user_id:    'sample',
+    created_at: '',
+    name:       'Sample Client',
+    email:      'client@email.com',
+    address:    'Kuala Lumpur, Malaysia',
+  },
   line_items: [
     { id: '1', description: 'Design Service', quantity: 1, unit_price: 1000, amount: 1000 },
     { id: '2', description: 'Development',    quantity: 1, unit_price: 500,  amount: 500  },

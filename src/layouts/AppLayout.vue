@@ -114,6 +114,13 @@ import {
 } from 'ionicons/icons'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 
+interface NavItem {
+  path: string
+  label: string
+  icon: string
+  badge?: number
+}
+
 const route = useRoute()
 const sidebarCollapsed = ref(false)
 const mobileOpen = ref(false)
@@ -121,7 +128,7 @@ const mobileOpen = ref(false)
 const bpStore = useBusinessProfileStore()
 onMounted(() => bpStore.fetch())
 
-const navItems = [
+const navItems: NavItem[] = [
   { path: '/app/dashboard', label: 'Dashboard', icon: gridOutline },
   { path: '/app/invoices',  label: 'Invoices',  icon: documentTextOutline },
   { path: '/app/receipts',  label: 'Receipts',  icon: receiptOutline },

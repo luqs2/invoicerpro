@@ -38,7 +38,7 @@ interface Option {
   label: string
 }
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   options: Option[]
   placeholder?: string
   disabled?: boolean

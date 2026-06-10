@@ -22,6 +22,7 @@ export interface BusinessProfile {
   receipt_prefix: string
   next_invoice_number: number
   next_receipt_number: number
+  active_template_id?: string
 }
 
 // ── Client ────────────────────────────────────────────

@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { templateService } from '@/services/templates'
 import { useAuthStore } from './auth'
+import { useBusinessProfileStore } from './businessProfile'
 import type { InvoiceTemplate } from '@/types'
 
 export const useTemplateStore = defineStore('templates', () => {
@@ -11,9 +12,21 @@ export const useTemplateStore = defineStore('templates', () => {
   async function fetchAll() {
     const auth = useAuthStore()
     if (!auth.user) return
+
     const { data } = await templateService.getAll(auth.user.id)
     templates.value = data ?? []
-    if (!active.value && data?.length) {
+
+    if (!data?.length) return
+
+    // Restore the previously saved active template from business profile
+    const bpStore = useBusinessProfileStore()
+    await bpStore.fetch()
+    const savedId = (bpStore.profile as any).active_template_id as string | undefined
+
+    if (savedId) {
+      const match = data.find(t => t.id === savedId)
+      active.value = match ?? data[0]
+    } else {
       active.value = data[0]
     }
   }
@@ -33,8 +46,12 @@ export const useTemplateStore = defineStore('templates', () => {
     }
   }
 
-  function setActive(template: InvoiceTemplate) {
+  async function setActive(template: InvoiceTemplate) {
     active.value = template
+
+    // Persist the choice to business_profiles so it survives a refresh
+    const bpStore = useBusinessProfileStore()
+    await bpStore.save({ active_template_id: template.id } as any)
   }
 
   return { templates, active, fetchAll, save, setActive }
