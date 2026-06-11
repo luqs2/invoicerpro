@@ -82,8 +82,10 @@ export const useInvoiceStore = defineStore('invoices', () => {
       } else {
         const { data, error } = await invoiceService.create(payload)
         if (error) throw error
-        if (data) invoices.value.unshift(data)
-        current.value.id = data?.id
+  if (data) {
+    invoices.value.unshift(data)
+    current.value = { ...current.value, ...data } // ← sync back including invoice_number
+  }
       }
     } finally {
       loading.value = false

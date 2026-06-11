@@ -309,6 +309,13 @@ onMounted(async () => {
     }
   } else {
     store.resetCurrent()
+    const { useBusinessProfileStore } = await import('@/stores/businessProfile')
+    const bpStore = useBusinessProfileStore()
+    await bpStore.fetch()
+    const p = bpStore.profile
+    if (p.default_currency) store.current.currency  = p.default_currency
+    if (p.default_tax_rate) store.current.tax_rate  = p.default_tax_rate
+    store.recalcTotals()
   }
 })
 

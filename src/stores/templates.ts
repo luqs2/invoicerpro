@@ -18,7 +18,6 @@ export const useTemplateStore = defineStore('templates', () => {
 
     if (!data?.length) return
 
-    // Restore the previously saved active template from business profile
     const bpStore = useBusinessProfileStore()
     await bpStore.fetch()
     const savedId = (bpStore.profile as any).active_template_id as string | undefined
@@ -34,14 +33,28 @@ export const useTemplateStore = defineStore('templates', () => {
   async function save(template: Partial<InvoiceTemplate>) {
     const auth = useAuthStore()
     if (!auth.user) return
-    if (template.id) {
-      const { data } = await templateService.update(template.id, template)
-      const idx = templates.value.findIndex(t => t.id === template.id)
-      if (idx > -1 && data) templates.value[idx] = data
+
+    // If it's a system template, save as a new user-owned copy instead
+    const isSystem = template.is_system || !template.user_id
+    const payload = isSystem
+      ? { ...template, id: undefined, is_system: false, user_id: auth.user.id }
+      : template
+
+    if (payload.id) {
+      const { data } = await templateService.update(payload.id, payload)
+      const idx = templates.value.findIndex(t => t.id === payload.id)
+      if (idx > -1 && data) {
+        templates.value[idx] = data
+        active.value = data
+      }
       return data
     } else {
-      const { data } = await templateService.create({ ...template, user_id: auth.user.id, is_system: false })
-      if (data) templates.value.push(data)
+      const { data } = await templateService.create({ ...payload, user_id: auth.user.id, is_system: false })
+      if (data) {
+        templates.value.push(data)
+        active.value = data
+        await setActive(data)
+      }
       return data
     }
   }
@@ -49,7 +62,6 @@ export const useTemplateStore = defineStore('templates', () => {
   async function setActive(template: InvoiceTemplate) {
     active.value = template
 
-    // Persist the choice to business_profiles so it survives a refresh
     const bpStore = useBusinessProfileStore()
     await bpStore.save({ active_template_id: template.id } as any)
   }
