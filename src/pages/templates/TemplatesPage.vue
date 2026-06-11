@@ -283,7 +283,7 @@ const sampleInvoice = {
     { id: '1', description: 'Design Service', quantity: 1, unit_price: 1000, amount: 1000 },
     { id: '2', description: 'Development',    quantity: 1, unit_price: 500,  amount: 500  },
   ],
-}
+}as any
 
 onMounted(async () => {
   await templateStore.fetchAll()
