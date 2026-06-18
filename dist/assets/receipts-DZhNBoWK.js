@@ -1,1 +1,0 @@
-import{s as r}from"./auth-Dh6_p3Pr.js";const s={async getAll(e){return r.from("receipts").select("*, client:clients(*)").eq("user_id",e).order("created_at",{ascending:!1})},async create(e){return r.from("receipts").insert(e).select().single()},async delete(e){return r.from("receipts").delete().eq("id",e)}};export{s as r};

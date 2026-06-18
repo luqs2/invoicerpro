@@ -19,10 +19,10 @@
     </div>
 
     <!-- Stats row -->
-    <div class="stats-row">
+    <div class="stats-row" v-if="!loading">
       <div class="stat-card">
         <div class="stat-icon-wrap" style="background:#ede9fe;">
-          <ion-icon :icon="cashOutline" style="color:#6366f1;" />
+          <DollarSign :size="22" style="color:#6366f1;" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Total Revenue</p>
@@ -31,7 +31,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon-wrap" style="background:#dbeafe;">
-          <ion-icon :icon="documentTextOutline" style="color:#3b82f6;" />
+          <FileText :size="22" style="color:#3b82f6;" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Invoices Sent</p>
@@ -40,7 +40,7 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon-wrap" style="background:#fef3c7;">
-          <ion-icon :icon="timeOutline" style="color:#f59e0b;" />
+          <Clock :size="22" style="color:#f59e0b;" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Awaiting Payment</p>
@@ -49,11 +49,22 @@
       </div>
       <div class="stat-card">
         <div class="stat-icon-wrap" style="background:#fee2e2;">
-          <ion-icon :icon="alertCircleOutline" style="color:#ef4444;" />
+          <AlertCircle :size="22" style="color:#ef4444;" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Overdue</p>
           <p class="stat-value overdue">{{ formatCurrency(stats.overdue_amount) }}</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats skeleton -->
+    <div class="stats-row" v-else>
+      <div class="stat-card" v-for="i in 4" :key="i">
+        <Skeleton variant="rect" width="44px" height="44px" style="border-radius:12px; flex-shrink:0;" />
+        <div class="stat-body" style="flex:1;">
+          <Skeleton variant="text" width="80px" />
+          <Skeleton variant="title" width="100px" />
         </div>
       </div>
     </div>
@@ -64,11 +75,19 @@
         <h2 class="section-title">Recent Invoices</h2>
         <router-link to="/app/invoices" class="see-all-link">
           View all
-          <ion-icon :icon="arrowForwardOutline" />
+          <ArrowRight :size="14" />
         </router-link>
       </div>
 
-      <div v-if="invoiceStore.invoices.length">
+      <div v-if="loading" style="padding: 16px 24px;">
+        <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #f8fafc;">
+          <Skeleton variant="text" width="80px" />
+          <Skeleton variant="text" width="120px" />
+          <Skeleton variant="text" width="90px" style="margin-left:auto;" />
+          <Skeleton variant="text" width="60px" />
+        </div>
+      </div>
+      <div v-else-if="invoiceStore.invoices.length">
         <table class="data-table">
           <thead>
             <tr>
@@ -100,8 +119,8 @@
         </table>
       </div>
 
-      <div class="empty-state" v-else-if="!invoiceStore.loading">
-        <ion-icon :icon="documentTextOutline" class="empty-icon" />
+      <div class="empty-state" v-else-if="!loading">
+        <FileText :size="48" class="empty-icon" />
         <p class="empty-title">No invoices yet</p>
         <p class="empty-sub">Create your first invoice to start tracking revenue.</p>
         <router-link to="/app/invoices/new" class="btn-primary" style="margin-top:8px;">
@@ -115,13 +134,10 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, computed } from 'vue'
-import { IonIcon } from '@ionic/vue'
-import {
-  cashOutline, documentTextOutline, timeOutline,
-  alertCircleOutline, arrowForwardOutline,
-} from 'ionicons/icons'
+import { DollarSign, FileText, Clock, AlertCircle, ArrowRight } from '@lucide/vue'
 import { useInvoiceStore } from '@/stores/invoices'
 import { useFormatters } from '@/composables/useFormatters'
+import Skeleton from '@/components/ui/Skeleton.vue'
 
 const invoiceStore = useInvoiceStore()
 const { formatCurrency, formatDate } = useFormatters()
@@ -132,6 +148,8 @@ const stats = reactive({
   pending_amount: 0,
   overdue_amount: 0,
 })
+
+const loading = computed(() => invoiceStore.loading)
 
 const timeOfDay = computed(() => {
   const h = new Date().getHours()
@@ -229,6 +247,8 @@ onMounted(async () => {
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
   transition: box-shadow .15s;
 }
+.dark .stat-card { background: #1e293b; border-color: #334155; }
+
 .stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
 
 .stat-icon-wrap {
@@ -240,7 +260,6 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
 }
-.stat-icon-wrap ion-icon { font-size: 22px; }
 
 .stat-label {
   font-size: 12px;
@@ -259,6 +278,7 @@ onMounted(async () => {
   letter-spacing: -0.4px;
   font-variant-numeric: tabular-nums;
 }
+.dark .stat-value { color: #f1f5f9; }
 
 .stat-value.overdue { color: #ef4444; }
 

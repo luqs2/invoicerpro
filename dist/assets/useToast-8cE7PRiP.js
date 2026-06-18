@@ -1,1 +1,0 @@
-import{ak as n}from"./index-B97arZqZ.js";function c(){async function t(s,o="success",a=2500){await(await n.create({message:s,duration:a,color:o,position:"bottom",cssClass:"app-toast"})).present()}return{showToast:t}}export{c as u};

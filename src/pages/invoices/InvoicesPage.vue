@@ -21,6 +21,11 @@
         <Search :size="15" class="search-icon" />
         <input class="search-input" v-model="search" placeholder="Search invoice # or client…" />
       </div>
+      <button class="filter-toggle" @click="showFilters = !showFilters" :class="{ active: hasActiveFilters }">
+        <SlidersHorizontal :size="14" />
+        Filters
+        <span v-if="hasActiveFilters" class="filter-active-dot" />
+      </button>
       <div class="filter-tabs">
         <button
           v-for="t in tabs" :key="t.value"
@@ -33,11 +38,67 @@
       </div>
     </div>
 
+    <!-- Advanced filters -->
+    <div class="advanced-filters" v-if="showFilters">
+      <div class="af-row">
+        <div class="af-field">
+          <label>From Date</label>
+          <input type="date" v-model="dateFrom" class="af-input" />
+        </div>
+        <div class="af-field">
+          <label>To Date</label>
+          <input type="date" v-model="dateTo" class="af-input" />
+        </div>
+        <div class="af-field">
+          <label>Min Amount</label>
+          <input type="number" v-model.number="minAmount" min="0" step="0.01" placeholder="0" class="af-input" />
+        </div>
+        <div class="af-field">
+          <label>Max Amount</label>
+          <input type="number" v-model.number="maxAmount" min="0" step="0.01" placeholder="∞" class="af-input" />
+        </div>
+        <button v-if="hasActiveFilters" class="af-clear" @click="clearFilters">Clear</button>
+      </div>
+    </div>
+
+    <!-- Table skeleton -->
+    <div class="section-card" v-if="store.loading">
+      <div style="padding: 16px 20px;">
+        <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #f8fafc;">
+          <Skeleton variant="text" width="80px" />
+          <Skeleton variant="text" width="120px" />
+          <Skeleton variant="text" width="90px" />
+          <Skeleton variant="text" width="60px" style="margin-left:auto;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk action bar -->
+    <div class="bulk-bar" v-if="selectedIds.size > 0">
+      <div class="bulk-left">
+        <CheckSquare :size="16" />
+        <span>{{ selectedIds.size }} selected</span>
+      </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn" @click="bulkExport">
+          <Download :size="14" />
+          Export PDFs
+        </button>
+        <button class="bulk-btn bulk-btn-danger" @click="bulkDelete">
+          <Trash2 :size="14" />
+          Delete
+        </button>
+      </div>
+    </div>
+
     <!-- Table -->
-    <div class="section-card" v-if="filtered.length">
+    <div class="section-card" v-else-if="filtered.length">
       <table class="data-table">
         <thead>
           <tr>
+            <th style="width:40px; padding-left:16px;">
+              <input type="checkbox" v-model="selectAll" class="select-cb" aria-label="Select all" />
+            </th>
             <th>Invoice #</th>
             <th>Client</th>
             <th>Issue Date</th>
@@ -49,6 +110,9 @@
         </thead>
         <tbody>
           <tr v-for="inv in filtered" :key="inv.id" class="table-row">
+            <td style="padding-left:16px;">
+              <input type="checkbox" :checked="selectedIds.has(inv.id)" @change="toggleSelect(inv.id)" class="select-cb" :aria-label="`Select ${inv.invoice_number}`" />
+            </td>
             <td class="td-mono">{{ inv.invoice_number }}</td>
             <td class="td-client">{{ inv.client?.name ?? '—' }}</td>
             <td class="td-muted">{{ formatDate(inv.issue_date) }}</td>
@@ -58,13 +122,13 @@
               <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
             </td>
             <td class="td-actions">
-              <button class="act-btn act-view"  @click="viewInvoice(inv)"   title="View">
+              <button class="act-btn act-view"  @click="viewInvoice(inv)"   title="View" :aria-label="`View ${inv.invoice_number}`">
                 <Eye :size="14" />
               </button>
-              <button class="act-btn act-edit"  @click="editInvoice(inv)"   title="Edit">
+              <button class="act-btn act-edit"  @click="editInvoice(inv)"   title="Edit" :aria-label="`Edit ${inv.invoice_number}`">
                 <Pencil :size="14" />
               </button>
-              <button class="act-btn act-del"   @click="deleteInvoice(inv)" title="Delete">
+              <button class="act-btn act-del"   @click="deleteInvoice(inv)" title="Delete" :aria-label="`Delete ${inv.invoice_number}`">
                 <Trash2 :size="14" />
               </button>
             </td>
@@ -92,13 +156,15 @@
             <h2 class="modal-title">{{ viewing.invoice_number }}</h2>
           </div>
           <div class="modal-header-actions">
-            <button class="modal-act-btn" @click="exportInvoicePdf(viewing)" title="Export PDF">
+            <button class="modal-act-btn" @click="exportInvoicePdf(viewing)" title="Export PDF" aria-label="Export PDF">
               <Download :size="15" />
             </button>
-            <button class="modal-act-btn" @click="editInvoice(viewing); viewing = null" title="Edit">
+            <button class="modal-act-btn" @click="editInvoice(viewing); viewing = null" title="Edit" aria-label="Edit invoice">
               <Pencil :size="15" />
             </button>
-            <button class="modal-close" @click="viewing = null">✕</button>
+            <button class="modal-close" @click="viewing = null" aria-label="Close preview">
+              ✕
+            </button>
           </div>
         </div>
         <div class="modal-body">
@@ -111,17 +177,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, Search, FileText, Eye, Pencil, Trash2, Download } from '@lucide/vue'
+import { Plus, Search, FileText, Eye, Pencil, Trash2, Download, SlidersHorizontal, CheckSquare } from '@lucide/vue'
 import { useInvoiceStore }  from '@/stores/invoices'
 import { useTemplateStore } from '@/stores/templates'
 import { invoiceService }   from '@/services/invoices'
 import { useFormatters }    from '@/composables/useFormatters'
 import { useToast }         from '@/composables/useToast'
 import { usePdf }           from '@/composables/usePdf'
-import InvoicePreview from '@/components/invoice/InvoicePreview.vue'
+import { useConfirm }       from '@/composables/useConfirm'
+import { useEscapeKey }     from '@/composables/useFocusTrap'
+import Skeleton from '@/components/ui/Skeleton.vue'
 import type { Invoice } from '@/types'
+
+const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
 
 const router        = useRouter()
 const store         = useInvoiceStore()
@@ -129,10 +199,81 @@ const templateStore = useTemplateStore()
 const { formatCurrency, formatDate } = useFormatters()
 const { showToast } = useToast()
 const { exportToPdf } = usePdf()
+const { confirm } = useConfirm()
 
 const search  = ref('')
 const filter  = ref('all')
 const viewing = ref<Invoice | null>(null)
+const showFilters = ref(false)
+const dateFrom = ref('')
+const dateTo = ref('')
+const minAmount = ref<number | null>(null)
+const maxAmount = ref<number | null>(null)
+
+useEscapeKey(() => {
+  if (viewing.value) viewing.value = null
+})
+
+const selectedIds = ref<Set<string>>(new Set())
+const selectAll = computed({
+  get: () => filtered.value.length > 0 && filtered.value.every(i => selectedIds.value.has(i.id)),
+  set: (val: boolean) => {
+    if (val) {
+      selectedIds.value = new Set(filtered.value.map(i => i.id))
+    } else {
+      selectedIds.value = new Set()
+    }
+  },
+})
+
+function toggleSelect(id: string) {
+  const s = new Set(selectedIds.value)
+  if (s.has(id)) s.delete(id)
+  else s.add(id)
+  selectedIds.value = s
+}
+
+const hasActiveFilters = computed(() =>
+  !!dateFrom.value || !!dateTo.value || minAmount.value !== null || maxAmount.value !== null
+)
+
+function clearFilters() {
+  dateFrom.value = ''
+  dateTo.value = ''
+  minAmount.value = null
+  maxAmount.value = null
+}
+
+async function bulkDelete() {
+  const count = selectedIds.value.size
+  const ok = await confirm({
+    title: `Delete ${count} invoice${count > 1 ? 's' : ''}`,
+    message: `This will permanently delete ${count} invoice${count > 1 ? 's' : ''}. This cannot be undone.`,
+    confirmText: 'Delete All',
+    variant: 'danger',
+  })
+  if (!ok) return
+
+  for (const id of selectedIds.value) {
+    await invoiceService.delete(id)
+    store.invoices = store.invoices.filter(i => i.id !== id)
+  }
+  selectedIds.value = new Set()
+  showToast(`${count} invoice${count > 1 ? 's' : ''} deleted`)
+}
+
+async function bulkExport() {
+  for (const id of selectedIds.value) {
+    const inv = store.invoices.find(i => i.id === id)
+    if (inv) {
+      viewing.value = inv
+      await nextTick()
+      await exportInvoicePdf(inv)
+    }
+  }
+  viewing.value = null
+  showToast('PDFs exported!')
+}
 
 onMounted(() => {
   store.fetchAll()
@@ -154,6 +295,13 @@ const filtered = computed(() =>
       i.invoice_number.toLowerCase().includes(search.value.toLowerCase()) ||
       (i.client?.name ?? '').toLowerCase().includes(search.value.toLowerCase())
     )
+    .filter(i => {
+      if (dateFrom.value && i.issue_date < dateFrom.value) return false
+      if (dateTo.value && i.issue_date > dateTo.value) return false
+      if (minAmount.value !== null && i.total < minAmount.value) return false
+      if (maxAmount.value !== null && i.total > maxAmount.value) return false
+      return true
+    })
 )
 
 function viewInvoice(inv: Invoice) {
@@ -167,7 +315,13 @@ function editInvoice(inv: Invoice) {
 }
 
 async function deleteInvoice(inv: Invoice) {
-  if (!confirm(`Delete invoice ${inv.invoice_number}? This cannot be undone.`)) return
+  const ok = await confirm({
+    title: 'Delete invoice',
+    message: `Delete invoice ${inv.invoice_number}? This cannot be undone.`,
+    confirmText: 'Delete',
+    variant: 'danger',
+  })
+  if (!ok) return
   const { error } = await invoiceService.delete(inv.id)
   if (error) { showToast('Failed to delete invoice', 'danger'); return }
   store.invoices = store.invoices.filter(i => i.id !== inv.id)
@@ -175,8 +329,6 @@ async function deleteInvoice(inv: Invoice) {
 }
 
 async function exportInvoicePdf(inv: Invoice) {
-  // Small delay to ensure the modal preview has rendered
-  await new Promise(r => setTimeout(r, 150))
   await exportToPdf('invoice-preview-modal', inv.invoice_number ?? 'invoice')
   showToast('PDF exported!')
 }
@@ -209,6 +361,92 @@ async function exportInvoicePdf(inv: Invoice) {
 
 /* Toolbar */
 .toolbar { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s;
+  white-space: nowrap;
+  position: relative;
+}
+.filter-toggle:hover { border-color: #c7d2fe; color: #4f46e5; }
+.filter-toggle.active { background: #f5f3ff; border-color: #c7d2fe; color: #4f46e5; }
+
+.filter-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6366f1;
+}
+
+/* Advanced filters */
+.advanced-filters {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.af-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.af-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.af-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.af-input {
+  height: 34px;
+  padding: 0 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 13px;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  transition: border-color .15s;
+}
+.af-input:focus { border-color: #6366f1; }
+
+.af-clear {
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 7px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .12s;
+}
+.af-clear:hover { background: #fecaca; }
 
 .search-wrap { position: relative; flex: 1; min-width: 220px; max-width: 360px; }
 .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
@@ -271,6 +509,61 @@ async function exportInvoicePdf(inv: Invoice) {
 .empty-icon  { color: #cbd5e1; margin-bottom: 4px; }
 .empty-title { font-size: 16px; font-weight: 700; color: #374151; margin: 0; }
 .empty-sub   { font-size: 14px; color: #94a3b8; margin: 0; text-align: center; max-width: 320px; }
+
+/* Bulk actions */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #f5f3ff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 12px;
+}
+
+.bulk-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4f46e5;
+}
+
+.bulk-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bulk-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s;
+}
+.bulk-btn:hover { background: #f8fafc; border-color: #c7d2fe; }
+
+.bulk-btn-danger {
+  border-color: #fecaca;
+  color: #991b1b;
+}
+.bulk-btn-danger:hover { background: #fee2e2; border-color: #fca5a5; }
+
+.select-cb {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
 
 /* Modal */
 .modal-overlay {

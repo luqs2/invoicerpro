@@ -8,38 +8,33 @@
     <div class="field-group">
       <div class="field">
         <label>Full Name</label>
-        <input
-          type="text"
+        <UiInput
           v-model="fullName"
           placeholder="Jane Smith"
-          autocomplete="name"
         />
       </div>
       <div class="field">
         <label>Email</label>
-        <input
-          type="email"
+        <UiInput
           v-model="email"
+          type="email"
           placeholder="you@company.com"
-          autocomplete="email"
         />
       </div>
       <div class="field">
         <label>Password</label>
-        <input
-          type="password"
+        <UiInput
           v-model="password"
+          type="password"
           placeholder="Min. 8 characters"
-          autocomplete="new-password"
           @keyup.enter="register"
         />
       </div>
     </div>
 
-    <button class="btn-primary" @click="register" :disabled="loading">
-      <span v-if="loading" class="spinner" />
-      <span v-else>Create Account</span>
-    </button>
+    <UiButton size="lg" @click="register" :loading="loading" class="w-full">
+      Create Account
+    </UiButton>
 
     <p class="switch-link">
       Already have an account?
@@ -53,6 +48,8 @@ import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
+import UiButton from '@/components/ui/Button.vue'
+import UiInput from '@/components/ui/Input.vue'
 
 const router   = useRouter()
 const auth     = useAuthStore()

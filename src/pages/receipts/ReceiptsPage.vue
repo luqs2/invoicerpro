@@ -22,10 +22,39 @@
       </div>
     </div>
 
-    <div class="section-card" v-if="filtered.length">
+    <!-- Table skeleton -->
+    <div class="section-card" v-if="loading">
+      <div style="padding: 16px 20px;">
+        <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #f8fafc;">
+          <Skeleton variant="text" width="80px" />
+          <Skeleton variant="text" width="120px" />
+          <Skeleton variant="text" width="90px" />
+          <Skeleton variant="text" width="60px" style="margin-left:auto;" />
+        </div>
+      </div>
+    </div>
+
+    <!-- Bulk action bar -->
+    <div class="bulk-bar" v-if="selectedIds.size > 0">
+      <div class="bulk-left">
+        <CheckSquare :size="16" />
+        <span>{{ selectedIds.size }} selected</span>
+      </div>
+      <div class="bulk-actions">
+        <button class="bulk-btn bulk-btn-danger" @click="bulkDelete">
+          <Trash2 :size="14" />
+          Delete
+        </button>
+      </div>
+    </div>
+
+    <div class="section-card" v-else-if="filtered.length">
       <table class="data-table">
         <thead>
           <tr>
+            <th style="width:40px; padding-left:16px;">
+              <input type="checkbox" v-model="selectAll" class="select-cb" aria-label="Select all" />
+            </th>
             <th>Receipt #</th>
             <th>Client</th>
             <th>Payment Date</th>
@@ -36,6 +65,9 @@
         </thead>
         <tbody>
           <tr v-for="r in filtered" :key="r.id" class="table-row">
+            <td style="padding-left:16px;">
+              <input type="checkbox" :checked="selectedIds.has(r.id)" @change="toggleSelect(r.id)" class="select-cb" :aria-label="`Select ${r.receipt_number}`" />
+            </td>
             <td class="td-mono">{{ r.receipt_number }}</td>
             <td class="td-client">{{ r.client?.name ?? '—' }}</td>
             <td class="td-muted">{{ formatDate(r.payment_date) }}</td>
@@ -44,13 +76,13 @@
             </td>
             <td class="td-mono td-bold">{{ formatCurrency(r.amount, r.currency) }}</td>
             <td class="td-actions">
-              <button class="act-btn act-view"  @click="viewReceipt(r)"   title="View">
+              <button class="act-btn act-view"  @click="viewReceipt(r)"   title="View" :aria-label="`View ${r.receipt_number}`">
                 <Eye :size="14" />
               </button>
-              <button class="act-btn act-edit"  @click="editReceipt(r)"   title="Edit">
+              <button class="act-btn act-edit"  @click="editReceipt(r)"   title="Edit" :aria-label="`Edit ${r.receipt_number}`">
                 <Pencil :size="14" />
               </button>
-              <button class="act-btn act-del"   @click="deleteReceipt(r)" title="Delete">
+              <button class="act-btn act-del"   @click="deleteReceipt(r)" title="Delete" :aria-label="`Delete ${r.receipt_number}`">
                 <Trash2 :size="14" />
               </button>
             </td>
@@ -77,13 +109,15 @@
             <h2 class="modal-title">{{ viewing.receipt_number }}</h2>
           </div>
           <div class="modal-header-actions">
-            <button class="modal-act-btn" @click="exportReceiptPdf(viewing)" title="Export PDF">
+            <button class="modal-act-btn" @click="exportReceiptPdf(viewing)" title="Export PDF" aria-label="Export PDF">
               <Download :size="15" />
             </button>
-            <button class="modal-act-btn" @click="editReceipt(viewing); viewing = null" title="Edit">
+            <button class="modal-act-btn" @click="editReceipt(viewing); viewing = null" title="Edit" aria-label="Edit receipt">
               <Pencil :size="15" />
             </button>
-            <button class="modal-close" @click="viewing = null">✕</button>
+            <button class="modal-close" @click="viewing = null" aria-label="Close preview">
+              ✕
+            </button>
           </div>
         </div>
         <div class="modal-body">
@@ -96,17 +130,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, FileText, Search, Eye, Pencil, Trash2, Download } from '@lucide/vue'
+import { Plus, FileText, Search, Eye, Pencil, Trash2, Download, CheckSquare } from '@lucide/vue'
 import { receiptService }  from '@/services/receipts'
 import { useAuthStore }    from '@/stores/auth'
 import { useTemplateStore } from '@/stores/templates'
 import { useFormatters }   from '@/composables/useFormatters'
 import { useToast }        from '@/composables/useToast'
 import { usePdf }          from '@/composables/usePdf'
+import { useConfirm }      from '@/composables/useConfirm'
+import { useEscapeKey }    from '@/composables/useFocusTrap'
 import UiBadge       from '@/components/ui/Badge.vue'
-import ReceiptPreview from '@/components/receipt/ReceiptPreview.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
+
+const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
 
 const router        = useRouter()
 const auth          = useAuthStore()
@@ -114,10 +152,53 @@ const templateStore = useTemplateStore()
 const { formatCurrency, formatDate } = useFormatters()
 const { showToast } = useToast()
 const { exportToPdf } = usePdf()
+const { confirm } = useConfirm()
 
 const receipts = ref<any[]>([])
 const search   = ref('')
 const viewing  = ref<any | null>(null)
+const loading  = ref(true)
+
+useEscapeKey(() => {
+  if (viewing.value) viewing.value = null
+})
+
+const selectedIds = ref<Set<string>>(new Set())
+const selectAll = computed({
+  get: () => filtered.value.length > 0 && filtered.value.every(r => selectedIds.value.has(r.id)),
+  set: (val: boolean) => {
+    if (val) {
+      selectedIds.value = new Set(filtered.value.map(r => r.id))
+    } else {
+      selectedIds.value = new Set()
+    }
+  },
+})
+
+function toggleSelect(id: string) {
+  const s = new Set(selectedIds.value)
+  if (s.has(id)) s.delete(id)
+  else s.add(id)
+  selectedIds.value = s
+}
+
+async function bulkDelete() {
+  const count = selectedIds.value.size
+  const ok = await confirm({
+    title: `Delete ${count} receipt${count > 1 ? 's' : ''}`,
+    message: `This will permanently delete ${count} receipt${count > 1 ? 's' : ''}. This cannot be undone.`,
+    confirmText: 'Delete All',
+    variant: 'danger',
+  })
+  if (!ok) return
+
+  for (const id of selectedIds.value) {
+    await receiptService.delete(id)
+    receipts.value = receipts.value.filter(r => r.id !== id)
+  }
+  selectedIds.value = new Set()
+  showToast(`${count} receipt${count > 1 ? 's' : ''} deleted`)
+}
 
 const filtered = computed(() =>
   receipts.value.filter(r =>
@@ -133,6 +214,7 @@ onMounted(async () => {
     templateStore.fetchAll(),
   ])
   receipts.value = data ?? []
+  loading.value = false
 })
 
 function viewReceipt(r: any) {
@@ -144,7 +226,13 @@ function editReceipt(r: any) {
 }
 
 async function deleteReceipt(r: any) {
-  if (!confirm(`Delete receipt ${r.receipt_number}? This cannot be undone.`)) return
+  const ok = await confirm({
+    title: 'Delete receipt',
+    message: `Delete receipt ${r.receipt_number}? This cannot be undone.`,
+    confirmText: 'Delete',
+    variant: 'danger',
+  })
+  if (!ok) return
   const { error } = await receiptService.delete(r.id)
   if (error) { showToast('Failed to delete receipt', 'danger'); return }
   receipts.value = receipts.value.filter(x => x.id !== r.id)
@@ -152,7 +240,6 @@ async function deleteReceipt(r: any) {
 }
 
 async function exportReceiptPdf(r: any) {
-  await new Promise(res => setTimeout(res, 150))
   await exportToPdf('receipt-preview-modal', r.receipt_number ?? 'receipt')
   showToast('PDF exported!')
 }
@@ -228,6 +315,36 @@ function methodVariant(m: string): 'success' | 'default' | 'sent' | 'warning' {
 }
 .act-btn:hover { color: #0f172a; background: #f1f5f9; }
 .act-del:hover { color: #ef4444 !important; background: #fee2e2 !important; }
+
+/* Bulk actions */
+.bulk-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 20px;
+  background: #f5f3ff;
+  border: 1.5px solid #c7d2fe;
+  border-radius: 12px;
+}
+.bulk-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #4f46e5;
+}
+.bulk-actions { display: flex; gap: 8px; }
+.bulk-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  background: #fff; font-size: 13px; font-weight: 600; color: #374151;
+  cursor: pointer; font-family: inherit; transition: all .12s;
+}
+.bulk-btn:hover { background: #f8fafc; border-color: #c7d2fe; }
+.bulk-btn-danger { border-color: #fecaca; color: #991b1b; }
+.bulk-btn-danger:hover { background: #fee2e2; border-color: #fca5a5; }
+.select-cb { width: 16px; height: 16px; accent-color: #6366f1; cursor: pointer; }
 
 /* Empty */
 .empty-state { display: flex; flex-direction: column; align-items: center; padding: 80px 20px; gap: 8px; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; }

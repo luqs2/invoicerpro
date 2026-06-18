@@ -53,22 +53,22 @@
             <div class="field-row">
               <div class="field">
                 <label>Business Name</label>
-                <input v-model="form.name" placeholder="Acme Co." />
+                <UiInput v-model="form.name" placeholder="Acme Co." />
               </div>
               <div class="field">
                 <label>Email</label>
-                <input type="email" v-model="form.email" placeholder="hello@acme.com" />
+                <UiInput v-model="form.email" type="email" placeholder="hello@acme.com" />
               </div>
             </div>
 
             <div class="field-row">
               <div class="field">
                 <label>Phone</label>
-                <input v-model="form.phone" placeholder="+60 12-345 6789" />
+                <UiInput v-model="form.phone" placeholder="+60 12-345 6789" />
               </div>
               <div class="field">
                 <label>Address</label>
-                <input v-model="form.address" placeholder="123 Main St, City" />
+                <UiInput v-model="form.address" placeholder="123 Main St, City" />
               </div>
             </div>
           </div>
@@ -88,17 +88,17 @@
               </div>
               <div class="field">
                 <label>Default Tax Rate (%)</label>
-                <input type="number" v-model="form.default_tax_rate" min="0" max="100" step="0.5" />
+                <UiInput v-model="form.default_tax_rate" type="number" min="0" max="100" step="0.5" />
               </div>
             </div>
             <div class="field-row">
               <div class="field">
                 <label>Invoice Prefix</label>
-                <input v-model="form.invoice_prefix" placeholder="INV" />
+                <UiInput v-model="form.invoice_prefix" placeholder="INV" />
               </div>
               <div class="field">
                 <label>Receipt Prefix</label>
-                <input v-model="form.receipt_prefix" placeholder="RCP" />
+                <UiInput v-model="form.receipt_prefix" placeholder="RCP" />
               </div>
             </div>
           </div>
@@ -132,6 +132,14 @@
             <h2 class="card-title">Account</h2>
           </div>
           <div class="card-body" style="padding-top:0">
+            <div class="theme-toggle-row">
+              <span class="theme-label">Appearance</span>
+              <button class="theme-toggle" @click="toggleTheme" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`">
+                <Sun v-if="theme === 'dark'" :size="16" />
+                <Moon v-else :size="16" />
+                <span>{{ theme === 'light' ? 'Dark' : 'Light' }} mode</span>
+              </button>
+            </div>
             <button class="danger-btn" @click="logout">
               <LogOut :size="16" />
               Sign Out
@@ -153,16 +161,19 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Upload, LogOut } from '@lucide/vue'
+import { Upload, LogOut, Sun, Moon } from '@lucide/vue'
 import { useAuthStore }            from '@/stores/auth'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useToast }                from '@/composables/useToast'
+import { useTheme }                 from '@/composables/useTheme'
 import UiSelect from '@/components/ui/Select.vue'
+import UiInput from '@/components/ui/Input.vue'
 
 const auth          = useAuthStore()
 const bpStore       = useBusinessProfileStore()
 const { showToast } = useToast()
 const router        = useRouter()
+const { theme, toggleTheme } = useTheme()
 
 const saving    = ref(false)
 const logoInput = ref<HTMLInputElement | null>(null)
@@ -441,6 +452,36 @@ async function logout() {
   transition: background .12s;
 }
 .danger-btn:hover { background: #fee2e2; }
+
+.theme-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+}
+
+.theme-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s;
+}
+.theme-toggle:hover { background: #f8fafc; border-color: #c7d2fe; }
 
 .spinner {
   width: 14px; height: 14px;

@@ -148,7 +148,7 @@
                     @input="updateItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
                   />
                   <span class="li-amount">{{ formatCurrency(item.amount, form.currency) }}</span>
-                  <button class="li-del" @click="removeItem(idx)" title="Remove">
+                  <button class="li-del" @click="removeItem(idx)" title="Remove" :aria-label="`Remove line item ${idx + 1}`">
                     <Trash2 :size="14" />
                   </button>
                 </div>
@@ -242,8 +242,8 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { ref, reactive, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue'
+import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { ArrowLeft, Download, FileText, Trash2, CheckCircle } from '@lucide/vue'
 import { useClientStore }   from '@/stores/clients'
 import { useInvoiceStore }  from '@/stores/invoices'
@@ -254,8 +254,10 @@ import { useAuthStore }     from '@/stores/auth'
 import { useFormatters }    from '@/composables/useFormatters'
 import { usePdf }           from '@/composables/usePdf'
 import { useToast }         from '@/composables/useToast'
-import ReceiptPreview from '@/components/receipt/ReceiptPreview.vue'
+import { useConfirm }       from '@/composables/useConfirm'
 import UiButton   from '@/components/ui/Button.vue'
+
+const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
 import UiTabs     from '@/components/ui/Tabs.vue'
 import UiSelect   from '@/components/ui/Select.vue'
 import UiInput    from '@/components/ui/Input.vue'
@@ -271,10 +273,21 @@ const auth          = useAuthStore()
 const { formatCurrency } = useFormatters()
 const { exportToPdf }    = usePdf()
 const { showToast }      = useToast()
+const { confirm }        = useConfirm()
 
 const tab    = ref('form')
 const saving = ref(false)
 const isEdit = ref(false)
+const hasUnsavedChanges = ref(false)
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (hasUnsavedChanges.value) {
+    const ok = window.confirm('You have unsaved changes. Leave anyway?')
+    next(ok)
+  } else {
+    next()
+  }
+})
 
 // Import from invoice
 const selectedImportInvoiceId = ref('')
@@ -295,6 +308,10 @@ const form = reactive({
   tax_rate:       undefined as number | undefined,
   tax_amount:     undefined as number | undefined,
 })
+
+watch(form, () => {
+  hasUnsavedChanges.value = true
+}, { deep: true })
 
 const currencyOptions = [
   { value: 'MYR', label: 'MYR — Malaysian Ringgit' },
@@ -419,9 +436,13 @@ async function save() {
   if (form.invoice_id) {
     const linkedInvoice = invoiceStore.invoices.find(i => i.id === form.invoice_id)
     if (linkedInvoice && linkedInvoice.status !== 'paid') {
-      markInvoicePaid = confirm(
-        `Mark invoice ${form.invoice_number} as paid?\n\nChoose OK to mark it paid, or Cancel to leave it as "${linkedInvoice.status}".`
-      )
+      markInvoicePaid = await confirm({
+        title: 'Mark invoice as paid',
+        message: `Mark invoice ${form.invoice_number} as paid?\n\nChoose Confirm to mark it paid, or Cancel to leave it as "${linkedInvoice.status}".`,
+        confirmText: 'Mark as Paid',
+        cancelText: 'Leave as-is',
+        variant: 'info',
+      })
     }
   }
 
@@ -441,11 +462,13 @@ async function save() {
     if (isEdit.value && form.id) {
       const { error } = await receiptService.update(form.id, payload)
       if (error) throw error
+      hasUnsavedChanges.value = false
       showToast('Receipt updated!')
     } else {
       // Pass empty string so DB trigger auto_receipt_number fills it in
       const { error } = await receiptService.create({ ...payload, receipt_number: '' })
       if (error) throw error
+      hasUnsavedChanges.value = false
       showToast('Receipt saved!')
     }
 
@@ -475,8 +498,7 @@ async function save() {
 async function exportPdf() {
   if (tab.value !== 'preview') {
     tab.value = 'preview'
-    // Allow Vue to render the preview component before capturing
-    await new Promise(r => setTimeout(r, 300))
+    await nextTick()
   }
   const filename = (form as any).receipt_number ?? 'receipt'
   await exportToPdf('receipt-preview', filename)

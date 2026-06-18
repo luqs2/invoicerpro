@@ -9,8 +9,8 @@ import type { InvoiceTemplate } from "@/types"
 defineProps<{ template: InvoiceTemplate; selected: boolean }>()
 </script>
 <style scoped>
-.tpl-card{border:2px solid var(--ion-border-color);border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .15s;}
-.tpl-card.selected{border-color:#c8f04a;}
+.tpl-card{border:2px solid #e2e8f0;border-radius:10px;overflow:hidden;cursor:pointer;transition:border-color .15s;}
+.tpl-card.selected{border-color:#6366f1;}
 .tpl-thumb{height:80px;display:flex;align-items:center;justify-content:center;font-size:28px;}
-.tpl-name{padding:8px;font-size:12px;font-weight:600;background:var(--ion-card-background);}
+.tpl-name{padding:8px;font-size:12px;font-weight:600;background:#ffffff;}
 </style>

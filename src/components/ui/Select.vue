@@ -1,6 +1,6 @@
 <template>
   <SelectRoot v-model="model" :disabled="disabled">
-    <SelectTrigger :class="cn(triggerClass)">
+    <SelectTrigger :class="cn(triggerClass)" :title="selectedLabel">
       <SelectValue :placeholder="placeholder" />
       <ChevronsUpDown :size="14" class="select-chevron" />
     </SelectTrigger>
@@ -31,6 +31,7 @@ import {
   SelectItemIndicator,
 } from 'radix-vue'
 import { ChevronsUpDown, Check } from '@lucide/vue'
+import { computed } from 'vue'
 import { cn } from '@/lib/utils'
 
 interface Option {
@@ -38,7 +39,7 @@ interface Option {
   label: string
 }
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   options: Option[]
   placeholder?: string
   disabled?: boolean
@@ -48,6 +49,10 @@ withDefaults(defineProps<{
 })
 
 const model = defineModel<string>()
+
+const selectedLabel = computed(() =>
+  props.options.find(o => o.value === model.value)?.label ?? ''
+)
 </script>
 
 <style scoped>
@@ -68,7 +73,17 @@ const model = defineModel<string>()
   font-family: inherit;
   outline: none;
   transition: border-color .15s, box-shadow .15s;
+  overflow: hidden;
+  min-width: 0;
+}
+
+:deep(.select-trigger > span) {
+  overflow: hidden;
+  text-overflow: ellipsis;
   white-space: nowrap;
+  min-width: 0;
+  flex: 1;
+  text-align: left;
 }
 
 :deep(.select-trigger:hover) {
@@ -99,7 +114,7 @@ const model = defineModel<string>()
   box-shadow: 0 8px 30px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
   overflow: hidden;
   z-index: 9999;
-  min-width: var(--radix-select-trigger-width);
+  min-width: calc(var(--radix-select-trigger-width) + 40px);
   max-height: var(--radix-select-content-available-height);
   animation: slideDown .12s ease;
 }
@@ -119,12 +134,13 @@ const model = defineModel<string>()
   justify-content: space-between;
   padding: 8px 10px 8px 12px;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 13px;
   color: #374151;
   cursor: pointer;
   outline: none;
   transition: background .1s, color .1s;
   user-select: none;
+  white-space: nowrap;
 }
 
 :deep(.select-item[data-highlighted]) {
@@ -140,4 +156,27 @@ const model = defineModel<string>()
 :deep(.select-item-indicator) {
   color: #6366f1;
 }
-</style>
+
+/* Dark mode */
+.dark :deep(.select-trigger) {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark :deep(.select-trigger:hover) {
+  border-color: #475569;
+}
+.dark :deep(.select-content) {
+  background: #1e293b;
+  border-color: #334155;
+}
+.dark :deep(.select-item[data-highlighted]) {
+  background: #312e81;
+  color: #a5b4fc;
+}
+.dark :deep(.select-item) {
+  color: #e2e8f0;
+}
+.dark :deep(.select-item[data-state="checked"]) {
+  color: #818cf8;
+}</style>

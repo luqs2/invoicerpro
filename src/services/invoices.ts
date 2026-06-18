@@ -18,6 +18,14 @@ export const invoiceService = {
       .single()
   },
 
+  async getByClientId(clientId: string) {
+    return supabase
+      .from('invoices')
+      .select('*, client:clients(*)')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+  },
+
   async create(invoice: Partial<Invoice>) {
     return supabase.from('invoices').insert(invoice).select().single()
   },

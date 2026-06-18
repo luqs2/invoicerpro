@@ -18,8 +18,9 @@
             Invoicer<span>Pro</span>
           </span>
         </div>
-        <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed" title="Toggle sidebar">
-          <ion-icon :icon="sidebarCollapsed ? chevronForwardOutline : chevronBackOutline" />
+        <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed" :aria-label="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
+          <ChevronLeft v-if="!sidebarCollapsed" :size="14" />
+          <ChevronRight v-else :size="14" />
         </button>
       </div>
 
@@ -32,7 +33,7 @@
           :class="{ active: isActive(item.path) }"
           :title="sidebarCollapsed ? item.label : ''"
         >
-          <ion-icon :icon="item.icon" class="nav-icon" />
+          <component :is="item.icon" :size="18" class="nav-icon" />
           <span class="nav-label" v-show="!sidebarCollapsed">{{ item.label }}</span>
           <span v-if="item.badge && !sidebarCollapsed" class="nav-badge">{{ item.badge }}</span>
         </router-link>
@@ -40,7 +41,7 @@
 
       <div class="sidebar-footer" v-show="!sidebarCollapsed">
         <router-link to="/app/settings" class="nav-item" :class="{ active: isActive('/app/settings') }">
-          <ion-icon :icon="settingsOutline" class="nav-icon" />
+          <Settings :size="18" class="nav-icon" />
           <span class="nav-label">Settings</span>
         </router-link>
       </div>
@@ -50,8 +51,8 @@
     <main class="main-content">
       <!-- Mobile top bar -->
       <div class="mobile-topbar">
-        <button class="mobile-menu-btn" @click="mobileOpen = !mobileOpen">
-          <ion-icon :icon="menuOutline" />
+        <button class="mobile-menu-btn" @click="mobileOpen = !mobileOpen" aria-label="Open navigation menu">
+          <Menu :size="20" />
         </button>
         <span class="mobile-brand">Invoicer<span>Pro</span></span>
       </div>
@@ -72,8 +73,8 @@
               </div>
               <span class="brand-text">Invoicer<span>Pro</span></span>
             </div>
-            <button class="collapse-btn" @click="mobileOpen = false">
-              <ion-icon :icon="closeOutline" />
+            <button class="collapse-btn" @click="mobileOpen = false" aria-label="Close navigation menu">
+              <X :size="16" />
             </button>
           </div>
           <nav class="sidebar-nav">
@@ -85,13 +86,13 @@
               :class="{ active: isActive(item.path) }"
               @click="mobileOpen = false"
             >
-              <ion-icon :icon="item.icon" class="nav-icon" />
+              <component :is="item.icon" :size="18" class="nav-icon" />
               <span class="nav-label">{{ item.label }}</span>
             </router-link>
           </nav>
           <div class="sidebar-footer">
             <router-link to="/app/settings" class="nav-item" :class="{ active: isActive('/app/settings') }" @click="mobileOpen = false">
-              <ion-icon :icon="settingsOutline" class="nav-icon" />
+              <Settings :size="18" class="nav-icon" />
               <span class="nav-label">Settings</span>
             </router-link>
           </div>
@@ -103,37 +104,41 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, watch, onMounted } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
-import { IonIcon } from '@ionic/vue'
 import {
-  gridOutline, documentTextOutline, receiptOutline,
-  peopleOutline, settingsOutline, colorPaletteOutline,
-  chevronBackOutline, chevronForwardOutline,
-  menuOutline, closeOutline,
-} from 'ionicons/icons'
+  LayoutGrid, FileText, Receipt, Users, Palette,
+  ChevronLeft, ChevronRight,
+  Menu, X, Settings,
+} from '@lucide/vue'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
+import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 interface NavItem {
   path: string
   label: string
-  icon: string
+  icon: any
   badge?: number
 }
 
 const route = useRoute()
-const sidebarCollapsed = ref(false)
+const sidebarCollapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true')
 const mobileOpen = ref(false)
 
+watch(sidebarCollapsed, (v) => {
+  localStorage.setItem('sidebar-collapsed', String(v))
+})
+
 const bpStore = useBusinessProfileStore()
+useKeyboardShortcuts()
 onMounted(() => bpStore.fetch())
 
 const navItems: NavItem[] = [
-  { path: '/app/dashboard', label: 'Dashboard', icon: gridOutline },
-  { path: '/app/invoices',  label: 'Invoices',  icon: documentTextOutline },
-  { path: '/app/receipts',  label: 'Receipts',  icon: receiptOutline },
-  { path: '/app/clients',   label: 'Clients',   icon: peopleOutline },
-  { path: '/app/templates', label: 'Templates', icon: colorPaletteOutline },
+  { path: '/app/dashboard', label: 'Dashboard', icon: LayoutGrid },
+  { path: '/app/invoices',  label: 'Invoices',  icon: FileText },
+  { path: '/app/receipts',  label: 'Receipts',  icon: Receipt },
+  { path: '/app/clients',   label: 'Clients',   icon: Users },
+  { path: '/app/templates', label: 'Templates', icon: Palette },
 ]
 
 function isActive(path: string) {
@@ -149,6 +154,7 @@ function isActive(path: string) {
   overflow: hidden;
   background: #f8fafc;
 }
+.dark .app-shell { background: #0f172a; }
 
 /* ── Sidebar ───────────────────────────────────────────────── */
 .sidebar {
@@ -162,6 +168,7 @@ function isActive(path: string) {
   overflow: hidden;
   z-index: 10;
 }
+.dark .sidebar { background: #1e293b; border-color: #334155; }
 
 .sidebar.collapsed {
   width: 64px;
@@ -176,6 +183,7 @@ function isActive(path: string) {
   border-bottom: 1px solid #f1f5f9;
   min-height: 64px;
 }
+.dark .sidebar-header { border-color: #334155; }
 
 .brand-logo {
   display: flex;
@@ -210,6 +218,7 @@ function isActive(path: string) {
   white-space: nowrap;
   letter-spacing: -0.3px;
 }
+.dark .brand-text { color: #f1f5f9; }
 
 .brand-text span { color: #6366f1; }
 
@@ -228,8 +237,10 @@ function isActive(path: string) {
   font-size: 14px;
   transition: background .12s, color .12s;
 }
+.dark .collapse-btn { background: #334155; color: #94a3b8; }
 
 .collapse-btn:hover { background: #e2e8f0; color: #0f172a; }
+.dark .collapse-btn:hover { background: #475569; color: #f1f5f9; }
 
 /* Nav */
 .sidebar-nav {
@@ -245,6 +256,7 @@ function isActive(path: string) {
   padding: 8px;
   border-top: 1px solid #f1f5f9;
 }
+.dark .sidebar-footer { border-color: #334155; }
 
 .nav-item {
   display: flex;
@@ -270,15 +282,16 @@ function isActive(path: string) {
   background: #f1f5f9;
   color: #0f172a;
 }
+.dark .nav-item:hover { background: #334155; color: #f1f5f9; }
 
 .nav-item.active {
   background: #ede9fe;
   color: #6366f1;
   font-weight: 600;
 }
+.dark .nav-item.active { background: #312e81; color: #818cf8; }
 
 .nav-icon {
-  font-size: 18px;
   min-width: 18px;
   flex-shrink: 0;
 }
@@ -319,6 +332,7 @@ function isActive(path: string) {
   z-index: 20;
   flex-shrink: 0;
 }
+.dark .mobile-topbar { background: #1e293b; border-color: #334155; }
 
 .mobile-menu-btn {
   width: 36px;
@@ -333,6 +347,7 @@ function isActive(path: string) {
   font-size: 20px;
   color: #374151;
 }
+.dark .mobile-menu-btn { background: #334155; color: #e2e8f0; }
 
 .mobile-brand {
   font-size: 17px;
@@ -340,6 +355,7 @@ function isActive(path: string) {
   color: #0f172a;
   letter-spacing: -0.3px;
 }
+.dark .mobile-brand { color: #f1f5f9; }
 
 .mobile-brand span { color: #6366f1; }
 
@@ -362,6 +378,7 @@ function isActive(path: string) {
   flex-direction: column;
   box-shadow: 4px 0 24px rgba(0,0,0,.12);
 }
+.dark .mobile-drawer { background: #1e293b; }
 
 /* Transitions */
 .overlay-fade-enter-active,

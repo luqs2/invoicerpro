@@ -126,7 +126,7 @@
                     @input="store.updateLineItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
                   />
                   <span class="li-amount">{{ formatCurrency(item.amount, store.current.currency) }}</span>
-                  <button class="li-del" @click="store.removeLineItem(idx)" title="Remove">
+                  <button class="li-del" @click="store.removeLineItem(idx)" title="Remove" :aria-label="`Remove line item ${idx + 1}`">
                     <Trash2 :size="14" />
                   </button>
                 </div>
@@ -235,12 +235,23 @@
       </div>
 
     </div>
+
+    <!-- Mobile floating summary bar -->
+    <div class="mobile-summary-bar">
+      <div class="msb-left">
+        <span class="msb-label">Total</span>
+        <span class="msb-value">{{ formatCurrency(store.current.total ?? 0, store.current.currency) }}</span>
+      </div>
+      <UiButton size="sm" @click="saveInvoice" :loading="saving === 'save'">
+        Save
+      </UiButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
+import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { ArrowLeft, Send, Trash2, Plus, Download, Save } from '@lucide/vue'
 import { useInvoiceStore } from '@/stores/invoices'
 import { useClientStore } from '@/stores/clients'
@@ -248,8 +259,9 @@ import { useTemplateStore } from '@/stores/templates'
 import { useFormatters } from '@/composables/useFormatters'
 import { usePdf } from '@/composables/usePdf'
 import { useToast } from '@/composables/useToast'
-import InvoicePreview from '@/components/invoice/InvoicePreview.vue'
 import UiButton from '@/components/ui/Button.vue'
+
+const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
 import UiTabs from '@/components/ui/Tabs.vue'
 import UiSelect from '@/components/ui/Select.vue'
 import UiInput from '@/components/ui/Input.vue'
@@ -266,6 +278,20 @@ const { showToast }      = useToast()
 const tab    = ref('form')
 const saving = ref<'draft' | 'save' | 'send' | null>(null)
 const isEdit = ref(false)
+const hasUnsavedChanges = ref(false)
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (hasUnsavedChanges.value) {
+    const ok = window.confirm('You have unsaved changes. Leave anyway?')
+    next(ok)
+  } else {
+    next()
+  }
+})
+
+watch(() => store.current, () => {
+  hasUnsavedChanges.value = true
+}, { deep: true })
 
 const currencyOptions = [
   { value: 'MYR', label: 'MYR — Malaysian Ringgit (RM)' },
@@ -324,6 +350,7 @@ async function saveDraft() {
   try {
     store.current.status = 'draft'
     await store.save()
+    hasUnsavedChanges.value = false
     showToast('Saved as draft')
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to save draft', 'danger')
@@ -339,6 +366,7 @@ async function saveInvoice() {
     // Only set to draft if it's a brand-new invoice with no status
     if (!store.current.status) store.current.status = 'draft'
     await store.save()
+    hasUnsavedChanges.value = false
     showToast('Invoice saved!')
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to save invoice', 'danger')
@@ -350,8 +378,14 @@ async function saveInvoice() {
 async function send() {
   saving.value = 'send'
   try {
-    store.current.status = 'sent'
-    await store.save()
+    if (store.current.id) {
+      await store.updateStatus(store.current.id, 'sent')
+      store.current.status = 'sent'
+    } else {
+      store.current.status = 'sent'
+      await store.save()
+    }
+    hasUnsavedChanges.value = false
     showToast('Invoice marked as sent!')
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to update invoice', 'danger')
@@ -656,9 +690,75 @@ async function exportPdf() {
 }
 
 @media (max-width: 768px) {
-  .page { padding: 20px 16px; }
+  .page { padding: 20px 16px; padding-bottom: 80px; }
   .field-row { grid-template-columns: 1fr; }
-  .li-header, .li-row { grid-template-columns: 1fr 60px 80px 36px; }
-  .li-col-amt, .li-amount { display: none; }
+  .line-items-table { border: none; background: none; }
+  .li-header { display: none; }
+  .li-row {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 14px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    margin-bottom: 8px;
+  }
+  .li-input { padding: 8px 0; background: transparent; }
+  .li-input-num { text-align: left; }
+  .li-amount {
+    padding: 8px 0;
+    text-align: left;
+    font-size: 15px;
+    font-weight: 700;
+    color: #6366f1;
+  }
+  .li-del {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+  }
+  .li-row { position: relative; }
+  .add-item-btn { width: 100%; justify-content: center; }
+}
+
+/* Mobile floating summary */
+.mobile-summary-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  padding: 12px 16px;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 50;
+  box-shadow: 0 -2px 10px rgba(0,0,0,.08);
+}
+
+.msb-left {
+  display: flex;
+  flex-direction: column;
+}
+
+.msb-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.msb-value {
+  font-size: 20px;
+  font-weight: 800;
+  color: #6366f1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 900px) {
+  .mobile-summary-bar { display: flex; }
 }
 </style>

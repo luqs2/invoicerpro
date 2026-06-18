@@ -25,10 +25,19 @@ export const useClientStore = defineStore('clients', () => {
     return data
   }
 
+  async function update(id: string, updates: Partial<Client>) {
+    const { data } = await clientService.update(id, updates)
+    if (data) {
+      const idx = clients.value.findIndex(c => c.id === id)
+      if (idx > -1) clients.value[idx] = data
+    }
+    return data
+  }
+
   async function remove(id: string) {
     await clientService.delete(id)
     clients.value = clients.value.filter(c => c.id !== id)
   }
 
-  return { clients, loading, fetchAll, create, remove }
+  return { clients, loading, fetchAll, create, update, remove }
 })

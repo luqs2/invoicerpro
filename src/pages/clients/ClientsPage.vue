@@ -19,7 +19,7 @@
     <!-- Search -->
     <div class="toolbar">
       <div class="search-wrap">
-        <ion-icon :icon="searchOutline" class="search-icon" />
+        <Search :size="15" class="search-icon" />
         <input
           class="search-input"
           v-model="search"
@@ -28,8 +28,19 @@
       </div>
     </div>
 
+    <!-- Table skeleton -->
+    <div class="section-card" v-if="store.loading">
+      <div style="padding: 16px 20px;">
+        <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f8fafc;">
+          <Skeleton variant="rect" width="34px" height="34px" style="border-radius:8px; flex-shrink:0;" />
+          <Skeleton variant="text" width="120px" />
+          <Skeleton variant="text" width="140px" style="margin-left:auto;" />
+        </div>
+      </div>
+    </div>
+
     <!-- Table -->
-    <div class="section-card" v-if="filtered.length">
+    <div class="section-card" v-else-if="filtered.length">
       <table class="data-table">
         <thead>
           <tr>
@@ -60,7 +71,7 @@
               <span v-else class="td-muted">—</span>
             </td>
             <td class="td-action">
-              <ion-icon :icon="chevronForwardOutline" />
+              <ChevronRight :size="14" />
             </td>
           </tr>
         </tbody>
@@ -69,7 +80,7 @@
 
     <!-- Empty -->
     <div class="empty-state" v-else>
-      <ion-icon :icon="peopleOutline" class="empty-icon" />
+      <Users :size="52" class="empty-icon" />
       <p class="empty-title">{{ search ? 'No matching clients' : 'No clients yet' }}</p>
       <p class="empty-sub">{{ search ? 'Try a different search.' : 'Add your first client to get started.' }}</p>
       <button v-if="!search" class="btn-primary" @click="openPanel()" style="margin-top:8px;">Add Client</button>
@@ -81,39 +92,39 @@
         <div class="side-panel">
           <div class="panel-header">
             <h2 class="panel-title">Add Client</h2>
-            <button class="panel-close" @click="closePanel">
-              <ion-icon :icon="closeOutline" />
+            <button class="panel-close" @click="closePanel" aria-label="Close panel">
+              <X :size="16" />
             </button>
           </div>
 
           <div class="panel-body">
             <div class="field">
               <label>Full Name <span class="req">*</span></label>
-              <input v-model="form.name" placeholder="Jane Smith" />
+              <UiInput v-model="form.name" placeholder="Jane Smith" />
             </div>
             <div class="field">
               <label>Email <span class="req">*</span></label>
-              <input type="email" v-model="form.email" placeholder="jane@company.com" />
+              <UiInput v-model="form.email" type="email" placeholder="jane@company.com" />
             </div>
             <div class="field-row">
               <div class="field">
                 <label>Phone</label>
-                <input v-model="form.phone" placeholder="+1 (555) 000-0000" />
+                <UiInput v-model="form.phone" placeholder="+1 (555) 000-0000" />
               </div>
               <div class="field">
                 <label>Company</label>
-                <input v-model="form.company" placeholder="Acme Corp" />
+                <UiInput v-model="form.company" placeholder="Acme Corp" />
               </div>
             </div>
             <div class="field">
               <label>Address</label>
-              <textarea v-model="form.address" placeholder="123 Main St, City, Country" rows="3" />
+              <UiTextarea v-model="form.address" placeholder="123 Main St, City, Country" :rows="3" />
             </div>
           </div>
 
           <div class="panel-footer">
-            <button class="btn-outline" @click="closePanel">Cancel</button>
-            <button class="btn-primary" @click="addClient">Save Client</button>
+            <UiButton variant="outline" @click="closePanel" class="footer-btn">Cancel</UiButton>
+            <UiButton @click="addClient" class="footer-btn">Save Client</UiButton>
           </div>
         </div>
       </div>
@@ -124,11 +135,14 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive } from 'vue'
-import { IonIcon } from '@ionic/vue'
-import { searchOutline, closeOutline, peopleOutline, chevronForwardOutline } from 'ionicons/icons'
+import { Search, X, Users, ChevronRight } from '@lucide/vue'
 import { useClientStore } from '@/stores/clients'
 import { useToast } from '@/composables/useToast'
 import { useFormatters } from '@/composables/useFormatters'
+import Skeleton from '@/components/ui/Skeleton.vue'
+import UiInput from '@/components/ui/Input.vue'
+import UiTextarea from '@/components/ui/Textarea.vue'
+import UiButton from '@/components/ui/Button.vue'
 
 const store = useClientStore()
 const { showToast } = useToast()
@@ -213,23 +227,6 @@ async function addClient() {
 .btn-primary:hover { opacity: .9; }
 .btn-primary:active { transform: scale(.98); }
 .btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
-
-.btn-outline {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 9px 18px;
-  background: transparent;
-  color: #374151;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  transition: background .12s, border-color .12s;
-}
-.btn-outline:hover { background: #f8fafc; border-color: #c7d2fe; }
 
 /* Toolbar */
 .toolbar { display: flex; gap: 12px; align-items: center; }
@@ -462,8 +459,7 @@ async function addClient() {
   flex-shrink: 0;
 }
 
-.panel-footer .btn-primary { flex: 1; justify-content: center; }
-.panel-footer .btn-outline  { flex: 1; justify-content: center; }
+.footer-btn { flex: 1; justify-content: center; }
 
 /* Panel transition */
 .panel-slide-enter-active,

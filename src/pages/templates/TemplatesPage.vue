@@ -209,12 +209,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { useTemplateStore } from '@/stores/templates'
 import { useToast } from '@/composables/useToast'
 import TemplateCard from '@/components/template/TemplateCard.vue'
-import InvoicePreview from '@/components/invoice/InvoicePreview.vue'
 import UiButton from '@/components/ui/Button.vue'
+
+const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
 import UiTabs from '@/components/ui/Tabs.vue'
 import UiSelect from '@/components/ui/Select.vue'
 import UiInput from '@/components/ui/Input.vue'

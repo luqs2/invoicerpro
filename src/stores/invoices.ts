@@ -92,9 +92,26 @@ export const useInvoiceStore = defineStore('invoices', () => {
     }
   }
 
+  async function updateStatus(id: string, status: Invoice['status']) {
+    const idx = invoices.value.findIndex(i => i.id === id)
+    const prev = idx > -1 ? invoices.value[idx].status : null
+
+    // Optimistic update
+    if (idx > -1) {
+      invoices.value[idx] = { ...invoices.value[idx], status }
+    }
+
+    const { error } = await invoiceService.updateStatus(id, status)
+    if (error && prev) {
+      // Rollback
+      invoices.value[idx] = { ...invoices.value[idx], status: prev }
+      throw error
+    }
+  }
+
   return {
     invoices, current, loading,
-    fetchAll, save, resetCurrent,
+    fetchAll, save, updateStatus, resetCurrent,
     addLineItem, removeLineItem, updateLineItem, recalcTotals,
   }
 })
