@@ -181,7 +181,6 @@
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Search, FileText, Eye, Pencil, Trash2, Download, SlidersHorizontal, CheckSquare } from '@lucide/vue'
-import confetti from 'canvas-confetti'
 import { useInvoiceStore }  from '@/stores/invoices'
 import { useTemplateStore } from '@/stores/templates'
 import { invoiceService }   from '@/services/invoices'
