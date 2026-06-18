@@ -30,13 +30,14 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchProfile(id: string) {
     const { data } = await supabase
       .from('profiles')
-      .select('*')
+      .select('id, full_name, avatar_url')
       .eq('id', id)
       .single()
     user.value = data
   }
 
   async function login(email: string, password: string) {
+    if (!email || !password) throw new Error('Email and password are required')
     loading.value = true
     const { error } = await supabase.auth.signInWithPassword({ email, password })
     loading.value = false
@@ -44,6 +45,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function register(email: string, password: string, fullName: string) {
+    if (!email || !password || !fullName) throw new Error('All fields are required')
+    if (password.length < 8) throw new Error('Password must be at least 8 characters')
     loading.value = true
     const { error } = await supabase.auth.signUp({
       email,
@@ -54,11 +57,30 @@ export const useAuthStore = defineStore('auth', () => {
     if (error) throw error
   }
 
+  async function resetPassword(email: string, newPassword: string) {
+    if (!email || !newPassword) throw new Error('Email and new password are required')
+    if (newPassword.length < 8) throw new Error('Password must be at least 8 characters')
+
+    const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string
+
+    const res = await fetch(`${supabaseUrl}/functions/v1/reset-password`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+      },
+      body: JSON.stringify({ email, newPassword }),
+    })
+
+    const data = await res.json()
+    if (!res.ok || data.error) throw new Error(data.error ?? 'Failed to reset password')
+  }
+
   async function logout() {
     await supabase.auth.signOut()
     user.value = null
     initialized.value = false
   }
 
-  return { user, loading, isAuthed, initialized, init, login, register, logout }
+  return { user, loading, isAuthed, initialized, init, login, register, resetPassword, logout }
 })

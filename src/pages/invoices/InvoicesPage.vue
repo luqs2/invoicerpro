@@ -92,22 +92,23 @@
     </div>
 
     <!-- Table -->
-    <div class="section-card" v-else-if="filtered.length">
+    <div class="section-card" v-if="filtered.length">
       <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:40px; padding-left:16px;">
-              <input type="checkbox" v-model="selectAll" class="select-cb" aria-label="Select all" />
-            </th>
-            <th>Invoice #</th>
-            <th>Client</th>
-            <th>Issue Date</th>
-            <th>Due Date</th>
-            <th>Amount</th>
-            <th>Status</th>
-            <th style="width:120px; text-align:right; padding-right:20px;">Actions</th>
-          </tr>
-        </thead>
+          <caption class="sr-only">Invoices</caption>
+          <thead>
+            <tr>
+              <th scope="col" style="width:40px; padding-left:16px;">
+                <input type="checkbox" v-model="selectAll" class="select-cb" aria-label="Select all" />
+              </th>
+              <th scope="col">Invoice #</th>
+              <th scope="col">Client</th>
+              <th scope="col">Issue Date</th>
+              <th scope="col">Due Date</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col" style="width:120px; text-align:right; padding-right:20px;">Actions</th>
+            </tr>
+          </thead>
         <tbody>
           <tr v-for="inv in filtered" :key="inv.id" class="table-row">
             <td style="padding-left:16px;">
@@ -180,6 +181,7 @@
 import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Search, FileText, Eye, Pencil, Trash2, Download, SlidersHorizontal, CheckSquare } from '@lucide/vue'
+import confetti from 'canvas-confetti'
 import { useInvoiceStore }  from '@/stores/invoices'
 import { useTemplateStore } from '@/stores/templates'
 import { invoiceService }   from '@/services/invoices'

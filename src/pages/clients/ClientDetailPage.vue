@@ -70,6 +70,21 @@
             <p class="stat-label">Member Since</p>
             <p class="stat-value">{{ formatDate(client.created_at) }}</p>
           </div>
+          <div class="stat-card">
+            <div class="stat-icon-inline" style="background:#d1fae5;">
+              <DollarSign :size="16" style="color:#059669;" />
+            </div>
+            <p class="stat-label">Total Revenue</p>
+            <p class="stat-value">{{ formatCurrency(totalRevenue) }}</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Outstanding Invoices</p>
+            <p class="stat-value" :class="{ 'overdue': outstandingCount > 0 }">{{ outstandingCount }}</p>
+          </div>
+          <div class="stat-card">
+            <p class="stat-label">Total Received</p>
+            <p class="stat-value">{{ formatCurrency(totalReceipts) }}</p>
+          </div>
         </div>
 
       </div>
@@ -100,6 +115,36 @@
             <div class="inv-right">
               <span class="inv-amount">{{ formatCurrency(inv.total, inv.currency) }}</span>
               <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
+            </div>
+          </router-link>
+        </div>
+      </div>
+
+      <!-- Receipts section -->
+      <div class="invoices-section" v-if="receipts.length">
+        <div class="section-header">
+          <h2 class="section-title">Receipts</h2>
+          <router-link to="/app/receipts/new" class="section-link">
+            <Plus :size="14" />
+            New
+          </router-link>
+        </div>
+        <div class="invoices-list">
+          <router-link
+            v-for="r in receipts"
+            :key="r.id"
+            :to="`/app/receipts/${r.id}`"
+            class="invoice-row"
+          >
+            <div class="inv-left">
+              <DollarSign :size="16" class="inv-icon" />
+              <div>
+                <p class="inv-number">{{ r.receipt_number }}</p>
+                <p class="inv-date">{{ formatDate(r.payment_date) }}</p>
+              </div>
+            </div>
+            <div class="inv-right">
+              <span class="inv-amount">{{ formatCurrency(r.amount, r.currency) }}</span>
             </div>
           </router-link>
         </div>
@@ -159,14 +204,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Plus, Trash2, Pencil, X, FileText } from '@lucide/vue'
+import { ArrowLeft, Plus, Trash2, Pencil, X, FileText, DollarSign } from '@lucide/vue'
 import { clientService } from '@/services/clients'
 import { invoiceService } from '@/services/invoices'
+import { receiptService } from '@/services/receipts'
 import { useClientStore } from '@/stores/clients'
 import { useFormatters } from '@/composables/useFormatters'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
 import type { Client, Invoice } from '@/types'
 import UiButton from '@/components/ui/Button.vue'
 import UiInput from '@/components/ui/Input.vue'
@@ -177,23 +224,37 @@ const router = useRouter()
 const store  = useClientStore()
 const { getInitials, formatDate, formatCurrency } = useFormatters()
 const { showToast } = useToast()
+const { confirm } = useConfirm()
 
 const client    = ref<Client | null>(null)
 const invoices  = ref<Invoice[]>([])
+const receipts  = ref<any[]>([])
 const deleting  = ref(false)
 const panelOpen = ref(false)
 const saving    = ref(false)
+
+const totalRevenue = computed(() =>
+  invoices.value.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0)
+)
+const outstandingCount = computed(() =>
+  invoices.value.filter(i => i.status === 'sent' || i.status === 'overdue').length
+)
+const totalReceipts = computed(() =>
+  receipts.value.reduce((s, r) => s + Number(r.amount), 0)
+)
 
 const form = reactive({ name: '', email: '', phone: '', company: '', address: '' })
 
 onMounted(async () => {
   const clientId = route.params.id as string
-  const [{ data }, { data: invData }] = await Promise.all([
+  const [{ data }, { data: invData }, { data: rcpData }] = await Promise.all([
     clientService.getById(clientId),
     invoiceService.getByClientId(clientId),
+    receiptService.getByClientId(clientId),
   ])
   client.value = data
   invoices.value = invData ?? []
+  receipts.value = rcpData ?? []
 })
 
 function openEdit() {
@@ -231,6 +292,16 @@ async function saveEdit() {
 
 async function del() {
   if (!client.value) return
+  const invoiceCount = invoices.value.length
+  const ok = await confirm({
+    title: `Delete ${client.value.name}?`,
+    message: invoiceCount > 0
+      ? `This client has ${invoiceCount} linked invoice${invoiceCount > 1 ? 's' : ''}. Deleting will orphan those records. This cannot be undone.`
+      : 'This will permanently delete this client. This cannot be undone.',
+    confirmText: 'Delete Client',
+    variant: 'danger',
+  })
+  if (!ok) return
   deleting.value = true
   try {
     await store.remove(client.value.id)
@@ -404,6 +475,18 @@ async function del() {
   font-weight: 700;
   color: #0f172a;
   margin: 0;
+}
+
+.stat-value.overdue { color: #ef4444; }
+
+.stat-icon-inline {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 6px;
 }
 
 /* Loading */

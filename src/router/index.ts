@@ -8,8 +8,9 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import('@/layouts/AuthLayout.vue'),
     children: [
       { path: '',         redirect: '/auth/login' },
-      { path: 'login',    component: () => import('@/pages/auth/LoginPage.vue') },
-      { path: 'register', component: () => import('@/pages/auth/RegisterPage.vue') },
+      { path: 'login',           component: () => import('@/pages/auth/LoginPage.vue') },
+      { path: 'register',        component: () => import('@/pages/auth/RegisterPage.vue') },
+      { path: 'forgot-password', component: () => import('@/pages/auth/ForgotPasswordPage.vue') },
     ],
   },
   {

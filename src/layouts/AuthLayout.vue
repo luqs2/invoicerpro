@@ -149,11 +149,27 @@ import { RouterView } from 'vue-router'
 
 @media (max-width: 768px) {
   .auth-shell { flex-direction: column; }
-  .auth-left { flex: none; padding: 32px 24px; }
-  .auth-left-inner { gap: 20px; }
-  .hero-text h1 { font-size: 24px; }
-  .hero-text p, .feature-list { display: none; }
-  .auth-right { width: 100%; min-width: 0; padding: 24px 16px; }
-  .auth-right-inner { max-width: 100%; }
+  .auth-left {
+    flex: none;
+    padding: 28px 24px;
+    min-height: auto;
+    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+  }
+  .auth-left-inner { gap: 0; }
+  .brand-mark { margin-bottom: 0; }
+  .hero-text { display: none; }
+  .feature-list { display: none; }
+  .auth-right {
+    width: 100%;
+    min-width: 0;
+    padding: 32px 16px 24px;
+    flex: 1;
+  }
+  .auth-right-inner {
+    max-width: 100%;
+    box-shadow: none;
+    border: none;
+    background: transparent;
+  }
 }
 </style>

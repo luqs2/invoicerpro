@@ -14,7 +14,7 @@ export const useBusinessProfileStore = defineStore('businessProfile', () => {
     loading.value = true
     const { data } = await supabase
       .from('business_profiles')
-      .select('*')
+      .select('id, user_id, name, email, phone, address, logo_url, default_currency, default_tax_rate, invoice_prefix, receipt_prefix, next_invoice_number, next_receipt_number, active_template_id')
       .eq('user_id', auth.user.id)
       .single()
     if (data) profile.value = data

@@ -9,10 +9,7 @@
       </div>
       <div class="page-header-right">
         <router-link to="/app/invoices/new" class="btn-primary">
-          <svg viewBox="0 0 24 24" fill="none" class="btn-icon">
-            <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-            <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          </svg>
+          <Plus :size="16" />
           New Invoice
         </router-link>
       </div>
@@ -20,40 +17,60 @@
 
     <!-- Stats row -->
     <div class="stats-row" v-if="!loading">
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:#ede9fe;">
-          <DollarSign :size="22" style="color:#6366f1;" />
+      <div class="stat-card stat-revenue">
+        <div class="stat-icon-wrap">
+          <DollarSign :size="22" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Total Revenue</p>
           <p class="stat-value">{{ formatCurrency(stats.total_revenue) }}</p>
+          <p class="stat-trend" :class="trends.revenue >= 0 ? 'trend-up' : 'trend-down'">
+            <TrendingUp v-if="trends.revenue >= 0" :size="12" />
+            <TrendingDown v-else :size="12" />
+            {{ trends.revenue >= 0 ? '+' : '' }}{{ trends.revenue }}% vs last month
+          </p>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:#dbeafe;">
-          <FileText :size="22" style="color:#3b82f6;" />
+      <div class="stat-card stat-sent">
+        <div class="stat-icon-wrap">
+          <FileText :size="22" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Invoices Sent</p>
           <p class="stat-value">{{ stats.invoices_sent }}</p>
+          <p class="stat-trend" :class="trends.sent >= 0 ? 'trend-up' : 'trend-down'">
+            <TrendingUp v-if="trends.sent >= 0" :size="12" />
+            <TrendingDown v-else :size="12" />
+            {{ trends.sent >= 0 ? '+' : '' }}{{ trends.sent }}% vs last month
+          </p>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:#fef3c7;">
-          <Clock :size="22" style="color:#f59e0b;" />
+      <div class="stat-card stat-pending">
+        <div class="stat-icon-wrap">
+          <Clock :size="22" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Awaiting Payment</p>
           <p class="stat-value">{{ formatCurrency(stats.pending_amount) }}</p>
+          <p class="stat-trend" :class="trends.pending <= 0 ? 'trend-up' : 'trend-down'">
+            <TrendingUp v-if="trends.pending <= 0" :size="12" />
+            <TrendingDown v-else :size="12" />
+            {{ trends.pending >= 0 ? '+' : '' }}{{ trends.pending }}% vs last month
+          </p>
         </div>
       </div>
-      <div class="stat-card">
-        <div class="stat-icon-wrap" style="background:#fee2e2;">
-          <AlertCircle :size="22" style="color:#ef4444;" />
+      <div class="stat-card stat-overdue">
+        <div class="stat-icon-wrap">
+          <AlertCircle :size="22" />
         </div>
         <div class="stat-body">
           <p class="stat-label">Overdue</p>
           <p class="stat-value overdue">{{ formatCurrency(stats.overdue_amount) }}</p>
+          <p class="stat-trend" :class="trends.overdue <= 0 ? 'trend-up' : 'trend-down'">
+            <TrendingUp v-if="trends.overdue <= 0" :size="12" />
+            <TrendingDown v-else :size="12" />
+            {{ trends.overdue >= 0 ? '+' : '' }}{{ trends.overdue }}% vs last month
+          </p>
         </div>
       </div>
     </div>
@@ -69,10 +86,81 @@
       </div>
     </div>
 
+    <!-- Profile completion -->
+    <div class="profile-banner" v-if="profileCompletion < 100">
+      <div class="profile-banner-text">
+        <p class="profile-banner-title">Complete your profile</p>
+        <p class="profile-banner-sub">Your profile is {{ profileCompletion }}% complete. A complete profile makes your invoices look professional.</p>
+      </div>
+      <div class="profile-banner-right">
+        <div class="progress-ring">
+          <svg viewBox="0 0 36 36">
+            <path class="progress-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="progress-fill" :stroke-dasharray="`${profileCompletion}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+          </svg>
+          <span class="progress-text">{{ profileCompletion }}%</span>
+        </div>
+        <router-link to="/app/settings" class="profile-link">
+          Complete now
+          <ArrowRight :size="12" />
+        </router-link>
+      </div>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="quick-actions" v-if="!loading">
+      <router-link to="/app/invoices/new" class="qa-card">
+        <div class="qa-icon qa-icon-purple">
+          <FilePlus :size="18" />
+        </div>
+        <div class="qa-content">
+          <p class="qa-title">New Invoice</p>
+          <p class="qa-sub">Create and send an invoice</p>
+        </div>
+        <ArrowRight :size="14" class="qa-arrow" />
+      </router-link>
+      <router-link to="/app/clients" class="qa-card">
+        <div class="qa-icon qa-icon-blue">
+          <UserPlus :size="18" />
+        </div>
+        <div class="qa-content">
+          <p class="qa-title">Add Client</p>
+          <p class="qa-sub">Manage your clients</p>
+        </div>
+        <ArrowRight :size="14" class="qa-arrow" />
+      </router-link>
+      <router-link to="/app/receipts/new" class="qa-card">
+        <div class="qa-icon qa-icon-green">
+          <Receipt :size="18" />
+        </div>
+        <div class="qa-content">
+          <p class="qa-title">New Receipt</p>
+          <p class="qa-sub">Record a payment</p>
+        </div>
+        <ArrowRight :size="14" class="qa-arrow" />
+      </router-link>
+    </div>
+
+    <!-- Quick actions skeleton -->
+    <div class="quick-actions" v-else>
+      <div class="qa-card" v-for="i in 3" :key="i">
+        <Skeleton variant="rect" width="40px" height="40px" style="border-radius:10px; flex-shrink:0;" />
+        <div class="qa-content" style="flex:1;">
+          <Skeleton variant="text" width="90px" />
+          <Skeleton variant="text" width="140px" />
+        </div>
+      </div>
+    </div>
+
     <!-- Recent invoices table -->
     <div class="section-card">
       <div class="section-head">
-        <h2 class="section-title">Recent Invoices</h2>
+        <div class="section-head-left">
+          <h2 class="section-title">Recent Invoices</h2>
+          <span class="section-count" v-if="!loading && invoiceStore.invoices.length">
+            {{ invoiceStore.invoices.length }}
+          </span>
+        </div>
         <router-link to="/app/invoices" class="see-all-link">
           View all
           <ArrowRight :size="14" />
@@ -89,14 +177,16 @@
       </div>
       <div v-else-if="invoiceStore.invoices.length">
         <table class="data-table">
+          <caption class="sr-only">Recent invoices</caption>
           <thead>
             <tr>
-              <th>Invoice #</th>
-              <th>Client</th>
-              <th>Date</th>
-              <th>Due Date</th>
-              <th>Amount</th>
-              <th>Status</th>
+              <th scope="col">Invoice #</th>
+              <th scope="col">Client</th>
+              <th scope="col">Date</th>
+              <th scope="col">Due Date</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col" class="th-action"></th>
             </tr>
           </thead>
           <tbody>
@@ -107,12 +197,15 @@
               @click="$router.push(`/app/invoices/${inv.id}`)"
             >
               <td class="td-mono">{{ inv.invoice_number }}</td>
-              <td>{{ inv.client?.name ?? '—' }}</td>
+              <td class="td-client">{{ inv.client?.name ?? '—' }}</td>
               <td class="td-muted">{{ formatDate(inv.issue_date) }}</td>
               <td class="td-muted">{{ formatDate(inv.due_date) }}</td>
               <td class="td-mono td-bold">{{ formatCurrency(inv.total, inv.currency) }}</td>
               <td>
                 <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
+              </td>
+              <td class="td-action">
+                <ChevronRight :size="14" class="row-arrow" />
               </td>
             </tr>
           </tbody>
@@ -120,10 +213,13 @@
       </div>
 
       <div class="empty-state" v-else-if="!loading">
-        <FileText :size="48" class="empty-icon" />
+        <div class="empty-icon-wrap">
+          <FileText :size="40" />
+        </div>
         <p class="empty-title">No invoices yet</p>
         <p class="empty-sub">Create your first invoice to start tracking revenue.</p>
         <router-link to="/app/invoices/new" class="btn-primary" style="margin-top:8px;">
+          <Plus :size="14" />
           Create Invoice
         </router-link>
       </div>
@@ -134,12 +230,14 @@
 
 <script setup lang="ts">
 import { onMounted, reactive, computed } from 'vue'
-import { DollarSign, FileText, Clock, AlertCircle, ArrowRight } from '@lucide/vue'
+import { DollarSign, FileText, Clock, AlertCircle, ArrowRight, TrendingUp, TrendingDown, FilePlus, UserPlus, Receipt, Plus, ChevronRight } from '@lucide/vue'
 import { useInvoiceStore } from '@/stores/invoices'
+import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useFormatters } from '@/composables/useFormatters'
 import Skeleton from '@/components/ui/Skeleton.vue'
 
 const invoiceStore = useInvoiceStore()
+const bpStore = useBusinessProfileStore()
 const { formatCurrency, formatDate } = useFormatters()
 
 const stats = reactive({
@@ -147,6 +245,26 @@ const stats = reactive({
   invoices_sent:  0,
   pending_amount: 0,
   overdue_amount: 0,
+})
+
+const prevStats = reactive({
+  total_revenue:  0,
+  invoices_sent:  0,
+  pending_amount: 0,
+  overdue_amount: 0,
+})
+
+const trends = computed(() => {
+  function pct(curr: number, prev: number) {
+    if (prev === 0) return curr > 0 ? 100 : 0
+    return Math.round(((curr - prev) / prev) * 100)
+  }
+  return {
+    revenue: pct(stats.total_revenue, prevStats.total_revenue),
+    sent:    pct(stats.invoices_sent, prevStats.invoices_sent),
+    pending: pct(stats.pending_amount, prevStats.pending_amount),
+    overdue: pct(stats.overdue_amount, prevStats.overdue_amount),
+  }
 })
 
 const loading = computed(() => invoiceStore.loading)
@@ -158,12 +276,45 @@ const timeOfDay = computed(() => {
   return 'evening'
 })
 
+const profileCompletion = computed(() => {
+  const p = bpStore.profile
+  const fields = [p.name, p.email, p.phone, p.address, p.logo_url]
+  const filled = fields.filter(f => f && f.trim()).length
+  return Math.round((filled / fields.length) * 100)
+})
+
 onMounted(async () => {
-  await invoiceStore.fetchAll()
-  stats.invoices_sent  = invoiceStore.invoices.length
-  stats.total_revenue  = invoiceStore.invoices.filter(i => i.status === 'paid').reduce((s, i) => s + i.total, 0)
-  stats.pending_amount = invoiceStore.invoices.filter(i => i.status === 'sent').reduce((s, i) => s + i.total, 0)
-  stats.overdue_amount = invoiceStore.invoices.filter(i => i.status === 'overdue').reduce((s, i) => s + i.total, 0)
+  await Promise.all([
+    invoiceStore.fetchAll(),
+    bpStore.fetch(),
+  ])
+
+  const now = new Date()
+  const thisMonth = now.getMonth()
+  const thisYear = now.getFullYear()
+  const prevMonth = thisMonth === 0 ? 11 : thisMonth - 1
+  const prevYear  = thisMonth === 0 ? thisYear - 1 : thisYear
+
+  for (const inv of invoiceStore.invoices) {
+    const d = new Date(inv.issue_date)
+    const m = d.getMonth()
+    const y = d.getFullYear()
+    const isThisMonth = m === thisMonth && y === thisYear
+    const isPrevMonth = m === prevMonth && y === prevYear
+
+    if (isThisMonth) {
+      stats.invoices_sent++
+      if (inv.status === 'paid')    stats.total_revenue  += inv.total
+      if (inv.status === 'sent')    stats.pending_amount += inv.total
+      if (inv.status === 'overdue') stats.overdue_amount += inv.total
+    }
+    if (isPrevMonth) {
+      prevStats.invoices_sent++
+      if (inv.status === 'paid')    prevStats.total_revenue  += inv.total
+      if (inv.status === 'sent')    prevStats.pending_amount += inv.total
+      if (inv.status === 'overdue') prevStats.overdue_amount += inv.total
+    }
+  }
 })
 </script>
 
@@ -173,7 +324,7 @@ onMounted(async () => {
   max-width: 1200px;
   display: flex;
   flex-direction: column;
-  gap: 28px;
+  gap: 24px;
 }
 
 /* Page header */
@@ -199,6 +350,7 @@ onMounted(async () => {
   margin: 0;
   letter-spacing: -0.5px;
 }
+.dark .page-title { color: #f1f5f9; }
 
 /* Primary button */
 .btn-primary {
@@ -215,25 +367,19 @@ onMounted(async () => {
   cursor: pointer;
   text-decoration: none;
   letter-spacing: 0.1px;
-  transition: opacity .15s, transform .1s;
+  transition: opacity .15s, transform .1s, box-shadow .15s;
   box-shadow: 0 2px 10px rgba(99,102,241,.35);
   font-family: inherit;
   white-space: nowrap;
 }
-.btn-primary:hover { opacity: .9; }
+.btn-primary:hover { opacity: .9; box-shadow: 0 4px 16px rgba(99,102,241,.45); }
 .btn-primary:active { transform: scale(.98); }
-
-.btn-icon {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
 
 /* Stats */
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
+  gap: 14px;
 }
 
 .stat-card {
@@ -242,14 +388,30 @@ onMounted(async () => {
   border-radius: 14px;
   padding: 20px;
   display: flex;
-  align-items: center;
-  gap: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
-  transition: box-shadow .15s;
+  align-items: flex-start;
+  gap: 14px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  transition: box-shadow .2s, transform .15s;
+  position: relative;
+  overflow: hidden;
 }
 .dark .stat-card { background: #1e293b; border-color: #334155; }
 
-.stat-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  border-radius: 14px 14px 0 0;
+}
+.stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-1px); }
+
+.stat-revenue::before  { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
+.stat-sent::before     { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
+.stat-pending::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+.stat-overdue::before  { background: linear-gradient(90deg, #ef4444, #f87171); }
 
 .stat-icon-wrap {
   width: 44px;
@@ -260,9 +422,15 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
 }
+.stat-revenue .stat-icon-wrap  { background: #ede9fe; color: #6366f1; }
+.stat-sent .stat-icon-wrap     { background: #dbeafe; color: #3b82f6; }
+.stat-pending .stat-icon-wrap  { background: #fef3c7; color: #f59e0b; }
+.stat-overdue .stat-icon-wrap  { background: #fee2e2; color: #ef4444; }
+
+.stat-body { flex: 1; min-width: 0; }
 
 .stat-label {
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
@@ -277,26 +445,187 @@ onMounted(async () => {
   margin: 0;
   letter-spacing: -0.4px;
   font-variant-numeric: tabular-nums;
+  line-height: 1.2;
 }
 .dark .stat-value { color: #f1f5f9; }
 
 .stat-value.overdue { color: #ef4444; }
+
+.stat-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: 600;
+  margin: 6px 0 0;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+.trend-up   { color: #16a34a; background: #f0fdf4; }
+.trend-down { color: #ef4444; background: #fef2f2; }
+
+/* Quick actions */
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.qa-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: box-shadow .2s, border-color .2s, transform .15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  position: relative;
+}
+.dark .qa-card { background: #1e293b; border-color: #334155; }
+.qa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: #c7d2fe; transform: translateY(-1px); }
+
+.qa-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.qa-icon-purple { background: #ede9fe; color: #6366f1; }
+.qa-icon-blue   { background: #dbeafe; color: #3b82f6; }
+.qa-icon-green  { background: #d1fae5; color: #059669; }
+
+.qa-content { flex: 1; min-width: 0; }
+
+.qa-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 2px;
+}
+.dark .qa-title { color: #f1f5f9; }
+
+.qa-sub {
+  font-size: 12px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.qa-arrow {
+  color: #cbd5e1;
+  transition: color .15s, transform .15s;
+  flex-shrink: 0;
+}
+.qa-card:hover .qa-arrow { color: #6366f1; transform: translateX(2px); }
+
+/* Profile completion */
+.profile-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, #ede9fe, #dbeafe);
+  border: 1px solid #c7d2fe;
+  border-radius: 14px;
+}
+
+.profile-banner-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #374151;
+  margin: 0 0 4px;
+}
+
+.profile-banner-sub {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}
+
+.profile-banner-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-shrink: 0;
+}
+
+.progress-ring {
+  width: 44px;
+  height: 44px;
+  position: relative;
+}
+
+.progress-ring svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.progress-bg {
+  fill: none;
+  stroke: #e2e8f0;
+  stroke-width: 3;
+}
+
+.progress-fill {
+  fill: none;
+  stroke: #6366f1;
+  stroke-width: 3;
+  stroke-linecap: round;
+  transition: stroke-dasharray .4s ease;
+}
+
+.progress-text {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.profile-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6366f1;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: gap .15s;
+}
+.profile-link:hover { text-decoration: underline; gap: 6px; }
 
 /* Section card */
 .section-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+  box-shadow: 0 1px 3px rgba(0,0,0,.04);
   overflow: hidden;
 }
+.dark .section-card { background: #1e293b; border-color: #334155; }
 
 .section-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px 16px;
-  border-bottom: 1px solid #f1f5f9;
+  padding: 18px 24px 14px;
+}
+
+.section-head-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .section-title {
@@ -306,17 +635,30 @@ onMounted(async () => {
   margin: 0;
   letter-spacing: -0.2px;
 }
+.dark .section-title { color: #f1f5f9; }
+
+.section-count {
+  font-size: 11px;
+  font-weight: 700;
+  color: #6366f1;
+  background: #ede9fe;
+  padding: 2px 8px;
+  border-radius: 10px;
+}
 
 .see-all-link {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 4px;
   font-size: 13px;
   font-weight: 600;
   color: #6366f1;
   text-decoration: none;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: background .15s;
 }
-.see-all-link:hover { text-decoration: underline; }
+.see-all-link:hover { background: #f5f3ff; }
 
 /* Table */
 .data-table {
@@ -338,12 +680,15 @@ onMounted(async () => {
   text-align: left;
 }
 
+.th-action { width: 40px; }
+
 .data-table td {
   padding: 14px 16px 14px 24px;
   font-size: 14px;
   color: #374151;
   border-bottom: 1px solid #f8fafc;
 }
+.dark .data-table td { color: #e2e8f0; border-color: #1e293b; }
 
 .table-row {
   cursor: pointer;
@@ -353,8 +698,23 @@ onMounted(async () => {
 .table-row:last-child td { border-bottom: none; }
 
 .td-mono { font-variant-numeric: tabular-nums; font-weight: 600; color: #0f172a; }
+.dark .td-mono { color: #f1f5f9; }
+.td-client { font-weight: 500; color: #1e293b; }
+.dark .td-client { color: #e2e8f0; }
 .td-muted { color: #94a3b8; font-size: 13px; }
 .td-bold { font-weight: 700; color: #0f172a; }
+
+.td-action {
+  width: 40px;
+  text-align: right;
+  padding-right: 20px;
+}
+
+.row-arrow {
+  color: #cbd5e1;
+  transition: color .15s, transform .15s;
+}
+.table-row:hover .row-arrow { color: #6366f1; transform: translateX(2px); }
 
 /* Status badges */
 .status-badge {
@@ -380,13 +740,28 @@ onMounted(async () => {
   padding: 60px 20px;
   gap: 8px;
 }
-.empty-icon { font-size: 48px; color: #cbd5e1; margin-bottom: 4px; }
+
+.empty-icon-wrap {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #cbd5e1;
+  margin-bottom: 8px;
+}
+.dark .empty-icon-wrap { background: #334155; color: #475569; }
+
 .empty-title { font-size: 16px; font-weight: 700; color: #374151; margin: 0; }
+.dark .empty-title { color: #e2e8f0; }
 .empty-sub { font-size: 14px; color: #94a3b8; margin: 0; text-align: center; max-width: 320px; }
 
 /* Responsive */
 @media (max-width: 1024px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .quick-actions { grid-template-columns: repeat(3, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -395,9 +770,13 @@ onMounted(async () => {
   .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
   .stat-card { padding: 14px; gap: 10px; }
   .stat-value { font-size: 18px; }
+  .quick-actions { grid-template-columns: 1fr; }
   .data-table th:nth-child(3),
   .data-table th:nth-child(4),
   .data-table td:nth-child(3),
   .data-table td:nth-child(4) { display: none; }
+  .th-action, .td-action { display: none; }
+  .profile-banner { flex-direction: column; align-items: stretch; gap: 12px; }
+  .profile-banner-right { justify-content: space-between; }
 }
 </style>

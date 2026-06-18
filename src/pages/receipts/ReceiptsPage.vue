@@ -20,6 +20,44 @@
         <Search :size="15" class="search-icon" />
         <input class="search-input" v-model="search" placeholder="Search receipt # or client…" />
       </div>
+      <button class="filter-toggle" @click="showFilters = !showFilters" :class="{ active: hasActiveFilters }">
+        <SlidersHorizontal :size="14" />
+        Filters
+        <span v-if="hasActiveFilters" class="filter-active-dot" />
+      </button>
+      <div class="filter-tabs">
+        <button
+          v-for="t in methodTabs" :key="t.value"
+          class="filter-tab" :class="{ active: methodFilter === t.value }"
+          @click="methodFilter = t.value"
+        >
+          {{ t.label }}
+          <span class="tab-count" :class="{ 'tab-count-active': methodFilter === t.value }">{{ t.count }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Advanced filters -->
+    <div class="advanced-filters" v-if="showFilters">
+      <div class="af-row">
+        <div class="af-field">
+          <label>From Date</label>
+          <input type="date" v-model="dateFrom" class="af-input" />
+        </div>
+        <div class="af-field">
+          <label>To Date</label>
+          <input type="date" v-model="dateTo" class="af-input" />
+        </div>
+        <div class="af-field">
+          <label>Min Amount</label>
+          <input type="number" v-model.number="minAmount" min="0" step="0.01" placeholder="0" class="af-input" />
+        </div>
+        <div class="af-field">
+          <label>Max Amount</label>
+          <input type="number" v-model.number="maxAmount" min="0" step="0.01" placeholder="∞" class="af-input" />
+        </div>
+        <button v-if="hasActiveFilters" class="af-clear" @click="clearFilters">Clear</button>
+      </div>
     </div>
 
     <!-- Table skeleton -->
@@ -48,21 +86,22 @@
       </div>
     </div>
 
-    <div class="section-card" v-else-if="filtered.length">
+    <div class="section-card" v-if="filtered.length">
       <table class="data-table">
-        <thead>
-          <tr>
-            <th style="width:40px; padding-left:16px;">
-              <input type="checkbox" v-model="selectAll" class="select-cb" aria-label="Select all" />
-            </th>
-            <th>Receipt #</th>
-            <th>Client</th>
-            <th>Payment Date</th>
-            <th>Method</th>
-            <th>Amount</th>
-            <th style="width:120px; text-align:right; padding-right:20px;">Actions</th>
-          </tr>
-        </thead>
+          <caption class="sr-only">Receipts</caption>
+          <thead>
+            <tr>
+              <th scope="col" style="width:40px; padding-left:16px;">
+                <input type="checkbox" v-model="selectAll" class="select-cb" aria-label="Select all" />
+              </th>
+              <th scope="col">Receipt #</th>
+              <th scope="col">Client</th>
+              <th scope="col">Payment Date</th>
+              <th scope="col">Method</th>
+              <th scope="col">Amount</th>
+              <th scope="col" style="width:120px; text-align:right; padding-right:20px;">Actions</th>
+            </tr>
+          </thead>
         <tbody>
           <tr v-for="r in filtered" :key="r.id" class="table-row">
             <td style="padding-left:16px;">
@@ -93,9 +132,9 @@
 
     <div class="empty-state" v-else>
       <FileText :size="52" class="empty-icon" />
-      <p class="empty-title">{{ search ? 'No matching receipts' : 'No receipts yet' }}</p>
-      <p class="empty-sub">{{ search ? 'Try a different search term.' : 'Create a receipt to record a payment.' }}</p>
-      <router-link v-if="!search" to="/app/receipts/new" class="btn-primary" style="margin-top:8px;">
+      <p class="empty-title">{{ search || methodFilter !== 'all' || hasActiveFilters ? 'No matching receipts' : 'No receipts yet' }}</p>
+      <p class="empty-sub">{{ search || methodFilter !== 'all' || hasActiveFilters ? 'Try adjusting your search or filter.' : 'Create a receipt to record a payment.' }}</p>
+      <router-link v-if="!search && methodFilter === 'all' && !hasActiveFilters" to="/app/receipts/new" class="btn-primary" style="margin-top:8px;">
         New Receipt
       </router-link>
     </div>
@@ -132,7 +171,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
 import { useRouter } from 'vue-router'
-import { Plus, FileText, Search, Eye, Pencil, Trash2, Download, CheckSquare } from '@lucide/vue'
+import { Plus, FileText, Search, Eye, Pencil, Trash2, Download, CheckSquare, SlidersHorizontal } from '@lucide/vue'
 import { receiptService }  from '@/services/receipts'
 import { useAuthStore }    from '@/stores/auth'
 import { useTemplateStore } from '@/stores/templates'
@@ -158,6 +197,12 @@ const receipts = ref<any[]>([])
 const search   = ref('')
 const viewing  = ref<any | null>(null)
 const loading  = ref(true)
+const showFilters = ref(false)
+const methodFilter = ref('all')
+const dateFrom = ref('')
+const dateTo = ref('')
+const minAmount = ref<number | null>(null)
+const maxAmount = ref<number | null>(null)
 
 useEscapeKey(() => {
   if (viewing.value) viewing.value = null
@@ -201,11 +246,39 @@ async function bulkDelete() {
 }
 
 const filtered = computed(() =>
-  receipts.value.filter(r =>
-    r.receipt_number.toLowerCase().includes(search.value.toLowerCase()) ||
-    (r.client?.name ?? '').toLowerCase().includes(search.value.toLowerCase())
-  )
+  receipts.value
+    .filter(r => methodFilter.value === 'all' || r.payment_method === methodFilter.value)
+    .filter(r =>
+      r.receipt_number.toLowerCase().includes(search.value.toLowerCase()) ||
+      (r.client?.name ?? '').toLowerCase().includes(search.value.toLowerCase())
+    )
+    .filter(r => {
+      if (dateFrom.value && r.payment_date < dateFrom.value) return false
+      if (dateTo.value && r.payment_date > dateTo.value) return false
+      if (minAmount.value !== null && r.amount < minAmount.value) return false
+      if (maxAmount.value !== null && r.amount > maxAmount.value) return false
+      return true
+    })
 )
+
+const methodTabs = computed(() => [
+  { label: 'All',      value: 'all',           count: receipts.value.length },
+  { label: 'Transfer',  value: 'bank_transfer', count: receipts.value.filter(r => r.payment_method === 'bank_transfer').length },
+  { label: 'Cash',     value: 'cash',          count: receipts.value.filter(r => r.payment_method === 'cash').length },
+  { label: 'Online',   value: 'online',        count: receipts.value.filter(r => r.payment_method === 'online').length },
+  { label: 'Card',     value: 'card',          count: receipts.value.filter(r => r.payment_method === 'card').length },
+])
+
+const hasActiveFilters = computed(() =>
+  !!dateFrom.value || !!dateTo.value || minAmount.value !== null || maxAmount.value !== null
+)
+
+function clearFilters() {
+  dateFrom.value = ''
+  dateTo.value = ''
+  minAmount.value = null
+  maxAmount.value = null
+}
 
 onMounted(async () => {
   if (!auth.user) return
@@ -279,7 +352,7 @@ function methodVariant(m: string): 'success' | 'default' | 'sent' | 'warning' {
 .btn-primary:hover { opacity: .9; }
 
 /* Toolbar */
-.toolbar { display: flex; align-items: center; gap: 12px; }
+.toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .search-wrap { position: relative; min-width: 220px; max-width: 360px; flex: 1; }
 .search-icon { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: #94a3b8; pointer-events: none; }
 .search-input {
@@ -290,6 +363,104 @@ function methodVariant(m: string): 'success' | 'default' | 'sent' | 'warning' {
 }
 .search-input:focus { border-color: #6366f1; box-shadow: 0 0 0 3px rgba(99,102,241,.1); }
 .search-input::placeholder { color: #94a3b8; }
+
+.filter-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: #64748b;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s;
+  white-space: nowrap;
+  position: relative;
+}
+.filter-toggle:hover { border-color: #c7d2fe; color: #4f46e5; }
+.filter-toggle.active { background: #f5f3ff; border-color: #c7d2fe; color: #4f46e5; }
+
+.filter-active-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #6366f1;
+}
+
+.filter-tabs { display: flex; gap: 4px; }
+.filter-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  background: #fff; font-size: 13px; font-weight: 600; color: #64748b;
+  cursor: pointer; font-family: inherit; transition: all .12s; white-space: nowrap;
+}
+.filter-tab:hover { border-color: #c7d2fe; color: #4f46e5; background: #f5f3ff; }
+.filter-tab.active { background: #6366f1; border-color: #6366f1; color: #fff; }
+.tab-count { background: #f1f5f9; color: #64748b; border-radius: 4px; padding: 0 5px; font-size: 11px; font-weight: 700; min-width: 18px; text-align: center; }
+.tab-count-active { background: rgba(255,255,255,.25); color: #fff; }
+
+/* Advanced filters */
+.advanced-filters {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 14px 18px;
+}
+
+.af-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.af-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.af-field label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.af-input {
+  height: 34px;
+  padding: 0 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 7px;
+  font-size: 13px;
+  color: #0f172a;
+  background: #fff;
+  outline: none;
+  font-family: inherit;
+  transition: border-color .15s;
+}
+.af-input:focus { border-color: #6366f1; }
+
+.af-clear {
+  height: 34px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 7px;
+  background: #fee2e2;
+  color: #991b1b;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .12s;
+}
+.af-clear:hover { background: #fecaca; }
 
 /* Table */
 .section-card { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); overflow: hidden; }

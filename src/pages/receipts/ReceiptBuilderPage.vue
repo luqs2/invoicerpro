@@ -6,11 +6,11 @@
       <div class="header-left">
         <router-link to="/app/receipts" class="back-link">
           <ArrowLeft :size="16" />
-          Receipts
+          <span class="back-text">Receipts</span>
         </router-link>
         <h1 class="page-title">{{ isEdit ? 'Edit Receipt' : 'New Receipt' }}</h1>
       </div>
-      <div class="header-actions">
+      <div class="header-actions desktop-only">
         <UiButton variant="outline" @click="exportPdf" :disabled="saving">
           <Download :size="14" />
           Export PDF
@@ -129,14 +129,14 @@
                     class="li-input"
                     :value="item.description"
                     placeholder="Description…"
-                    @input="updateItem(idx, { description: ($event.target as HTMLInputElement).value })"
+                    @input="debouncedUpdateItem(idx, { description: ($event.target as HTMLInputElement).value })"
                   />
                   <input
                     class="li-input li-input-num"
                     type="number"
                     :value="item.quantity"
                     min="0"
-                    @input="updateItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
+                    @input="debouncedUpdateItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
                   />
                   <input
                     class="li-input li-input-num"
@@ -145,7 +145,7 @@
                     min="0"
                     step="0.01"
                     placeholder="0.00"
-                    @input="updateItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
+                    @input="debouncedUpdateItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
                   />
                   <span class="li-amount">{{ formatCurrency(item.amount, form.currency) }}</span>
                   <button class="li-del" @click="removeItem(idx)" title="Remove" :aria-label="`Remove line item ${idx + 1}`">
@@ -245,6 +245,7 @@
 import { ref, reactive, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
 import { ArrowLeft, Download, FileText, Trash2, CheckCircle } from '@lucide/vue'
+import confetti from 'canvas-confetti'
 import { useClientStore }   from '@/stores/clients'
 import { useInvoiceStore }  from '@/stores/invoices'
 import { useTemplateStore } from '@/stores/templates'
@@ -255,6 +256,7 @@ import { useFormatters }    from '@/composables/useFormatters'
 import { usePdf }           from '@/composables/usePdf'
 import { useToast }         from '@/composables/useToast'
 import { useConfirm }       from '@/composables/useConfirm'
+import { debounce }         from '@/utils/debounce'
 import UiButton   from '@/components/ui/Button.vue'
 
 const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
@@ -275,6 +277,10 @@ const { exportToPdf }    = usePdf()
 const { showToast }      = useToast()
 const { confirm }        = useConfirm()
 
+const debouncedUpdateItem = debounce((idx: number, patch: any) => {
+  updateItem(idx, patch)
+}, 150)
+
 const tab    = ref('form')
 const saving = ref(false)
 const isEdit = ref(false)
@@ -282,8 +288,13 @@ const hasUnsavedChanges = ref(false)
 
 onBeforeRouteLeave((_to, _from, next) => {
   if (hasUnsavedChanges.value) {
-    const ok = window.confirm('You have unsaved changes. Leave anyway?')
-    next(ok)
+    confirm({
+      title: 'Unsaved changes',
+      message: 'You have unsaved changes. Leave without saving?',
+      confirmText: 'Leave',
+      cancelText: 'Stay',
+      variant: 'warning',
+    }).then(ok => next(ok))
   } else {
     next()
   }
@@ -482,12 +493,12 @@ async function save() {
         const idx = invoiceStore.invoices.findIndex(i => i.id === form.invoice_id)
         if (idx > -1) invoiceStore.invoices[idx] = { ...invoiceStore.invoices[idx], status: 'paid' }
         showToast(`Invoice ${form.invoice_number} marked as paid!`)
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } })
       }
     }
 
     router.push('/app/receipts')
   } catch (err: any) {
-    console.error('Receipt save error:', err)
     showToast(err?.message ?? 'Failed to save receipt. Please try again.', 'danger')
   } finally {
     saving.value = false
@@ -583,6 +594,11 @@ onMounted(async () => {
 .page-title { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
 
 .header-actions { display: flex; align-items: center; gap: 8px; }
+
+.desktop-only { display: flex; }
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+}
 
 /* Import banner */
 .import-banner {

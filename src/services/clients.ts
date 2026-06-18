@@ -5,13 +5,13 @@ export const clientService = {
   async getAll(userId: string) {
     return supabase
       .from('clients')
-      .select('*')
+      .select('id, user_id, name, email, phone, company, address, notes, created_at')
       .eq('user_id', userId)
       .order('name')
   },
 
   async getById(id: string) {
-    return supabase.from('clients').select('*').eq('id', id).single()
+    return supabase.from('clients').select('id, user_id, name, email, phone, company, address, notes, created_at').eq('id', id).single()
   },
 
   async create(client: Partial<Client>) {

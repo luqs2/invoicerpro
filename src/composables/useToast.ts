@@ -1,16 +1,27 @@
-import { toastController } from '@ionic/vue'
+import { ref } from 'vue'
+
+interface Toast {
+  id: number
+  message: string
+  type: 'success' | 'danger' | 'warning' | 'info'
+}
+
+const toasts = ref<Toast[]>([])
+let nextId = 0
 
 export function useToast() {
-  async function showToast(message: string, color: 'success' | 'danger' | 'warning' = 'success', duration = 2500) {
-    const toast = await toastController.create({
-      message,
-      duration,
-      color,
-      position: 'bottom',
-      cssClass: 'app-toast',
-    })
-    await toast.present()
+  function showToast(message: string, type: Toast['type'] = 'success', duration = 3000) {
+    const id = nextId++
+    toasts.value.push({ id, message, type })
+
+    if (duration > 0) {
+      setTimeout(() => removeToast(id), duration)
+    }
   }
 
-  return { showToast }
+  function removeToast(id: number) {
+    toasts.value = toasts.value.filter(t => t.id !== id)
+  }
+
+  return { toasts, showToast, removeToast }
 }

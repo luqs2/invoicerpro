@@ -18,6 +18,14 @@ export const receiptService = {
       .single()
   },
 
+  async getByClientId(clientId: string) {
+    return supabase
+      .from('receipts')
+      .select('*, client:clients(*)')
+      .eq('client_id', clientId)
+      .order('created_at', { ascending: false })
+  },
+
   async create(receipt: Partial<Receipt>) {
     return supabase.from('receipts').insert(receipt).select().single()
   },

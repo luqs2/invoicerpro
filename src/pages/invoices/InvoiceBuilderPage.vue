@@ -6,11 +6,11 @@
       <div class="header-left">
         <router-link to="/app/invoices" class="back-link">
           <ArrowLeft :size="16" />
-          Invoices
+          <span class="back-text">Invoices</span>
         </router-link>
         <h1 class="page-title">{{ isEdit ? 'Edit Invoice' : 'New Invoice' }}</h1>
       </div>
-      <div class="header-actions">
+      <div class="header-actions desktop-only">
         <UiButton variant="outline" @click="saveDraft" :loading="saving === 'draft'">Save Draft</UiButton>
         <UiButton @click="saveInvoice" :loading="saving === 'save'">
           <Save :size="14" />
@@ -107,14 +107,14 @@
                     class="li-input"
                     :value="item.description"
                     placeholder="Service or product…"
-                    @input="store.updateLineItem(idx, { description: ($event.target as HTMLInputElement).value })"
+                    @input="debouncedUpdateLineItem(idx, { description: ($event.target as HTMLInputElement).value })"
                   />
                   <input
                     class="li-input li-input-num"
                     type="number"
                     :value="item.quantity"
                     min="0"
-                    @input="store.updateLineItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
+                    @input="debouncedUpdateLineItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
                   />
                   <input
                     class="li-input li-input-num"
@@ -123,7 +123,7 @@
                     min="0"
                     step="0.01"
                     placeholder="0.00"
-                    @input="store.updateLineItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
+                    @input="debouncedUpdateLineItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
                   />
                   <span class="li-amount">{{ formatCurrency(item.amount, store.current.currency) }}</span>
                   <button class="li-del" @click="store.removeLineItem(idx)" title="Remove" :aria-label="`Remove line item ${idx + 1}`">
@@ -153,7 +153,7 @@
                         :value="store.current.tax_rate"
                         min="0"
                         max="100"
-                        @input="store.current.tax_rate = Number(($event.target as HTMLInputElement).value); store.recalcTotals()"
+                        @input="store.current.tax_rate = Number(($event.target as HTMLInputElement).value); debouncedRecalcTotals()"
                       />
                       <span class="tax-suffix">%</span>
                     </div>
@@ -253,12 +253,15 @@
 import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { ArrowLeft, Send, Trash2, Plus, Download, Save } from '@lucide/vue'
+import confetti from 'canvas-confetti'
 import { useInvoiceStore } from '@/stores/invoices'
 import { useClientStore } from '@/stores/clients'
 import { useTemplateStore } from '@/stores/templates'
 import { useFormatters } from '@/composables/useFormatters'
 import { usePdf } from '@/composables/usePdf'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
+import { debounce } from '@/utils/debounce'
 import UiButton from '@/components/ui/Button.vue'
 
 const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
@@ -274,6 +277,15 @@ const templateStore = useTemplateStore()
 const { formatCurrency } = useFormatters()
 const { exportToPdf }    = usePdf()
 const { showToast }      = useToast()
+const { confirm }        = useConfirm()
+
+const debouncedUpdateLineItem = debounce((idx: number, patch: any) => {
+  store.updateLineItem(idx, patch)
+}, 150)
+
+const debouncedRecalcTotals = debounce(() => {
+  store.recalcTotals()
+}, 150)
 
 const tab    = ref('form')
 const saving = ref<'draft' | 'save' | 'send' | null>(null)
@@ -282,8 +294,13 @@ const hasUnsavedChanges = ref(false)
 
 onBeforeRouteLeave((_to, _from, next) => {
   if (hasUnsavedChanges.value) {
-    const ok = window.confirm('You have unsaved changes. Leave anyway?')
-    next(ok)
+    confirm({
+      title: 'Unsaved changes',
+      message: 'You have unsaved changes. Leave without saving?',
+      confirmText: 'Leave',
+      cancelText: 'Stay',
+      variant: 'warning',
+    }).then(ok => next(ok))
   } else {
     next()
   }
@@ -387,6 +404,7 @@ async function send() {
     }
     hasUnsavedChanges.value = false
     showToast('Invoice marked as sent!')
+    confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } })
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to update invoice', 'danger')
   } finally {
@@ -438,6 +456,11 @@ async function exportPdf() {
 .page-title { font-size: 24px; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.5px; }
 
 .header-actions { display: flex; align-items: center; gap: 8px; }
+
+.desktop-only { display: flex; }
+@media (max-width: 768px) {
+  .desktop-only { display: none !important; }
+}
 
 /* Builder layout */
 .builder-layout {
@@ -726,7 +749,7 @@ async function exportPdf() {
 .mobile-summary-bar {
   display: none;
   position: fixed;
-  bottom: 0;
+  bottom: 60px;
   left: 0;
   right: 0;
   background: #ffffff;
@@ -734,7 +757,7 @@ async function exportPdf() {
   padding: 12px 16px;
   align-items: center;
   justify-content: space-between;
-  z-index: 50;
+  z-index: 60;
   box-shadow: 0 -2px 10px rgba(0,0,0,.08);
 }
 
@@ -760,5 +783,6 @@ async function exportPdf() {
 
 @media (max-width: 900px) {
   .mobile-summary-bar { display: flex; }
+  .page { padding-bottom: 140px; }
 }
 </style>

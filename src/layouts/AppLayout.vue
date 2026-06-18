@@ -100,11 +100,25 @@
       </div>
     </transition>
 
+    <!-- Mobile bottom nav -->
+    <nav class="bottom-nav" v-if="isMobile">
+      <router-link
+        v-for="item in bottomNavItems"
+        :key="item.path"
+        :to="item.path"
+        class="bottom-nav-item"
+        :class="{ active: isActive(item.path) }"
+      >
+        <component :is="item.icon" :size="20" />
+        <span>{{ item.label }}</span>
+      </router-link>
+    </nav>
+
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
 import {
   LayoutGrid, FileText, Receipt, Users, Palette,
@@ -124,6 +138,14 @@ interface NavItem {
 const route = useRoute()
 const sidebarCollapsed = ref(localStorage.getItem('sidebar-collapsed') === 'true')
 const mobileOpen = ref(false)
+const isMobile = ref(window.innerWidth <= 768)
+
+function onResize() {
+  isMobile.value = window.innerWidth <= 768
+}
+
+onMounted(() => window.addEventListener('resize', onResize))
+onUnmounted(() => window.removeEventListener('resize', onResize))
 
 watch(sidebarCollapsed, (v) => {
   localStorage.setItem('sidebar-collapsed', String(v))
@@ -139,6 +161,13 @@ const navItems: NavItem[] = [
   { path: '/app/receipts',  label: 'Receipts',  icon: Receipt },
   { path: '/app/clients',   label: 'Clients',   icon: Users },
   { path: '/app/templates', label: 'Templates', icon: Palette },
+]
+
+const bottomNavItems: NavItem[] = [
+  { path: '/app/dashboard', label: 'Home',    icon: LayoutGrid },
+  { path: '/app/invoices',  label: 'Invoices', icon: FileText },
+  { path: '/app/clients',   label: 'Clients', icon: Users },
+  { path: '/app/settings',  label: 'More',    icon: Settings },
 ]
 
 function isActive(path: string) {
@@ -387,9 +416,41 @@ function isActive(path: string) {
 .overlay-fade-leave-to { opacity: 0; }
 
 /* ── Responsive breakpoints ────────────────────────────────── */
+.bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #ffffff;
+  border-top: 1px solid #e2e8f0;
+  z-index: 50;
+  padding: 6px 0 env(safe-area-inset-bottom, 8px);
+}
+.dark .bottom-nav { background: #1e293b; border-color: #334155; }
+
+.bottom-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #94a3b8;
+  text-decoration: none;
+  padding: 4px 0;
+  transition: color .12s;
+  flex: 1;
+}
+.bottom-nav-item.active { color: #6366f1; }
+.dark .bottom-nav-item { color: #64748b; }
+.dark .bottom-nav-item.active { color: #818cf8; }
+
 @media (max-width: 768px) {
   .sidebar { display: none; }
   .mobile-topbar { display: flex; }
   .mobile-overlay { display: block; }
+  .bottom-nav { display: flex; }
+  .main-content { padding-bottom: 60px; }
 }
 </style>

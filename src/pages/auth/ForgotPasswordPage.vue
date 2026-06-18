@@ -2,20 +2,33 @@
   <div class="auth-form">
     <div class="form-header">
       <div class="header-icon">
-        <LogIn :size="20" />
+        <KeyRound :size="20" />
       </div>
-      <h2>Welcome back</h2>
-      <p>Sign in to your account</p>
+      <h2>Reset password</h2>
+      <p v-if="!success">Enter your email and a new password</p>
+      <p v-else>Your password has been updated</p>
     </div>
 
-    <form @submit.prevent="login" novalidate>
+    <!-- Success state -->
+    <div v-if="success" class="success-state">
+      <div class="success-icon">
+        <CheckCircle :size="32" />
+      </div>
+      <p class="success-text">Password reset successful</p>
+      <UiButton size="lg" class="submit-btn" @click="router.replace('/auth/login')">
+        Back to Sign In
+      </UiButton>
+    </div>
+
+    <!-- Form state -->
+    <form v-else @submit.prevent="resetPassword" novalidate>
       <div class="field-group">
         <div class="field" :class="{ 'field-error': errors.email }">
-          <label for="login-email">Email</label>
+          <label for="rp-email">Email</label>
           <div class="input-wrap">
             <Mail :size="16" class="field-icon" />
             <input
-              id="login-email"
+              id="rp-email"
               v-model="email"
               type="email"
               placeholder="you@company.com"
@@ -27,21 +40,16 @@
           <p class="field-error-text" v-if="errors.email">{{ errors.email }}</p>
         </div>
 
-        <div class="field" :class="{ 'field-error': errors.password }">
-          <div class="label-row">
-            <label for="login-password">Password</label>
-            <button type="button" class="forgot-link" @click="showForgotHint">
-              Forgot password?
-            </button>
-          </div>
+        <div class="field" :class="{ 'field-error': errors.newPassword }">
+          <label for="rp-password">New Password</label>
           <div class="input-wrap">
             <Lock :size="16" class="field-icon" />
             <input
-              id="login-password"
-              v-model="password"
+              id="rp-password"
+              v-model="newPassword"
               :type="showPassword ? 'text' : 'password'"
-              placeholder="Enter your password"
-              autocomplete="current-password"
+              placeholder="Min. 8 characters"
+              autocomplete="new-password"
               :disabled="loading"
               @blur="validatePassword"
             />
@@ -56,7 +64,24 @@
               <Eye v-else :size="16" />
             </button>
           </div>
-          <p class="field-error-text" v-if="errors.password">{{ errors.password }}</p>
+          <p class="field-error-text" v-if="errors.newPassword">{{ errors.newPassword }}</p>
+        </div>
+
+        <div class="field" :class="{ 'field-error': errors.confirmPassword }">
+          <label for="rp-confirm">Confirm Password</label>
+          <div class="input-wrap">
+            <Lock :size="16" class="field-icon" />
+            <input
+              id="rp-confirm"
+              v-model="confirmPassword"
+              :type="showPassword ? 'text' : 'password'"
+              placeholder="Re-enter password"
+              autocomplete="new-password"
+              :disabled="loading"
+              @blur="validateConfirm"
+            />
+          </div>
+          <p class="field-error-text" v-if="errors.confirmPassword">{{ errors.confirmPassword }}</p>
         </div>
       </div>
 
@@ -67,23 +92,14 @@
         :disabled="!isFormValid"
         class="submit-btn"
       >
-        Sign In
+        Reset Password
       </UiButton>
     </form>
 
-    <div class="divider">
-      <span>or</span>
-    </div>
-
-    <p class="switch-link">
-      Don't have an account?
-      <router-link to="/auth/register">Create one free</router-link>
+    <p class="switch-link" v-if="!success">
+      Remember your password?
+      <router-link to="/auth/login">Sign in</router-link>
     </p>
-
-    <div class="demo-hint">
-      <Zap :size="12" />
-      <span>Demo: <strong>demo@invoicerpro.com</strong> / <strong>password123</strong></span>
-    </div>
   </div>
 </template>
 
@@ -92,22 +108,26 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
-import { LogIn, Mail, Lock, Eye, EyeOff, Zap } from '@lucide/vue'
+import { KeyRound, Mail, Lock, Eye, EyeOff, CheckCircle } from '@lucide/vue'
 import UiButton from '@/components/ui/Button.vue'
 
 const router = useRouter()
 const auth = useAuthStore()
 const { showToast } = useToast()
 
-const email       = ref('')
-const password    = ref('')
-const loading     = ref(false)
-const showPassword = ref(false)
+const email           = ref('')
+const newPassword     = ref('')
+const confirmPassword = ref('')
+const loading         = ref(false)
+const showPassword    = ref(false)
+const success         = ref(false)
 
-const errors = ref<{ email?: string; password?: string }>({})
+const errors = ref<{ email?: string; newPassword?: string; confirmPassword?: string }>({})
 
 const isFormValid = computed(() =>
-  email.value.trim().length > 0 && password.value.length > 0
+  email.value.trim().length > 0 &&
+  newPassword.value.length >= 8 &&
+  confirmPassword.value.length > 0
 )
 
 function validateEmail() {
@@ -121,35 +141,39 @@ function validateEmail() {
 }
 
 function validatePassword() {
-  if (!password.value) {
-    errors.value.password = 'Password is required'
-  } else if (password.value.length < 6) {
-    errors.value.password = 'Password must be at least 6 characters'
+  if (!newPassword.value) {
+    errors.value.newPassword = 'Password is required'
+  } else if (newPassword.value.length < 8) {
+    errors.value.newPassword = 'Password must be at least 8 characters'
   } else {
-    delete errors.value.password
+    delete errors.value.newPassword
+  }
+  // Re-validate confirm if it's been touched
+  if (confirmPassword.value) validateConfirm()
+}
+
+function validateConfirm() {
+  if (!confirmPassword.value) {
+    errors.value.confirmPassword = 'Please confirm your password'
+  } else if (confirmPassword.value !== newPassword.value) {
+    errors.value.confirmPassword = 'Passwords do not match'
+  } else {
+    delete errors.value.confirmPassword
   }
 }
 
-function showForgotHint() {
-  router.push('/auth/forgot-password')
-}
-
-async function login() {
+async function resetPassword() {
   validateEmail()
   validatePassword()
+  validateConfirm()
   if (Object.keys(errors.value).length > 0) return
 
   try {
     loading.value = true
-    await auth.login(email.value, password.value)
-    router.replace('/app/dashboard')
+    await auth.resetPassword(email.value, newPassword.value)
+    success.value = true
   } catch (e: any) {
-    const msg = e.message ?? 'Login failed'
-    if (msg.toLowerCase().includes('invalid') || msg.toLowerCase().includes('credentials')) {
-      errors.value.email = ' '
-      errors.value.password = 'Invalid email or password'
-    }
-    showToast(msg, 'danger')
+    showToast(e.message ?? 'Failed to reset password', 'danger')
   } finally {
     loading.value = false
   }
@@ -172,12 +196,12 @@ async function login() {
   width: 48px;
   height: 48px;
   margin: 0 auto 16px;
-  background: linear-gradient(135deg, #ede9fe, #dbeafe);
+  background: linear-gradient(135deg, #fef3c7, #fee2e2);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #6366f1;
+  color: #d97706;
 }
 
 .form-header h2 {
@@ -212,32 +236,12 @@ form {
   gap: 6px;
 }
 
-.label-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.field label,
-.label-row > label {
+.field label {
   font-size: 13px;
   font-weight: 600;
   color: #374151;
   letter-spacing: 0.1px;
 }
-
-.forgot-link {
-  font-size: 12px;
-  font-weight: 600;
-  color: #6366f1;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 0;
-  font-family: inherit;
-  transition: color .12s;
-}
-.forgot-link:hover { color: #4f46e5; text-decoration: underline; }
 
 .input-wrap {
   position: relative;
@@ -274,9 +278,6 @@ form {
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(99,102,241,.12);
 }
-
-.input-wrap input:focus + .field-icon,
-.input-wrap input:focus ~ .field-icon { color: #6366f1; }
 
 .input-wrap input::placeholder { color: #94a3b8; }
 .input-wrap input:disabled { opacity: .55; cursor: not-allowed; }
@@ -319,22 +320,6 @@ form {
   margin-top: 4px;
 }
 
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: #cbd5e1;
-  font-size: 12px;
-  font-weight: 500;
-}
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: #e2e8f0;
-}
-
 .switch-link {
   text-align: center;
   font-size: 14px;
@@ -350,20 +335,32 @@ form {
 }
 .switch-link a:hover { color: #4f46e5; text-decoration: underline; }
 
-.demo-hint {
+/* Success state */
+.success-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 0;
+}
+
+.success-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: #d1fae5;
+  color: #059669;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #94a3b8;
-  padding: 10px 14px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  text-align: center;
 }
-.demo-hint strong { color: #64748b; font-weight: 600; }
+
+.success-text {
+  font-size: 16px;
+  font-weight: 600;
+  color: #065f46;
+  margin: 0;
+}
 
 @media (max-width: 480px) {
   .auth-form { padding: 24px 20px; }

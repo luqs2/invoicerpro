@@ -3,9 +3,10 @@ import type { InvoiceTemplate } from '@/types'
 
 export const templateService = {
   async getAll(userId: string) {
+    if (!userId || typeof userId !== 'string') throw new Error('Invalid user ID')
     return supabase
       .from('invoice_templates')
-      .select('*')
+      .select('id, user_id, name, is_system, header_color, accent_color, font_family, layout, logo_position, created_at')
       .or(`user_id.eq.${userId},is_system.eq.true`)
       .order('is_system', { ascending: false })
   },
