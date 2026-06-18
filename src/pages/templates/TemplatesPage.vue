@@ -140,6 +140,24 @@
               </div>
             </div>
           </div>
+          <div class="color-row">
+            <div class="color-field">
+              <label>Header Text Colour</label>
+              <div class="color-input-wrap">
+                <div class="color-swatch" :style="{ background: draft.header_text_color }" />
+                <span class="color-hex">{{ draft.header_text_color }}</span>
+                <input type="color" v-model="draft.header_text_color" class="color-picker" />
+              </div>
+            </div>
+            <div class="color-field">
+              <label>Body Text Colour</label>
+              <div class="color-input-wrap">
+                <div class="color-swatch" :style="{ background: draft.body_text_color }" />
+                <span class="color-hex">{{ draft.body_text_color }}</span>
+                <input type="color" v-model="draft.body_text_color" class="color-picker" />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -231,6 +249,8 @@ const draft = reactive({
   name:              'My Template',
   primary_color:     '#6366f1',
   secondary_color:   '#0f172a',
+  header_text_color: '#ffffff',
+  body_text_color:   '#0f172a',
   font_family:       "'Inter', sans-serif",
   border_radius:     '4px',
   footer_text:       'Thank you for your business!',
@@ -291,7 +311,7 @@ onMounted(async () => {
 })
 
 watch(() => templateStore.active, (t) => {
-  if (t) Object.assign(draft, { company_font_size: 14, ...t })
+  if (t) Object.assign(draft, t)
 }, { immediate: true })
 
 async function save() {

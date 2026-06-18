@@ -1,5 +1,5 @@
 <template>
-  <div class="invoice-doc" :style="{ fontFamily: font }">
+  <div class="invoice-doc" :style="{ fontFamily: font, color: bodyTextColor }">
 
     <!-- LAYOUT: classic — logo stacked above name, badge+number right -->
     <template v-if="headerLayout === 'classic' || !headerLayout">
@@ -9,12 +9,12 @@
             <img v-if="businessLogo" :src="businessLogo" alt="logo" class="inv-logo-img" :style="{ borderRadius: radius }" />
             <div v-else class="inv-logo" :style="{ background: primary, borderRadius: radius }">{{ getInitials(businessName) }}</div>
           </div>
-          <div class="inv-company" :style="{ fontSize: companyFontSize + 'px' }">{{ businessName }}</div>
+          <div class="inv-company" :style="{ fontSize: companyFontSize + 'px', color: headerTextColor }">{{ businessName }}</div>
         </div>
         <div style="text-align:right;">
-          <div class="inv-badge" :style="{ background: primary, borderRadius: radius }">INVOICE</div>
-          <div class="inv-number">{{ invoice.invoice_number }}</div>
-          <div class="inv-date">{{ formatDate(invoice.issue_date ?? '') }}</div>
+          <div class="inv-badge" :style="{ background: primary, borderRadius: radius, color: headerTextColor }">INVOICE</div>
+          <div class="inv-number" :style="{ color: headerTextColor }">{{ invoice.invoice_number }}</div>
+          <div class="inv-date" :style="{ color: headerTextColor, opacity: 0.7 }">{{ formatDate(invoice.issue_date ?? '') }}</div>
         </div>
       </div>
       <div class="inv-divider" :style="{ background: primary }" />
@@ -28,12 +28,12 @@
             <img v-if="businessLogo" :src="businessLogo" alt="logo" class="inv-logo-img inv-logo-img--inline" :style="{ borderRadius: radius }" />
             <div v-else class="inv-logo inv-logo--inline" :style="{ background: primary, borderRadius: radius }">{{ getInitials(businessName) }}</div>
           </div>
-          <div class="inv-company inv-company--inline" :style="{ fontSize: companyFontSize + 'px' }">{{ businessName }}</div>
+          <div class="inv-company inv-company--inline" :style="{ fontSize: companyFontSize + 'px', color: headerTextColor }">{{ businessName }}</div>
         </div>
         <div style="text-align:right;">
-          <div class="inv-badge" :style="{ background: primary, borderRadius: radius }">INVOICE</div>
-          <div class="inv-number">{{ invoice.invoice_number }}</div>
-          <div class="inv-date">{{ formatDate(invoice.issue_date ?? '') }}</div>
+          <div class="inv-badge" :style="{ background: primary, borderRadius: radius, color: headerTextColor }">INVOICE</div>
+          <div class="inv-number" :style="{ color: headerTextColor }">{{ invoice.invoice_number }}</div>
+          <div class="inv-date" :style="{ color: headerTextColor, opacity: 0.7 }">{{ formatDate(invoice.issue_date ?? '') }}</div>
         </div>
       </div>
       <div class="inv-divider" :style="{ background: primary }" />
@@ -46,11 +46,11 @@
           <img v-if="businessLogo" :src="businessLogo" alt="logo" class="inv-logo-img inv-logo-img--lg" :style="{ borderRadius: radius }" />
           <div v-else class="inv-logo inv-logo--lg" :style="{ background: primary, borderRadius: radius }">{{ getInitials(businessName) }}</div>
         </div>
-        <div class="inv-company inv-company--lg" :style="{ fontSize: companyFontSize + 'px' }">{{ businessName }}</div>
+        <div class="inv-company inv-company--lg" :style="{ fontSize: companyFontSize + 'px', color: headerTextColor }">{{ businessName }}</div>
         <div class="inv-head-meta-centered">
-          <div class="inv-badge" :style="{ background: primary, borderRadius: radius }">INVOICE</div>
-          <div class="inv-number">{{ invoice.invoice_number }}</div>
-          <div class="inv-date">{{ formatDate(invoice.issue_date ?? '') }}</div>
+          <div class="inv-badge" :style="{ background: primary, borderRadius: radius, color: headerTextColor }">INVOICE</div>
+          <div class="inv-number" :style="{ color: headerTextColor }">{{ invoice.invoice_number }}</div>
+          <div class="inv-date" :style="{ color: headerTextColor, opacity: 0.7 }">{{ formatDate(invoice.issue_date ?? '') }}</div>
         </div>
       </div>
       <div class="inv-divider" :style="{ background: primary }" />
@@ -60,12 +60,12 @@
     <template v-else-if="headerLayout === 'minimal'">
       <div class="inv-head inv-head--minimal">
         <div>
-          <div class="inv-company inv-company--minimal" :style="{ fontSize: companyFontSize + 'px' }">{{ businessName }}</div>
-          <div class="inv-date" style="margin-top:2px;">{{ formatDate(invoice.issue_date ?? '') }}</div>
+          <div class="inv-company inv-company--minimal" :style="{ fontSize: companyFontSize + 'px', color: headerTextColor }">{{ businessName }}</div>
+          <div class="inv-date" style="margin-top:2px;" :style="{ color: headerTextColor, opacity: 0.7 }">{{ formatDate(invoice.issue_date ?? '') }}</div>
         </div>
         <div style="text-align:right;">
-          <div class="inv-number inv-number--minimal" :style="{ color: primary }">{{ invoice.invoice_number }}</div>
-          <div class="inv-badge inv-badge--minimal" :style="{ color: primary }">INVOICE</div>
+          <div class="inv-number inv-number--minimal" :style="{ color: headerTextColor }">{{ invoice.invoice_number }}</div>
+          <div class="inv-badge inv-badge--minimal" :style="{ color: headerTextColor }">INVOICE</div>
         </div>
       </div>
       <div class="inv-divider inv-divider--thin" :style="{ background: primary }" />
@@ -79,12 +79,12 @@
             <img v-if="businessLogo" :src="businessLogo" alt="logo" class="inv-logo-img inv-logo-img--bold" :style="{ borderRadius: radius }" />
             <div v-else class="inv-logo inv-logo--bold" :style="{ background: primary, borderRadius: radius }">{{ getInitials(businessName) }}</div>
           </div>
-          <div class="inv-company inv-company--bold" :style="{ fontSize: companyFontSize + 'px' }">{{ businessName }}</div>
+          <div class="inv-company inv-company--bold" :style="{ fontSize: companyFontSize + 'px', color: headerTextColor }">{{ businessName }}</div>
         </div>
         <div style="text-align:right;">
-          <div class="inv-badge inv-badge--bold" :style="{ background: primary, borderRadius: radius }">INVOICE</div>
-          <div class="inv-number inv-number--bold">{{ invoice.invoice_number }}</div>
-          <div class="inv-date inv-date--bold">{{ formatDate(invoice.issue_date ?? '') }}</div>
+          <div class="inv-badge inv-badge--bold" :style="{ background: primary, borderRadius: radius, color: headerTextColor }">INVOICE</div>
+          <div class="inv-number inv-number--bold" :style="{ color: headerTextColor }">{{ invoice.invoice_number }}</div>
+          <div class="inv-date inv-date--bold" :style="{ color: headerTextColor, opacity: 0.6 }">{{ formatDate(invoice.issue_date ?? '') }}</div>
         </div>
       </div>
     </template>
@@ -99,12 +99,12 @@
               <img v-if="businessLogo" :src="businessLogo" alt="logo" class="inv-logo-img" :style="{ borderRadius: radius }" />
               <div v-else class="inv-logo" :style="{ background: primary, borderRadius: radius }">{{ getInitials(businessName) }}</div>
             </div>
-            <div class="inv-company" :style="{ fontSize: companyFontSize + 'px' }">{{ businessName }}</div>
+            <div class="inv-company" :style="{ fontSize: companyFontSize + 'px', color: headerTextColor }">{{ businessName }}</div>
           </div>
           <div style="text-align:right;">
-            <div class="inv-badge" :style="{ background: secondary, borderRadius: radius }">INVOICE</div>
-            <div class="inv-number">{{ invoice.invoice_number }}</div>
-            <div class="inv-date">{{ formatDate(invoice.issue_date ?? '') }}</div>
+            <div class="inv-badge" :style="{ background: secondary, borderRadius: radius, color: headerTextColor }">INVOICE</div>
+            <div class="inv-number" :style="{ color: headerTextColor }">{{ invoice.invoice_number }}</div>
+            <div class="inv-date" :style="{ color: headerTextColor, opacity: 0.7 }">{{ formatDate(invoice.issue_date ?? '') }}</div>
           </div>
         </div>
       </div>
@@ -135,10 +135,10 @@
       </colgroup>
       <thead>
         <tr>
-          <th :style="{ background: secondary }">Description</th>
-          <th :style="{ background: secondary }" class="center">Qty</th>
-          <th :style="{ background: secondary }" class="right">Rate</th>
-          <th :style="{ background: secondary }" class="right">Amount</th>
+          <th :style="{ background: secondary, color: headerTextColor }">Description</th>
+          <th :style="{ background: secondary, color: headerTextColor }" class="center">Qty</th>
+          <th :style="{ background: secondary, color: headerTextColor }" class="right">Rate</th>
+          <th :style="{ background: secondary, color: headerTextColor }" class="right">Amount</th>
         </tr>
       </thead>
       <tbody>
@@ -176,6 +176,8 @@ const bpStore = useBusinessProfileStore()
 
 const primary         = computed(() => props.template?.primary_color   ?? '#c8f04a')
 const secondary       = computed(() => props.template?.secondary_color ?? '#0f0f0f')
+const headerTextColor = computed(() => props.template?.header_text_color ?? '#ffffff')
+const bodyTextColor   = computed(() => props.template?.body_text_color   ?? '#0f172a')
 const font            = computed(() => props.template?.font_family     ?? "'Syne', sans-serif")
 const radius          = computed(() => props.template?.border_radius   ?? '4px')
 const headerLayout    = computed(() => (props.template as any)?.header_layout    ?? 'classic')

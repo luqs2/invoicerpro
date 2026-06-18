@@ -108,8 +108,12 @@ export interface InvoiceTemplate {
   primary_color: string
   secondary_color: string
   accent_color: string
+  header_text_color: string
+  body_text_color: string
   font_family: string
   border_radius: string
+  header_layout: string
+  company_font_size: number
   logo_position: 'left' | 'right' | 'center'
   show_bank_details: boolean
   footer_text?: string
