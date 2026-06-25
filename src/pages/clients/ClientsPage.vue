@@ -29,7 +29,7 @@
     </div>
 
     <!-- Table skeleton -->
-    <div class="section-card" v-if="store.loading">
+    <div class="section-card" v-if="!fetched">
       <div style="padding: 16px 20px;">
         <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f8fafc;">
           <Skeleton variant="rect" width="34px" height="34px" style="border-radius:8px; flex-shrink:0;" />
@@ -53,7 +53,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="c in filtered"
+            v-for="c in paginated"
             :key="c.id"
             class="table-row"
             @click="$router.push(`/app/clients/${c.id}`)"
@@ -76,10 +76,17 @@
           </tr>
         </tbody>
       </table>
+      <Pagination
+        :current-page="currentPage"
+        :total="filtered.length"
+        :page-size="pageSize"
+        @update:current-page="currentPage = $event"
+        @update:page-size="pageSize = $event; currentPage = 1"
+      />
     </div>
 
     <!-- Empty -->
-    <div class="empty-state" v-else>
+    <div class="empty-state" v-else-if="fetched && !filtered.length">
       <Users :size="52" class="empty-icon" />
       <p class="empty-title">{{ search ? 'No matching clients' : 'No clients yet' }}</p>
       <p class="empty-sub">{{ search ? 'Try a different search.' : 'Add your first client to get started.' }}</p>
@@ -134,25 +141,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, reactive } from 'vue'
+import { ref, computed, onMounted, reactive, watch } from 'vue'
 import { Search, X, Users, ChevronRight } from '@lucide/vue'
 import { useClientStore } from '@/stores/clients'
 import { useToast } from '@/composables/useToast'
 import { useFormatters } from '@/composables/useFormatters'
+import { useMinDelay } from '@/composables/useMinDelay'
 import Skeleton from '@/components/ui/Skeleton.vue'
 import UiInput from '@/components/ui/Input.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 import UiButton from '@/components/ui/Button.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const store = useClientStore()
 const { showToast } = useToast()
 const { getInitials } = useFormatters()
+const { wrap } = useMinDelay()
 
+const fetched    = ref(false)
 const search    = ref('')
 const panelOpen = ref(false)
 const form      = reactive({ name: '', email: '', phone: '', company: '', address: '' })
+const currentPage = ref(1)
+const pageSize = ref(10)
 
-onMounted(() => store.fetchAll())
+onMounted(async () => {
+  await wrap(store.fetchAll())
+  fetched.value = true
+})
 
 const filtered = computed(() =>
   store.clients.filter(c =>
@@ -160,6 +176,15 @@ const filtered = computed(() =>
     c.email.toLowerCase().includes(search.value.toLowerCase())
   )
 )
+
+const paginated = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filtered.value.slice(start, start + pageSize.value)
+})
+
+watch(search, () => {
+  currentPage.value = 1
+})
 
 function openPanel() { panelOpen.value = true }
 function closePanel() { panelOpen.value = false }

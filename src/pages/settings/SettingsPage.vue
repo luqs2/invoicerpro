@@ -12,7 +12,7 @@
       </button>
     </div>
 
-    <div class="settings-layout">
+    <div class="settings-layout" v-if="!loading">
 
       <!-- Left column -->
       <div class="settings-main">
@@ -155,6 +155,59 @@
       </div>
     </div>
 
+    <!-- Skeleton loading state -->
+    <div v-else class="settings-layout">
+      <div class="settings-main">
+        <div class="settings-card">
+          <div class="card-header">
+            <Skeleton variant="text" width="120px" />
+          </div>
+          <div class="card-body">
+            <div class="logo-section">
+              <Skeleton variant="rect" width="72px" height="72px" style="border-radius:14px; flex-shrink:0;" />
+              <div style="display:flex; flex-direction:column; gap:4px;">
+                <Skeleton variant="text" width="140px" />
+                <Skeleton variant="text" width="100px" />
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field"><Skeleton variant="text" width="60px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field"><Skeleton variant="text" width="40px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><Skeleton variant="text" width="40px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field"><Skeleton variant="text" width="50px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+            </div>
+          </div>
+        </div>
+        <div class="settings-card">
+          <div class="card-header">
+            <Skeleton variant="text" width="180px" />
+          </div>
+          <div class="card-body">
+            <div class="field-row">
+              <div class="field"><Skeleton variant="text" width="100px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field"><Skeleton variant="text" width="110px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+            </div>
+            <div class="field-row">
+              <div class="field"><Skeleton variant="text" width="90px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field"><Skeleton variant="text" width="90px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="settings-aside">
+        <div class="settings-card">
+          <div class="card-header"><Skeleton variant="text" width="60px" /></div>
+          <div class="preview-body">
+            <Skeleton variant="circle" width="56px" height="56px" />
+            <Skeleton variant="text" width="120px" />
+            <Skeleton variant="text" width="160px" />
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -166,14 +219,17 @@ import { useAuthStore }            from '@/stores/auth'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useToast }                from '@/composables/useToast'
 import { useTheme }                 from '@/composables/useTheme'
+import { useMinDelay }              from '@/composables/useMinDelay'
 import UiSelect from '@/components/ui/Select.vue'
 import UiInput from '@/components/ui/Input.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 
 const auth          = useAuthStore()
 const bpStore       = useBusinessProfileStore()
 const { showToast } = useToast()
 const router        = useRouter()
 const { theme, toggleTheme } = useTheme()
+const { loading, wrap } = useMinDelay()
 
 const saving    = ref(false)
 const logoInput = ref<HTMLInputElement | null>(null)
@@ -205,7 +261,7 @@ const nameInitials = computed(() => {
 })
 
 onMounted(async () => {
-  await bpStore.fetch()
+  await wrap(bpStore.fetch())
   const p = bpStore.profile
   form.name             = p.name             ?? ''
   form.email            = p.email            ?? ''

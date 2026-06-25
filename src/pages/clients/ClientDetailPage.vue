@@ -1,7 +1,7 @@
 <template>
   <div class="page">
 
-    <div v-if="client">
+    <div v-if="!loading && client">
       <!-- Header -->
       <div class="page-header">
         <div class="header-left">
@@ -152,8 +152,61 @@
     </div>
 
     <!-- Loading state -->
-    <div v-else class="loading-state">
-      <div class="loading-spinner" />
+    <div v-else>
+      <!-- Header skeleton -->
+      <div class="page-header">
+        <div class="header-left">
+          <Skeleton variant="text" width="60px" />
+          <div class="client-identity">
+            <Skeleton variant="rect" width="52px" height="52px" style="border-radius:14px; flex-shrink:0;" />
+            <div style="display:flex; flex-direction:column; gap:4px;">
+              <Skeleton variant="text" width="160px" />
+              <Skeleton variant="text" width="200px" />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content skeleton -->
+      <div class="detail-layout">
+        <div class="info-card">
+          <div class="card-header"><Skeleton variant="text" width="110px" /></div>
+          <div class="card-body">
+            <div v-for="i in 3" :key="i" style="padding:13px 20px;">
+              <Skeleton variant="text" width="60px" />
+              <Skeleton variant="text" width="180px" style="margin-top:4px;" />
+            </div>
+          </div>
+        </div>
+        <div class="stats-col">
+          <div class="stat-card" v-for="i in 4" :key="i">
+            <Skeleton variant="text" width="100px" />
+            <Skeleton variant="text" width="80px" style="margin-top:4px;" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Invoices section skeleton -->
+      <div class="invoices-section">
+        <div class="section-header">
+          <Skeleton variant="text" width="70px" />
+        </div>
+        <div>
+          <div v-for="i in 3" :key="i" class="invoice-row">
+            <div class="inv-left">
+              <Skeleton variant="rect" width="16px" height="16px" style="border-radius:4px;" />
+              <div>
+                <Skeleton variant="text" width="100px" />
+                <Skeleton variant="text" width="80px" />
+              </div>
+            </div>
+            <div class="inv-right">
+              <Skeleton variant="text" width="80px" />
+              <Skeleton variant="text" width="50px" />
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Edit side panel -->
@@ -214,10 +267,12 @@ import { useClientStore } from '@/stores/clients'
 import { useFormatters } from '@/composables/useFormatters'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
+import { useMinDelay } from '@/composables/useMinDelay'
 import type { Client, Invoice } from '@/types'
 import UiButton from '@/components/ui/Button.vue'
 import UiInput from '@/components/ui/Input.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 
 const route  = useRoute()
 const router = useRouter()
@@ -225,6 +280,7 @@ const store  = useClientStore()
 const { getInitials, formatDate, formatCurrency } = useFormatters()
 const { showToast } = useToast()
 const { confirm } = useConfirm()
+const { loading, wrap } = useMinDelay()
 
 const client    = ref<Client | null>(null)
 const invoices  = ref<Invoice[]>([])
@@ -247,11 +303,11 @@ const form = reactive({ name: '', email: '', phone: '', company: '', address: ''
 
 onMounted(async () => {
   const clientId = route.params.id as string
-  const [{ data }, { data: invData }, { data: rcpData }] = await Promise.all([
+  const [{ data }, { data: invData }, { data: rcpData }] = await wrap(Promise.all([
     clientService.getById(clientId),
     invoiceService.getByClientId(clientId),
     receiptService.getByClientId(clientId),
-  ])
+  ]))
   client.value = data
   invoices.value = invData ?? []
   receipts.value = rcpData ?? []
@@ -488,25 +544,6 @@ async function del() {
   justify-content: center;
   margin-bottom: 6px;
 }
-
-/* Loading */
-.loading-state {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 200px;
-}
-
-.loading-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid #e2e8f0;
-  border-top-color: #6366f1;
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-}
-
-@keyframes spin { to { transform: rotate(360deg); } }
 
 /* Invoices section */
 .invoices-section {

@@ -61,7 +61,7 @@
     </div>
 
     <!-- Table skeleton -->
-    <div class="section-card" v-if="loading">
+    <div class="section-card" v-if="!fetched">
       <div style="padding: 16px 20px;">
         <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #f8fafc;">
           <Skeleton variant="text" width="80px" />
@@ -103,7 +103,7 @@
             </tr>
           </thead>
         <tbody>
-          <tr v-for="r in filtered" :key="r.id" class="table-row">
+          <tr v-for="r in paginated" :key="r.id" class="table-row">
             <td style="padding-left:16px;">
               <input type="checkbox" :checked="selectedIds.has(r.id)" @change="toggleSelect(r.id)" class="select-cb" :aria-label="`Select ${r.receipt_number}`" />
             </td>
@@ -128,9 +128,16 @@
           </tr>
         </tbody>
       </table>
+      <Pagination
+        :current-page="currentPage"
+        :total="filtered.length"
+        :page-size="pageSize"
+        @update:current-page="currentPage = $event"
+        @update:page-size="pageSize = $event; currentPage = 1"
+      />
     </div>
 
-    <div class="empty-state" v-else>
+    <div class="empty-state" v-else-if="fetched && !filtered.length">
       <FileText :size="52" class="empty-icon" />
       <p class="empty-title">{{ search || methodFilter !== 'all' || hasActiveFilters ? 'No matching receipts' : 'No receipts yet' }}</p>
       <p class="empty-sub">{{ search || methodFilter !== 'all' || hasActiveFilters ? 'Try adjusting your search or filter.' : 'Create a receipt to record a payment.' }}</p>
@@ -169,7 +176,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, FileText, Search, Eye, Pencil, Trash2, Download, CheckSquare, SlidersHorizontal } from '@lucide/vue'
 import { receiptService }  from '@/services/receipts'
@@ -180,8 +187,10 @@ import { useToast }        from '@/composables/useToast'
 import { usePdf }          from '@/composables/usePdf'
 import { useConfirm }      from '@/composables/useConfirm'
 import { useEscapeKey }    from '@/composables/useFocusTrap'
+import { useMinDelay }     from '@/composables/useMinDelay'
 import UiBadge       from '@/components/ui/Badge.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 
 const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
 
@@ -192,17 +201,20 @@ const { formatCurrency, formatDate } = useFormatters()
 const { showToast } = useToast()
 const { exportToPdf } = usePdf()
 const { confirm } = useConfirm()
+const { wrap } = useMinDelay()
 
 const receipts = ref<any[]>([])
+const fetched  = ref(false)
 const search   = ref('')
 const viewing  = ref<any | null>(null)
-const loading  = ref(true)
 const showFilters = ref(false)
 const methodFilter = ref('all')
 const dateFrom = ref('')
 const dateTo = ref('')
 const minAmount = ref<number | null>(null)
 const maxAmount = ref<number | null>(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
 useEscapeKey(() => {
   if (viewing.value) viewing.value = null
@@ -210,10 +222,10 @@ useEscapeKey(() => {
 
 const selectedIds = ref<Set<string>>(new Set())
 const selectAll = computed({
-  get: () => filtered.value.length > 0 && filtered.value.every(r => selectedIds.value.has(r.id)),
+  get: () => paginated.value.length > 0 && paginated.value.every(r => selectedIds.value.has(r.id)),
   set: (val: boolean) => {
     if (val) {
-      selectedIds.value = new Set(filtered.value.map(r => r.id))
+      selectedIds.value = new Set(paginated.value.map(r => r.id))
     } else {
       selectedIds.value = new Set()
     }
@@ -261,6 +273,15 @@ const filtered = computed(() =>
     })
 )
 
+const paginated = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filtered.value.slice(start, start + pageSize.value)
+})
+
+watch([search, methodFilter, dateFrom, dateTo, minAmount, maxAmount], () => {
+  currentPage.value = 1
+})
+
 const methodTabs = computed(() => [
   { label: 'All',      value: 'all',           count: receipts.value.length },
   { label: 'Transfer',  value: 'bank_transfer', count: receipts.value.filter(r => r.payment_method === 'bank_transfer').length },
@@ -281,13 +302,13 @@ function clearFilters() {
 }
 
 onMounted(async () => {
-  if (!auth.user) return
-  const [{ data }] = await Promise.all([
+  if (!auth.user) { fetched.value = true; return }
+  const [{ data }] = await wrap(Promise.all([
     receiptService.getAll(auth.user.id),
     templateStore.fetchAll(),
-  ])
+  ]))
   receipts.value = data ?? []
-  loading.value = false
+  fetched.value = true
 })
 
 function viewReceipt(r: any) {

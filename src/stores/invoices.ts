@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { supabase } from '@/services/supabase'
 import { invoiceService } from '@/services/invoices'
 import { useAuthStore } from './auth'
 import type { Invoice, LineItem } from '@/types'
@@ -8,6 +9,7 @@ export const useInvoiceStore = defineStore('invoices', () => {
   const invoices = ref<Invoice[]>([])
   const current  = ref<Partial<Invoice>>({})
   const loading  = ref(false)
+  let channel: ReturnType<typeof supabase.channel> | null = null
 
   // Computed totals from current draft
   function recalcTotals() {
@@ -109,9 +111,49 @@ export const useInvoiceStore = defineStore('invoices', () => {
     }
   }
 
+  function subscribe() {
+    if (channel) return
+    const auth = useAuthStore()
+    if (!auth.user) return
+
+    channel = supabase
+      .channel('invoices-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'invoices', filter: `user_id=eq.${auth.user.id}` },
+        async (payload) => {
+          const { data } = await invoiceService.getById(payload.new.id)
+          if (data) invoices.value.unshift(data)
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'invoices', filter: `user_id=eq.${auth.user.id}` },
+        (payload) => {
+          const idx = invoices.value.findIndex(i => i.id === payload.new.id)
+          if (idx > -1) invoices.value[idx] = { ...invoices.value[idx], ...payload.new }
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'invoices', filter: `user_id=eq.${auth.user.id}` },
+        (payload) => {
+          invoices.value = invoices.value.filter(i => i.id !== payload.old.id)
+        }
+      )
+      .subscribe()
+  }
+
+  function unsubscribe() {
+    if (channel) {
+      supabase.removeChannel(channel)
+      channel = null
+    }
+  }
+
   return {
     invoices, current, loading,
-    fetchAll, save, updateStatus, resetCurrent,
+    fetchAll, save, updateStatus, resetCurrent, subscribe, unsubscribe,
     addLineItem, removeLineItem, updateLineItem, recalcTotals,
   }
 })

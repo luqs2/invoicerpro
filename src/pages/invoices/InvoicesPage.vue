@@ -62,7 +62,7 @@
     </div>
 
     <!-- Table skeleton -->
-    <div class="section-card" v-if="store.loading">
+    <div class="section-card" v-if="!fetched">
       <div style="padding: 16px 20px;">
         <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #f8fafc;">
           <Skeleton variant="text" width="80px" />
@@ -110,7 +110,7 @@
             </tr>
           </thead>
         <tbody>
-          <tr v-for="inv in filtered" :key="inv.id" class="table-row">
+          <tr v-for="inv in paginated" :key="inv.id" class="table-row">
             <td style="padding-left:16px;">
               <input type="checkbox" :checked="selectedIds.has(inv.id)" @change="toggleSelect(inv.id)" class="select-cb" :aria-label="`Select ${inv.invoice_number}`" />
             </td>
@@ -136,10 +136,17 @@
           </tr>
         </tbody>
       </table>
+      <Pagination
+        :current-page="currentPage"
+        :total="filtered.length"
+        :page-size="pageSize"
+        @update:current-page="currentPage = $event"
+        @update:page-size="pageSize = $event; currentPage = 1"
+      />
     </div>
 
     <!-- Empty -->
-    <div class="empty-state" v-else>
+    <div class="empty-state" v-else-if="fetched && !filtered.length">
       <FileText :size="52" class="empty-icon" />
       <p class="empty-title">{{ search || filter !== 'all' ? 'No matching invoices' : 'No invoices yet' }}</p>
       <p class="empty-sub">{{ search || filter !== 'all' ? 'Try adjusting your search or filter.' : 'Create your first invoice to get started.' }}</p>
@@ -178,7 +185,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, nextTick, defineAsyncComponent, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, Search, FileText, Eye, Pencil, Trash2, Download, SlidersHorizontal, CheckSquare } from '@lucide/vue'
 import { useInvoiceStore }  from '@/stores/invoices'
@@ -189,7 +196,9 @@ import { useToast }         from '@/composables/useToast'
 import { usePdf }           from '@/composables/usePdf'
 import { useConfirm }       from '@/composables/useConfirm'
 import { useEscapeKey }     from '@/composables/useFocusTrap'
+import { useMinDelay }      from '@/composables/useMinDelay'
 import Skeleton from '@/components/ui/Skeleton.vue'
+import Pagination from '@/components/ui/Pagination.vue'
 import type { Invoice } from '@/types'
 
 const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
@@ -201,7 +210,9 @@ const { formatCurrency, formatDate } = useFormatters()
 const { showToast } = useToast()
 const { exportToPdf } = usePdf()
 const { confirm } = useConfirm()
+const { wrap } = useMinDelay()
 
+const fetched = ref(false)
 const search  = ref('')
 const filter  = ref('all')
 const viewing = ref<Invoice | null>(null)
@@ -210,6 +221,8 @@ const dateFrom = ref('')
 const dateTo = ref('')
 const minAmount = ref<number | null>(null)
 const maxAmount = ref<number | null>(null)
+const currentPage = ref(1)
+const pageSize = ref(10)
 
 useEscapeKey(() => {
   if (viewing.value) viewing.value = null
@@ -217,10 +230,10 @@ useEscapeKey(() => {
 
 const selectedIds = ref<Set<string>>(new Set())
 const selectAll = computed({
-  get: () => filtered.value.length > 0 && filtered.value.every(i => selectedIds.value.has(i.id)),
+  get: () => paginated.value.length > 0 && paginated.value.every(i => selectedIds.value.has(i.id)),
   set: (val: boolean) => {
     if (val) {
-      selectedIds.value = new Set(filtered.value.map(i => i.id))
+      selectedIds.value = new Set(paginated.value.map(i => i.id))
     } else {
       selectedIds.value = new Set()
     }
@@ -244,6 +257,10 @@ function clearFilters() {
   minAmount.value = null
   maxAmount.value = null
 }
+
+watch([search, filter, dateFrom, dateTo, minAmount, maxAmount], () => {
+  currentPage.value = 1
+})
 
 async function bulkDelete() {
   const count = selectedIds.value.size
@@ -276,9 +293,12 @@ async function bulkExport() {
   showToast('PDFs exported!')
 }
 
-onMounted(() => {
-  store.fetchAll()
-  templateStore.fetchAll()
+onMounted(async () => {
+  await wrap(Promise.all([
+    store.fetchAll(),
+    templateStore.fetchAll(),
+  ]))
+  fetched.value = true
 })
 
 const tabs = computed(() => [
@@ -304,6 +324,11 @@ const filtered = computed(() =>
       return true
     })
 )
+
+const paginated = computed(() => {
+  const start = (currentPage.value - 1) * pageSize.value
+  return filtered.value.slice(start, start + pageSize.value)
+})
 
 function viewInvoice(inv: Invoice) {
   viewing.value = inv
