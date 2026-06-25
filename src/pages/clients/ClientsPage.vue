@@ -86,7 +86,7 @@
     </div>
 
     <!-- Empty -->
-    <div class="empty-state" v-else-if="fetched && !filtered.length">
+    <div class="empty-state" v-else-if="fetched">
       <Users :size="52" class="empty-icon" />
       <p class="empty-title">{{ search ? 'No matching clients' : 'No clients yet' }}</p>
       <p class="empty-sub">{{ search ? 'Try a different search.' : 'Add your first client to get started.' }}</p>

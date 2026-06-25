@@ -73,26 +73,27 @@
       </div>
     </div>
 
-    <!-- Bulk action bar -->
-    <div class="bulk-bar" v-if="selectedIds.size > 0">
-      <div class="bulk-left">
-        <CheckSquare :size="16" />
-        <span>{{ selectedIds.size }} selected</span>
+    <template v-else>
+      <!-- Bulk action bar -->
+      <div class="bulk-bar" v-if="selectedIds.size > 0">
+        <div class="bulk-left">
+          <CheckSquare :size="16" />
+          <span>{{ selectedIds.size }} selected</span>
+        </div>
+        <div class="bulk-actions">
+          <button class="bulk-btn" @click="bulkExport">
+            <Download :size="14" />
+            Export PDFs
+          </button>
+          <button class="bulk-btn bulk-btn-danger" @click="bulkDelete">
+            <Trash2 :size="14" />
+            Delete
+          </button>
+        </div>
       </div>
-      <div class="bulk-actions">
-        <button class="bulk-btn" @click="bulkExport">
-          <Download :size="14" />
-          Export PDFs
-        </button>
-        <button class="bulk-btn bulk-btn-danger" @click="bulkDelete">
-          <Trash2 :size="14" />
-          Delete
-        </button>
-      </div>
-    </div>
 
-    <!-- Table -->
-    <div class="section-card" v-if="filtered.length">
+      <!-- Table -->
+      <div class="section-card" v-if="filtered.length">
       <table class="data-table">
           <caption class="sr-only">Invoices</caption>
           <thead>
@@ -146,7 +147,7 @@
     </div>
 
     <!-- Empty -->
-    <div class="empty-state" v-else-if="fetched && !filtered.length">
+    <div class="empty-state" v-else>
       <FileText :size="52" class="empty-icon" />
       <p class="empty-title">{{ search || filter !== 'all' ? 'No matching invoices' : 'No invoices yet' }}</p>
       <p class="empty-sub">{{ search || filter !== 'all' ? 'Try adjusting your search or filter.' : 'Create your first invoice to get started.' }}</p>
@@ -154,6 +155,7 @@
         New Invoice
       </router-link>
     </div>
+    </template>
 
     <!-- View modal -->
     <div class="modal-overlay" v-if="viewing" @click.self="viewing = null">

@@ -72,21 +72,22 @@
       </div>
     </div>
 
-    <!-- Bulk action bar -->
-    <div class="bulk-bar" v-if="selectedIds.size > 0">
-      <div class="bulk-left">
-        <CheckSquare :size="16" />
-        <span>{{ selectedIds.size }} selected</span>
+    <template v-else>
+      <!-- Bulk action bar -->
+      <div class="bulk-bar" v-if="selectedIds.size > 0">
+        <div class="bulk-left">
+          <CheckSquare :size="16" />
+          <span>{{ selectedIds.size }} selected</span>
+        </div>
+        <div class="bulk-actions">
+          <button class="bulk-btn bulk-btn-danger" @click="bulkDelete">
+            <Trash2 :size="14" />
+            Delete
+          </button>
+        </div>
       </div>
-      <div class="bulk-actions">
-        <button class="bulk-btn bulk-btn-danger" @click="bulkDelete">
-          <Trash2 :size="14" />
-          Delete
-        </button>
-      </div>
-    </div>
 
-    <div class="section-card" v-if="filtered.length">
+      <div class="section-card" v-if="filtered.length">
       <table class="data-table">
           <caption class="sr-only">Receipts</caption>
           <thead>
@@ -137,7 +138,7 @@
       />
     </div>
 
-    <div class="empty-state" v-else-if="fetched && !filtered.length">
+    <div class="empty-state" v-else>
       <FileText :size="52" class="empty-icon" />
       <p class="empty-title">{{ search || methodFilter !== 'all' || hasActiveFilters ? 'No matching receipts' : 'No receipts yet' }}</p>
       <p class="empty-sub">{{ search || methodFilter !== 'all' || hasActiveFilters ? 'Try adjusting your search or filter.' : 'Create a receipt to record a payment.' }}</p>
@@ -145,6 +146,7 @@
         New Receipt
       </router-link>
     </div>
+    </template>
 
     <!-- View modal -->
     <div class="modal-overlay" v-if="viewing" @click.self="viewing = null">
