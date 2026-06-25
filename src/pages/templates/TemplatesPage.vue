@@ -17,13 +17,22 @@
 
     <!-- Layouts tab -->
     <div v-show="tab === 'pick'" class="tpl-grid">
-      <TemplateCard
-        v-for="t in templateStore.templates"
-        :key="t.id"
-        :template="t"
-        :selected="templateStore.active?.id === t.id"
-        @click="templateStore.setActive(t)"
-      />
+      <template v-if="!loading && templateStore.templates.length">
+        <TemplateCard
+          v-for="t in templateStore.templates"
+          :key="t.id"
+          :template="t"
+          :selected="templateStore.active?.id === t.id"
+          @click="templateStore.setActive(t)"
+        />
+      </template>
+      <template v-else>
+        <div v-for="i in 6" :key="i" class="tpl-skeleton">
+          <Skeleton variant="rect" style="width:100%; aspect-ratio:120/52; border-radius:6px;" />
+          <Skeleton variant="text" width="80px" />
+          <Skeleton variant="text" width="120px" />
+        </div>
+      </template>
     </div>
 
     <!-- Customise tab -->
@@ -230,8 +239,10 @@
 import { ref, reactive, computed, onMounted, watch, defineAsyncComponent } from 'vue'
 import { useTemplateStore } from '@/stores/templates'
 import { useToast } from '@/composables/useToast'
+import { useMinDelay } from '@/composables/useMinDelay'
 import TemplateCard from '@/components/template/TemplateCard.vue'
 import UiButton from '@/components/ui/Button.vue'
+import Skeleton from '@/components/ui/Skeleton.vue'
 
 const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
 import UiTabs from '@/components/ui/Tabs.vue'
@@ -241,6 +252,7 @@ import UiTextarea from '@/components/ui/Textarea.vue'
 
 const templateStore = useTemplateStore()
 const { showToast } = useToast()
+const { loading, wrap } = useMinDelay()
 
 const tab    = ref('pick')
 const saving = ref(false)
@@ -307,7 +319,7 @@ const sampleInvoice = {
 }as any
 
 onMounted(async () => {
-  await templateStore.fetchAll()
+  await wrap(templateStore.fetchAll())
 })
 
 watch(() => templateStore.active, (t) => {
@@ -342,6 +354,16 @@ async function save() {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 16px;
+}
+
+.tpl-skeleton {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 12px;
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  background: #f8fafc;
 }
 
 .custom-layout { display: flex; flex-direction: column; gap: 16px; }

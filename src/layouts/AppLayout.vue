@@ -126,6 +126,8 @@ import {
   Menu, X, Settings,
 } from '@lucide/vue'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
+import { useInvoiceStore } from '@/stores/invoices'
+import { useClientStore } from '@/stores/clients'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 interface NavItem {
@@ -152,8 +154,22 @@ watch(sidebarCollapsed, (v) => {
 })
 
 const bpStore = useBusinessProfileStore()
+const invoiceStore = useInvoiceStore()
+const clientStore = useClientStore()
 useKeyboardShortcuts()
-onMounted(() => bpStore.fetch())
+
+onMounted(() => {
+  bpStore.fetch()
+  invoiceStore.fetchAll()
+  clientStore.fetchAll()
+  invoiceStore.subscribe()
+  clientStore.subscribe()
+})
+
+onUnmounted(() => {
+  invoiceStore.unsubscribe()
+  clientStore.unsubscribe()
+})
 
 const navItems: NavItem[] = [
   { path: '/app/dashboard', label: 'Dashboard', icon: LayoutGrid },

@@ -16,7 +16,7 @@
     </div>
 
     <!-- Stats row -->
-    <div class="stats-row" v-if="!loading">
+    <div class="stats-row" v-if="fetched">
       <div class="stat-card stat-revenue">
         <div class="stat-icon-wrap">
           <DollarSign :size="22" />
@@ -108,7 +108,7 @@
     </div>
 
     <!-- Quick actions -->
-    <div class="quick-actions" v-if="!loading">
+    <div class="quick-actions" v-if="fetched">
       <router-link to="/app/invoices/new" class="qa-card">
         <div class="qa-icon qa-icon-purple">
           <FilePlus :size="18" />
@@ -157,7 +157,7 @@
       <div class="section-head">
         <div class="section-head-left">
           <h2 class="section-title">Recent Invoices</h2>
-          <span class="section-count" v-if="!loading && invoiceStore.invoices.length">
+          <span class="section-count" v-if="fetched && invoiceStore.invoices.length">
             {{ invoiceStore.invoices.length }}
           </span>
         </div>
@@ -167,7 +167,7 @@
         </router-link>
       </div>
 
-      <div v-if="loading" style="padding: 16px 24px;">
+      <div v-if="!fetched" style="padding: 16px 24px;">
         <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #f8fafc;">
           <Skeleton variant="text" width="80px" />
           <Skeleton variant="text" width="120px" />
@@ -229,16 +229,20 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, computed } from 'vue'
+import { ref, onMounted, reactive, computed } from 'vue'
 import { DollarSign, FileText, Clock, AlertCircle, ArrowRight, TrendingUp, TrendingDown, FilePlus, UserPlus, Receipt, Plus, ChevronRight } from '@lucide/vue'
 import { useInvoiceStore } from '@/stores/invoices'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useFormatters } from '@/composables/useFormatters'
+import { useMinDelay } from '@/composables/useMinDelay'
 import Skeleton from '@/components/ui/Skeleton.vue'
 
 const invoiceStore = useInvoiceStore()
 const bpStore = useBusinessProfileStore()
 const { formatCurrency, formatDate } = useFormatters()
+const { loading: skeletonLoading, wrap } = useMinDelay()
+
+const fetched = ref(false)
 
 const stats = reactive({
   total_revenue:  0,
@@ -267,7 +271,7 @@ const trends = computed(() => {
   }
 })
 
-const loading = computed(() => invoiceStore.loading)
+const loading = computed(() => skeletonLoading.value || invoiceStore.loading)
 
 const timeOfDay = computed(() => {
   const h = new Date().getHours()
@@ -284,10 +288,10 @@ const profileCompletion = computed(() => {
 })
 
 onMounted(async () => {
-  await Promise.all([
+  await wrap(Promise.all([
     invoiceStore.fetchAll(),
     bpStore.fetch(),
-  ])
+  ]))
 
   const now = new Date()
   const thisMonth = now.getMonth()
@@ -315,6 +319,7 @@ onMounted(async () => {
       if (inv.status === 'overdue') prevStats.overdue_amount += inv.total
     }
   }
+  fetched.value = true
 })
 </script>
 
