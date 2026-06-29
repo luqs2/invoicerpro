@@ -32,16 +32,16 @@ export const useTemplateStore = defineStore('templates', () => {
 
   async function save(template: Partial<InvoiceTemplate>) {
     const auth = useAuthStore()
-    if (!auth.user) return
+    if (!auth.user) throw new Error('Not authenticated')
 
-    // If it's a system template, save as a new user-owned copy instead
     const isSystem = template.is_system || !template.user_id
     const payload = isSystem
       ? { ...template, id: undefined, is_system: false, user_id: auth.user.id }
       : template
 
     if (payload.id) {
-      const { data } = await templateService.update(payload.id, payload)
+      const { data, error } = await templateService.update(payload.id, payload)
+      if (error) throw error
       const idx = templates.value.findIndex(t => t.id === payload.id)
       if (idx > -1 && data) {
         templates.value[idx] = data
@@ -49,7 +49,8 @@ export const useTemplateStore = defineStore('templates', () => {
       }
       return data
     } else {
-      const { data } = await templateService.create({ ...payload, user_id: auth.user.id, is_system: false })
+      const { data, error } = await templateService.create({ ...payload, user_id: auth.user.id, is_system: false })
+      if (error) throw error
       if (data) {
         templates.value.push(data)
         active.value = data

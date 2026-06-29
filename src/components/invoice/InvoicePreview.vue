@@ -315,6 +315,79 @@
       />
     </template>
 
+    <!-- LAYOUT: professional — company details left, badge right -->
+    <template v-else-if="headerLayout === 'professional'">
+      <div class="inv-head inv-head--professional">
+        <div class="inv-head-left">
+          <div class="inv-head-brand">
+            <div class="inv-logo-wrap">
+              <img
+                v-if="businessLogo"
+                :src="businessLogo"
+                alt="logo"
+                class="inv-logo-img"
+                :style="{ borderRadius: radius }"
+              >
+              <div
+                v-else
+                class="inv-logo"
+                :style="{ background: primary, borderRadius: radius }"
+              >
+                {{ getInitials(businessName) }}
+              </div>
+            </div>
+            <div
+              class="inv-company"
+              :style="{ fontSize: companyFontSize + 'px', color: headerTextColor }"
+            >
+              {{ businessName }}
+            </div>
+          </div>
+          <div
+            class="inv-company-details"
+            :style="{ color: headerTextColor, opacity: 0.8 }"
+          >
+            <div v-if="businessAddress">
+              {{ businessAddress }}
+            </div>
+            <div v-if="businessPhone">
+              Tel: {{ businessPhone }}
+            </div>
+            <div v-if="businessEmail">
+              Email: {{ businessEmail }}
+            </div>
+          </div>
+        </div>
+        <div class="inv-head-right">
+          <div
+            class="inv-badge"
+            :style="{ background: primary, borderRadius: radius, color: headerTextColor }"
+          >
+            INVOICE
+          </div>
+          <div class="inv-meta-row">
+            <span class="inv-meta-label">Date:</span>
+            <span>{{ formatDate(invoice.issue_date ?? '') }}</span>
+          </div>
+          <div class="inv-meta-row">
+            <span class="inv-meta-label">Invoice No.:</span>
+            <span>{{ invoice.invoice_number }}</span>
+          </div>
+          <div
+            v-if="invoice.quote_number"
+            class="inv-meta-row"
+          >
+            <span class="inv-meta-label">Quote No.:</span>
+            <span>{{ invoice.quote_number }}</span>
+          </div>
+        </div>
+      </div>
+      <div
+        class="inv-divider"
+        :style="{ background: primary }"
+      />
+    </template>
+
     <!-- Parties -->
     <div class="inv-parties">
       <div>
@@ -341,19 +414,39 @@
         <div class="party-detail">
           {{ invoice.client?.address }}
         </div>
+        <div
+          v-if="invoice.client?.attn"
+          class="party-detail"
+          style="margin-top: 4px;"
+        >
+          Attn: {{ invoice.client.attn }}
+        </div>
       </div>
     </div>
 
     <!-- Line items -->
     <table class="inv-table">
-      <colgroup>
-        <col style="width: auto;">
-        <col style="width: 52px;">
-        <col style="width: 90px;">
-        <col style="width: 90px;">
-      </colgroup>
       <thead>
         <tr>
+          <th
+            v-if="hasExtraColumns"
+            :style="{ background: secondary, color: headerTextColor }"
+            class="center"
+          >
+            S/N
+          </th>
+          <th
+            v-if="showDate"
+            :style="{ background: secondary, color: headerTextColor }"
+          >
+            Date
+          </th>
+          <th
+            v-if="showVehicleNo"
+            :style="{ background: secondary, color: headerTextColor }"
+          >
+            Veh. No.
+          </th>
           <th :style="{ background: secondary, color: headerTextColor }">
             Description
           </th>
@@ -362,6 +455,13 @@
             class="center"
           >
             Qty
+          </th>
+          <th
+            v-if="showUom"
+            :style="{ background: secondary, color: headerTextColor }"
+            class="center"
+          >
+            UOM
           </th>
           <th
             :style="{ background: secondary, color: headerTextColor }"
@@ -379,12 +479,23 @@
       </thead>
       <tbody>
         <tr
-          v-for="item in invoice.line_items"
+          v-for="(item, idx) in invoice.line_items"
           :key="item.id"
         >
+          <td
+            v-if="hasExtraColumns"
+            class="center"
+          >
+            {{ idx + 1 }}
+          </td>
+          <td v-if="showDate">{{ item.date ? formatDate(item.date) : '' }}</td>
+          <td v-if="showVehicleNo">{{ item.vehicle_no ?? '' }}</td>
           <td>{{ item.description }}</td>
           <td class="center">
             {{ item.quantity }}
+          </td>
+          <td v-if="showUom" class="center">
+            {{ item.uom ?? '' }}
           </td>
           <td class="right">
             {{ formatCurrency(item.unit_price, invoice.currency) }}
@@ -398,6 +509,12 @@
 
     <!-- Totals -->
     <div class="inv-totals">
+      <div
+        v-if="headerLayout === 'professional'"
+        class="total-row"
+      >
+        <span>Total Qty</span><span>{{ totalQty }}</span>
+      </div>
       <div class="total-row">
         <span>Subtotal</span><span>{{ formatCurrency(invoice.subtotal ?? 0, invoice.currency) }}</span>
       </div>
@@ -408,7 +525,70 @@
         class="total-row grand"
         :style="{ color: secondary }"
       >
-        <span>Total Due</span><span>{{ formatCurrency(invoice.total ?? 0, invoice.currency) }}</span>
+        <span>Grand Total</span><span>{{ formatCurrency(invoice.total ?? 0, invoice.currency) }}</span>
+      </div>
+    </div>
+
+    <!-- Terms & Conditions -->
+    <div
+      v-if="effectiveTerms"
+      class="inv-terms"
+    >
+      <div class="inv-terms-title">
+        Terms &amp; Conditions
+      </div>
+      <div class="inv-terms-body">
+        {{ effectiveTerms }}
+      </div>
+    </div>
+
+    <!-- Bank Details -->
+    <div
+      v-if="template?.show_bank_details && bankAccounts.length"
+      class="inv-bank"
+    >
+      <div
+        v-for="(acct, idx) in bankAccounts"
+        :key="acct.id"
+        class="inv-bank-card"
+      >
+        <div
+          v-if="idx > 0"
+          class="inv-bank-or"
+        >
+          Or
+        </div>
+        <div class="inv-bank-row">
+          <span class="inv-bank-label">Bank Name:</span>
+          <span>{{ acct.bank_name }}</span>
+        </div>
+        <div class="inv-bank-row">
+          <span class="inv-bank-label">Account Number:</span>
+          <span>{{ acct.account_number }}</span>
+        </div>
+        <div class="inv-bank-row">
+          <span class="inv-bank-label">Account Name:</span>
+          <span>{{ acct.account_name }}</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prepared By (professional layout) -->
+    <div
+      v-if="headerLayout === 'professional'"
+      class="inv-prepared"
+    >
+      <div class="inv-prepared-label">
+        Prepared By:
+      </div>
+      <div class="inv-prepared-stamp">
+        <div
+          class="inv-prepared-stamp-inner"
+          :style="{ borderColor: primary }"
+        />
+      </div>
+      <div class="inv-prepared-name">
+        {{ businessName }}
       </div>
     </div>
 
@@ -422,16 +602,22 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import type { Invoice, InvoiceTemplate } from '@/types'
 import { useFormatters }           from '@/composables/useFormatters'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
+import { useBankAccountStore }     from '@/stores/bankAccounts'
 
 const { formatCurrency, formatDate, getInitials } = useFormatters()
 
 const props = defineProps<{ invoice: Partial<Invoice>; template?: InvoiceTemplate | null }>()
 
 const bpStore = useBusinessProfileStore()
+const bankStore = useBankAccountStore()
+
+onMounted(() => {
+  bankStore.fetchAll()
+})
 
 const primary         = computed(() => props.template?.primary_color   ?? '#c8f04a')
 const secondary       = computed(() => props.template?.secondary_color ?? '#0f0f0f')
@@ -445,6 +631,23 @@ const companyFontSize = computed(() => (props.template as any)?.company_font_siz
 const businessName    = computed(() => bpStore.profile.name    || 'My Business')
 const businessLogo    = computed(() => bpStore.profile.logo_url || '')
 const businessAddress = computed(() => bpStore.profile.address || '')
+const businessPhone   = computed(() => bpStore.profile.phone || '')
+const businessEmail   = computed(() => bpStore.profile.email || '')
+
+const totalQty = computed(() => {
+  return (props.invoice.line_items ?? []).reduce((sum, i) => sum + (i.quantity ?? 0), 0)
+})
+
+const effectiveTerms = computed(() => {
+  return props.invoice.terms_text || (props.template as any)?.terms_text || ''
+})
+
+const bankAccounts = computed(() => bankStore.accounts)
+
+const showDate = computed(() => (props.template as any)?.show_line_item_date ?? false)
+const showVehicleNo = computed(() => (props.template as any)?.show_line_item_vehicle_no ?? false)
+const showUom = computed(() => (props.template as any)?.show_line_item_uom ?? false)
+const hasExtraColumns = computed(() => showDate.value || showVehicleNo.value || showUom.value)
 </script>
 
 <style scoped>
@@ -538,4 +741,30 @@ const businessAddress = computed(() => bpStore.profile.address || '')
 .total-row.grand { font-weight: 800; font-size: 14px; border-top: 2px solid currentColor; border-bottom: none; margin-top: 4px; padding-top: 8px; }
 
 .inv-footer { margin-top: 20px; padding-top: 12px; border-top: 1px solid #eee; font-size: 10px; color: #999; }
+
+/* ── Professional layout ── */
+.inv-head--professional { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+.inv-head-left { display: flex; flex-direction: column; gap: 6px; }
+.inv-head-right { text-align: right; }
+.inv-company-details { font-size: 11px; line-height: 1.5; margin-top: 4px; }
+.inv-meta-row { font-size: 11px; margin-top: 3px; }
+.inv-meta-label { font-weight: 700; margin-right: 4px; }
+/* ── Terms ── */
+.inv-terms { margin-top: 16px; }
+.inv-terms-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-bottom: 6px; }
+.inv-terms-body { font-size: 10px; color: #666; white-space: pre-line; line-height: 1.5; }
+
+/* ── Bank details ── */
+.inv-bank { margin-top: 16px; display: flex; gap: 24px; }
+.inv-bank-card { flex: 1; }
+.inv-bank-or { font-size: 10px; font-weight: 700; color: #999; text-align: center; margin: 8px 0; }
+.inv-bank-row { font-size: 10px; color: #555; margin-bottom: 2px; }
+.inv-bank-label { font-weight: 700; }
+
+/* ── Prepared By ── */
+.inv-prepared { margin-top: 24px; display: flex; flex-direction: column; align-items: flex-start; }
+.inv-prepared-label { font-size: 10px; font-weight: 700; color: #555; margin-bottom: 6px; }
+.inv-prepared-stamp { width: 72px; height: 72px; margin-bottom: 4px; }
+.inv-prepared-stamp-inner { width: 100%; height: 100%; border: 2px dashed #ccc; border-radius: 4px; }
+.inv-prepared-name { font-size: 10px; font-weight: 700; color: #555; }
 </style>

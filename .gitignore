@@ -1,5 +1,8 @@
 /.env
 /node_modules
-/supabase
 /dist
 *.local
+.mimocode/
+supabase/.env
+supabase/.temp/
+supabase/config.toml

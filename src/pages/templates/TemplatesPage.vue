@@ -667,6 +667,105 @@
               :rows="2"
             />
           </div>
+          <div class="field">
+            <label>Default Terms &amp; Conditions</label>
+            <UiTextarea
+              v-model="draft.terms_text"
+              placeholder="Enter default terms for invoices using this template…"
+              :rows="4"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Bank Accounts -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            Bank Accounts
+          </h2>
+          <p class="card-desc">
+            Shown on invoices when "Show bank details" is enabled.
+          </p>
+        </div>
+        <div class="card-body">
+          <div
+            v-for="acct in bankStore.accounts"
+            :key="acct.id"
+            class="bank-acct-row"
+          >
+            <div class="bank-acct-info">
+              <strong>{{ acct.bank_name }}</strong>
+              <span>{{ acct.account_number }}</span>
+              <span>{{ acct.account_name }}</span>
+            </div>
+            <UiButton
+              variant="outline"
+              size="sm"
+              @click="removeBankAccount(acct.id)"
+            >
+              Remove
+            </UiButton>
+          </div>
+          <div class="bank-add-form">
+            <UiInput
+              v-model="newBank.bank_name"
+              placeholder="Bank Name"
+            />
+            <UiInput
+              v-model="newBank.account_number"
+              placeholder="Account Number"
+            />
+            <UiInput
+              v-model="newBank.account_name"
+              placeholder="Account Name"
+            />
+            <UiButton
+              variant="outline"
+              size="sm"
+              @click="addBankAccount"
+            >
+              Add
+            </UiButton>
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Item Columns -->
+      <div class="settings-card">
+        <div class="card-header">
+          <h2 class="card-title">
+            Line Item Columns
+          </h2>
+          <p class="card-desc">
+            Show extra columns on the invoice line items table.
+          </p>
+        </div>
+        <div class="card-body">
+          <label class="toggle-row">
+            <input
+              v-model="draft.show_line_item_date"
+              type="checkbox"
+              class="toggle-input"
+            >
+            <span>Date column</span>
+          </label>
+          <label class="toggle-row">
+            <input
+              v-model="draft.show_line_item_vehicle_no"
+              type="checkbox"
+              class="toggle-input"
+            >
+            <span>Vehicle Number column</span>
+          </label>
+          <label class="toggle-row">
+            <input
+              v-model="draft.show_line_item_uom"
+              type="checkbox"
+              class="toggle-input"
+            >
+            <span>Unit of Measurement (UOM) column</span>
+          </label>
         </div>
       </div>
     </div>
@@ -689,6 +788,7 @@ import { ref, reactive, computed, onMounted, watch, defineAsyncComponent } from 
 import { useTemplateStore } from '@/stores/templates'
 import { useToast } from '@/composables/useToast'
 import { useMinDelay } from '@/composables/useMinDelay'
+import { useBankAccountStore } from '@/stores/bankAccounts'
 import TemplateCard from '@/components/template/TemplateCard.vue'
 import UiButton from '@/components/ui/Button.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
@@ -700,6 +800,7 @@ import UiInput from '@/components/ui/Input.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 
 const templateStore = useTemplateStore()
+const bankStore = useBankAccountStore()
 const { showToast } = useToast()
 const { loading, wrap } = useMinDelay()
 
@@ -715,8 +816,12 @@ const draft = reactive({
   font_family:       "'Inter', sans-serif",
   border_radius:     '4px',
   footer_text:       'Thank you for your business!',
+  terms_text:        '',
   header_layout:     'classic',
   company_font_size: 14,
+  show_line_item_date: false,
+  show_line_item_vehicle_no: false,
+  show_line_item_uom: false,
 })
 
 const headerLayouts = [
@@ -726,6 +831,7 @@ const headerLayouts = [
   { value: 'minimal',  label: 'Minimal',  desc: 'Text only, clean rule' },
   { value: 'bold',     label: 'Bold',     desc: 'Full-width colour banner' },
   { value: 'split',    label: 'Split',    desc: 'Accent sidebar strip' },
+  { value: 'professional', label: 'Professional', desc: 'Full details with bank & terms' },
 ]
 
 const fontOptions = [
@@ -769,17 +875,51 @@ const sampleInvoice = {
 
 onMounted(async () => {
   await wrap(templateStore.fetchAll())
+  await bankStore.fetchAll()
 })
 
 watch(() => templateStore.active, (t) => {
   if (t) Object.assign(draft, t)
 }, { immediate: true })
 
+const newBank = reactive({
+  bank_name: '',
+  account_number: '',
+  account_name: '',
+})
+
+async function addBankAccount() {
+  if (!newBank.bank_name || !newBank.account_number) {
+    showToast('Bank name and account number are required', 'danger')
+    return
+  }
+  try {
+    await bankStore.create({ ...newBank })
+    newBank.bank_name = ''
+    newBank.account_number = ''
+    newBank.account_name = ''
+    showToast('Bank account added')
+  } catch (e: any) {
+    showToast(e?.message ?? 'Failed to add bank account', 'danger')
+  }
+}
+
+async function removeBankAccount(id: string) {
+  try {
+    await bankStore.remove(id)
+    showToast('Bank account removed')
+  } catch (e: any) {
+    showToast(e?.message ?? 'Failed to remove bank account', 'danger')
+  }
+}
+
 async function save() {
   saving.value = true
   try {
     await templateStore.save({ ...templateStore.active, ...draft } as any)
     showToast('Template saved!')
+  } catch (e: any) {
+    showToast(e?.message ?? 'Failed to save template', 'danger')
   } finally {
     saving.value = false
   }
@@ -983,8 +1123,50 @@ async function save() {
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
 }
 
+/* Toggle rows */
+.toggle-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: #374151;
+  cursor: pointer;
+}
+.toggle-input {
+  width: 16px;
+  height: 16px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+/* Bank accounts */
+.bank-acct-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+.bank-acct-info {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #374151;
+}
+
+.bank-add-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
+}
+
 @media (max-width: 768px) {
   .field-row, .color-row { grid-template-columns: 1fr; }
   .header-layout-grid { grid-template-columns: repeat(2, 1fr); }
+  .bank-add-form { grid-template-columns: 1fr; }
 }
 </style>

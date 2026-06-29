@@ -7,6 +7,17 @@ export interface User {
   created_at?: string
 }
 
+// ── Bank Account ──────────────────────────────────────
+export interface BankAccount {
+  id: string
+  user_id: string
+  bank_name: string
+  account_name: string
+  account_number: string
+  is_default: boolean
+  created_at: string
+}
+
 // ── Business Profile ──────────────────────────────────
 export interface BusinessProfile {
   id: string
@@ -23,6 +34,7 @@ export interface BusinessProfile {
   next_invoice_number: number
   next_receipt_number: number
   active_template_id?: string
+  terms_text?: string
 }
 
 // ── Client ────────────────────────────────────────────
@@ -35,6 +47,7 @@ export interface Client {
   address?: string
   company?: string
   notes?: string
+  attn?: string
   created_at: string
 }
 
@@ -47,6 +60,9 @@ export interface LineItem {
   quantity: number
   unit_price: number
   amount: number
+  date?: string
+  vehicle_no?: string
+  uom?: string
 }
 
 export interface Invoice {
@@ -55,6 +71,7 @@ export interface Invoice {
   client_id: string
   client?: Client
   invoice_number: string
+  quote_number?: string
   status: InvoiceStatus
   issue_date: string
   due_date: string
@@ -66,6 +83,7 @@ export interface Invoice {
   discount_amount: number
   total: number
   notes?: string
+  terms_text?: string
   template_id?: string
   created_at: string
   updated_at: string
@@ -116,7 +134,11 @@ export interface InvoiceTemplate {
   company_font_size: number
   logo_position: 'left' | 'right' | 'center'
   show_bank_details: boolean
+  show_line_item_date: boolean
+  show_line_item_vehicle_no: boolean
+  show_line_item_uom: boolean
   footer_text?: string
+  terms_text?: string
   created_at: string
 }
 

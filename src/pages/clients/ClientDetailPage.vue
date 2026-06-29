@@ -96,6 +96,13 @@
               <span class="info-label">Address</span>
               <span class="info-value">{{ client.address }}</span>
             </div>
+            <div
+              v-if="client.attn"
+              class="info-row"
+            >
+              <span class="info-label">Attention</span>
+              <span class="info-value">{{ client.attn }}</span>
+            </div>
           </div>
         </div>
 
@@ -426,6 +433,13 @@
                 :rows="3"
               />
             </div>
+            <div class="field">
+              <label>Attention (Attn)</label>
+              <UiInput
+                v-model="form.attn"
+                placeholder="Contact person name"
+              />
+            </div>
           </div>
 
           <div class="panel-footer">
@@ -493,7 +507,7 @@ const totalReceipts = computed(() =>
   receipts.value.reduce((s, r) => s + Number(r.amount), 0)
 )
 
-const form = reactive({ name: '', email: '', phone: '', company: '', address: '' })
+const form = reactive({ name: '', email: '', phone: '', company: '', address: '', attn: '' })
 
 onMounted(async () => {
   const clientId = route.params.id as string
@@ -514,6 +528,7 @@ function openEdit() {
   form.phone   = client.value.phone   ?? ''
   form.company = client.value.company ?? ''
   form.address = client.value.address ?? ''
+  form.attn    = client.value.attn    ?? ''
   panelOpen.value = true
 }
 

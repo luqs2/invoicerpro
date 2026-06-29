@@ -237,6 +237,13 @@
                 :rows="3"
               />
             </div>
+            <div class="field">
+              <label>Attention (Attn)</label>
+              <UiInput
+                v-model="form.attn"
+                placeholder="Contact person name"
+              />
+            </div>
           </div>
 
           <div class="panel-footer">
@@ -281,7 +288,7 @@ const { wrap } = useMinDelay()
 const fetched    = ref(false)
 const search    = ref('')
 const panelOpen = ref(false)
-const form      = reactive({ name: '', email: '', phone: '', company: '', address: '' })
+const form      = reactive({ name: '', email: '', phone: '', company: '', address: '', attn: '' })
 const currentPage = ref(1)
 const pageSize = ref(10)
 
@@ -314,7 +321,7 @@ async function addClient() {
   await store.create({ ...form })
   closePanel()
   showToast('Client added!')
-  Object.assign(form, { name: '', email: '', phone: '', company: '', address: '' })
+  Object.assign(form, { name: '', email: '', phone: '', company: '', address: '', attn: '' })
 }
 </script>
 

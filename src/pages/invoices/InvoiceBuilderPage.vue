@@ -72,6 +72,15 @@
                   />
                 </div>
                 <div class="field">
+                  <label>Quote Number</label>
+                  <UiInput
+                    v-model="store.current.quote_number"
+                    placeholder="Optional"
+                  />
+                </div>
+              </div>
+              <div class="field-row">
+                <div class="field">
                   <label>Currency</label>
                   <UiSelect
                     v-model="store.current.currency"
@@ -127,7 +136,23 @@
             </div>
             <div class="card-body">
               <div class="line-items-table">
-                <div class="li-header">
+                <div
+                  v-if="hasExtraColumns"
+                  class="li-header li-header--pro"
+                >
+                  <span class="li-col-desc">Description</span>
+                  <span v-if="showDate" class="li-col-date">Date</span>
+                  <span v-if="showVehicleNo" class="li-col-veh">Veh. No.</span>
+                  <span class="li-col-qty">Qty</span>
+                  <span v-if="showUom" class="li-col-uom">UOM</span>
+                  <span class="li-col-rate">Rate</span>
+                  <span class="li-col-amt">Amount</span>
+                  <span class="li-col-del" />
+                </div>
+                <div
+                  v-else
+                  class="li-header"
+                >
                   <span class="li-col-desc">Description</span>
                   <span class="li-col-qty">Qty</span>
                   <span class="li-col-rate">Rate</span>
@@ -137,7 +162,7 @@
                 <div
                   v-for="(item, idx) in store.current.line_items"
                   :key="item.id"
-                  class="li-row"
+                  :class="['li-row', { 'li-row--pro': hasExtraColumns }]"
                 >
                   <input
                     class="li-input"
@@ -145,6 +170,22 @@
                     placeholder="Service or product…"
                     @input="debouncedUpdateLineItem(idx, { description: ($event.target as HTMLInputElement).value })"
                   >
+                  <template v-if="showDate || showVehicleNo">
+                    <input
+                      v-if="showDate"
+                      class="li-input"
+                      type="date"
+                      :value="item.date"
+                      @input="debouncedUpdateLineItem(idx, { date: ($event.target as HTMLInputElement).value })"
+                    >
+                    <input
+                      v-if="showVehicleNo"
+                      class="li-input"
+                      :value="item.vehicle_no"
+                      placeholder="—"
+                      @input="debouncedUpdateLineItem(idx, { vehicle_no: ($event.target as HTMLInputElement).value })"
+                    >
+                  </template>
                   <input
                     class="li-input li-input-num"
                     type="number"
@@ -152,6 +193,14 @@
                     min="0"
                     @input="debouncedUpdateLineItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
                   >
+                  <template v-if="showUom">
+                    <input
+                      class="li-input"
+                      :value="item.uom"
+                      placeholder="MT"
+                      @input="debouncedUpdateLineItem(idx, { uom: ($event.target as HTMLInputElement).value })"
+                    >
+                  </template>
                   <input
                     class="li-input li-input-num"
                     type="number"
@@ -226,6 +275,22 @@
                 v-model="store.current.notes"
                 placeholder="Payment terms, bank details, thank you note…"
                 :rows="3"
+              />
+            </div>
+          </div>
+
+          <!-- Terms & Conditions -->
+          <div class="form-card">
+            <div class="card-header">
+              <h2 class="card-title">
+                Terms &amp; Conditions
+              </h2>
+            </div>
+            <div class="card-body">
+              <UiTextarea
+                v-model="store.current.terms_text"
+                placeholder="Enter terms and conditions…"
+                :rows="4"
               />
             </div>
           </div>
@@ -390,6 +455,11 @@ const selectedClientName = computed(() => {
   return c?.name ?? '—'
 })
 
+const showDate = computed(() => (templateStore.active as any)?.show_line_item_date ?? false)
+const showVehicleNo = computed(() => (templateStore.active as any)?.show_line_item_vehicle_no ?? false)
+const showUom = computed(() => (templateStore.active as any)?.show_line_item_uom ?? false)
+const hasExtraColumns = computed(() => showDate.value || showVehicleNo.value || showUom.value)
+
 onMounted(async () => {
   await clientStore.fetchAll()
   await templateStore.fetchAll()
@@ -410,6 +480,9 @@ onMounted(async () => {
           quantity:    Number(li.quantity ?? 1),
           unit_price:  Number(li.unit_price ?? 0),
           amount:      Number(li.amount ?? 0),
+          date:        li.date ?? '',
+          vehicle_no:  li.vehicle_no ?? '',
+          uom:         li.uom ?? '',
         })),
       }
     }
@@ -604,6 +677,14 @@ async function exportPdf() {
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.li-header--pro {
+  grid-template-columns: 1fr 100px 80px 50px 50px 70px 80px 36px;
+}
+
+.li-row--pro {
+  grid-template-columns: 1fr 100px 80px 50px 50px 70px 80px 36px;
 }
 
 .li-header span {
