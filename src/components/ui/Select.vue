@@ -1,51 +1,23 @@
 <template>
-  <SelectRoot
-    v-model="model"
-    :disabled="disabled"
-  >
-    <SelectTrigger
-      :class="cn(triggerClass)"
-      :title="selectedLabel"
-    >
-      <SelectValue :placeholder="placeholder" />
-      <ChevronsUpDown
-        :size="14"
-        class="select-chevron"
-      />
+  <Select v-model="model">
+    <SelectTrigger :class="triggerClass" style="color: #0f172a">
+      <span>{{ selectedLabel || placeholder }}</span>
     </SelectTrigger>
-    <SelectPortal>
-      <SelectContent
-        :class="cn('select-content')"
-        position="popper"
-        :side-offset="4"
+    <SelectContent class="bg-white border border-gray-200 shadow-lg text-gray-900">
+      <SelectItem
+        v-for="opt in options"
+        :key="opt.value"
+        :value="opt.value"
       >
-        <SelectViewport class="select-viewport">
-          <SelectItem
-            v-for="opt in options"
-            :key="opt.value"
-            :value="opt.value"
-            :class="cn('select-item')"
-          >
-            <SelectItemText>{{ opt.label }}</SelectItemText>
-            <SelectItemIndicator class="select-item-indicator">
-              <Check :size="13" />
-            </SelectItemIndicator>
-          </SelectItem>
-        </SelectViewport>
-      </SelectContent>
-    </SelectPortal>
-  </SelectRoot>
+        {{ opt.label }}
+      </SelectItem>
+    </SelectContent>
+  </Select>
 </template>
 
 <script setup lang="ts">
-import {
-  SelectRoot, SelectTrigger, SelectValue, SelectPortal,
-  SelectContent, SelectViewport, SelectItem, SelectItemText,
-  SelectItemIndicator,
-} from 'radix-vue'
-import { ChevronsUpDown, Check } from '@lucide/vue'
 import { computed } from 'vue'
-import { cn } from '@/lib/utils'
+import { Select, SelectTrigger, SelectContent, SelectItem } from '@/components/ui/select'
 
 interface Option {
   value: string
@@ -53,143 +25,26 @@ interface Option {
 }
 
 const props = withDefaults(defineProps<{
+  modelValue?: string
   options: Option[]
   placeholder?: string
   disabled?: boolean
   triggerClass?: string
 }>(), {
+  modelValue: '',
   placeholder: 'Select…',
 })
 
-const model = defineModel<string>()
+const emit = defineEmits<{
+  'update:modelValue': [value: string]
+}>()
+
+const model = computed({
+  get: () => props.modelValue,
+  set: (v: string) => emit('update:modelValue', v),
+})
 
 const selectedLabel = computed(() =>
-  props.options.find(o => o.value === model.value)?.label ?? ''
+  props.options.find(o => o.value === props.modelValue)?.label ?? ''
 )
 </script>
-
-<style scoped>
-:deep(.select-trigger) {
-  display: inline-flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-  width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 9px;
-  background: #f8fafc;
-  font-size: 14px;
-  color: #0f172a;
-  cursor: pointer;
-  font-family: inherit;
-  outline: none;
-  transition: border-color .15s, box-shadow .15s;
-  overflow: hidden;
-  min-width: 0;
-}
-
-:deep(.select-trigger > span) {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-  flex: 1;
-  text-align: left;
-}
-
-:deep(.select-trigger:hover) {
-  border-color: #c7d2fe;
-}
-
-:deep(.select-trigger[data-state="open"]),
-:deep(.select-trigger:focus) {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.1);
-  background: #ffffff;
-}
-
-:deep(.select-trigger[data-disabled]) {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.select-chevron {
-  color: #94a3b8;
-  flex-shrink: 0;
-}
-
-:deep(.select-content) {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 10px;
-  box-shadow: 0 8px 30px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
-  overflow: hidden;
-  z-index: 9999;
-  min-width: calc(var(--radix-select-trigger-width) + 40px);
-  max-height: var(--radix-select-content-available-height);
-  animation: slideDown .12s ease;
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-:deep(.select-viewport) {
-  padding: 4px;
-}
-
-:deep(.select-item) {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 10px 8px 12px;
-  border-radius: 6px;
-  font-size: 13px;
-  color: #374151;
-  cursor: pointer;
-  outline: none;
-  transition: background .1s, color .1s;
-  user-select: none;
-  white-space: nowrap;
-}
-
-:deep(.select-item[data-highlighted]) {
-  background: #f5f3ff;
-  color: #4f46e5;
-}
-
-:deep(.select-item[data-state="checked"]) {
-  color: #4f46e5;
-  font-weight: 600;
-}
-
-:deep(.select-item-indicator) {
-  color: #6366f1;
-}
-
-/* Dark mode */
-.dark :deep(.select-trigger) {
-  background: #1e293b;
-  border-color: #334155;
-  color: #f1f5f9;
-}
-.dark :deep(.select-trigger:hover) {
-  border-color: #475569;
-}
-.dark :deep(.select-content) {
-  background: #1e293b;
-  border-color: #334155;
-}
-.dark :deep(.select-item[data-highlighted]) {
-  background: #312e81;
-  color: #a5b4fc;
-}
-.dark :deep(.select-item) {
-  color: #e2e8f0;
-}
-.dark :deep(.select-item[data-state="checked"]) {
-  color: #818cf8;
-}</style>
