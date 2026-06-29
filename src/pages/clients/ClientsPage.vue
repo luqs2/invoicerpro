@@ -10,36 +10,10 @@
           {{ store.clients.length }} client{{ store.clients.length !== 1 ? 's' : '' }}
         </p>
       </div>
-      <button
-        class="btn-primary"
-        @click="openPanel()"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          fill="none"
-          class="btn-icon"
-        >
-          <line
-            x1="12"
-            y1="5"
-            x2="12"
-            y2="19"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-          />
-          <line
-            x1="5"
-            y1="12"
-            x2="19"
-            y2="12"
-            stroke="currentColor"
-            stroke-width="2.5"
-            stroke-linecap="round"
-          />
-        </svg>
+      <UiButton @click="openAdd()">
+        <Plus :size="15" />
         Add Client
-      </button>
+      </UiButton>
     </div>
 
     <!-- Search -->
@@ -102,7 +76,9 @@
             <th>Email</th>
             <th>Phone</th>
             <th>Company</th>
-            <th />
+            <th style="width:100px; text-align:right; padding-right:20px;">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -136,8 +112,23 @@
                 class="td-muted"
               >—</span>
             </td>
-            <td class="td-action">
-              <ChevronRight :size="14" />
+            <td class="td-actions">
+              <button
+                class="act-btn"
+                title="Edit"
+                :aria-label="`Edit ${c.name}`"
+                @click.stop="openEdit(c)"
+              >
+                <Pencil :size="14" />
+              </button>
+              <button
+                class="act-btn act-del"
+                title="Delete"
+                :aria-label="`Delete ${c.name}`"
+                @click.stop="deleteClient(c)"
+              >
+                <Trash2 :size="14" />
+              </button>
             </td>
           </tr>
         </tbody>
@@ -166,17 +157,16 @@
       <p class="empty-sub">
         {{ search ? 'Try a different search.' : 'Add your first client to get started.' }}
       </p>
-      <button
+      <UiButton
         v-if="!search"
-        class="btn-primary"
         style="margin-top:8px;"
-        @click="openPanel()"
+        @click="openAdd()"
       >
         Add Client
-      </button>
+      </UiButton>
     </div>
 
-    <!-- ── Add/Edit side panel ─────────────────────────── -->
+    <!-- Add/Edit side panel -->
     <transition name="panel-slide">
       <div
         v-if="panelOpen"
@@ -186,7 +176,7 @@
         <div class="side-panel">
           <div class="panel-header">
             <h2 class="panel-title">
-              Add Client
+              {{ editingClient ? 'Edit Client' : 'Add Client' }}
             </h2>
             <button
               class="panel-close"
@@ -256,9 +246,10 @@
             </UiButton>
             <UiButton
               class="footer-btn"
-              @click="addClient"
+              :loading="saving"
+              @click="saveClient"
             >
-              Save Client
+              {{ editingClient ? 'Save Changes' : 'Save Client' }}
             </UiButton>
           </div>
         </div>
@@ -269,28 +260,34 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, reactive, watch } from 'vue'
-import { Search, X, Users, ChevronRight } from '@lucide/vue'
+import { Search, X, Users, Plus, Pencil, Trash2 } from '@lucide/vue'
 import { useClientStore } from '@/stores/clients'
 import { useToast } from '@/composables/useToast'
 import { useFormatters } from '@/composables/useFormatters'
 import { useMinDelay } from '@/composables/useMinDelay'
+import { useConfirm } from '@/composables/useConfirm'
 import Skeleton from '@/components/ui/Skeleton.vue'
 import UiInput from '@/components/ui/Input.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 import UiButton from '@/components/ui/Button.vue'
 import Pagination from '@/components/ui/Pagination.vue'
+import type { Client } from '@/types'
 
 const store = useClientStore()
 const { showToast } = useToast()
 const { getInitials } = useFormatters()
 const { wrap } = useMinDelay()
+const { confirm } = useConfirm()
 
-const fetched    = ref(false)
-const search    = ref('')
-const panelOpen = ref(false)
-const form      = reactive({ name: '', email: '', phone: '', company: '', address: '', attn: '' })
-const currentPage = ref(1)
-const pageSize = ref(10)
+const fetched      = ref(false)
+const search       = ref('')
+const panelOpen    = ref(false)
+const saving       = ref(false)
+const editingClient = ref<Client | null>(null)
+const currentPage  = ref(1)
+const pageSize     = ref(10)
+
+const form = reactive({ name: '', email: '', phone: '', company: '', address: '', attn: '' })
 
 onMounted(async () => {
   await wrap(store.fetchAll())
@@ -309,24 +306,61 @@ const paginated = computed(() => {
   return filtered.value.slice(start, start + pageSize.value)
 })
 
-watch(search, () => {
-  currentPage.value = 1
-})
+watch(search, () => { currentPage.value = 1 })
 
-function openPanel() { panelOpen.value = true }
+function openAdd() {
+  editingClient.value = null
+  Object.assign(form, { name: '', email: '', phone: '', company: '', address: '', attn: '' })
+  panelOpen.value = true
+}
+
+function openEdit(client: Client) {
+  editingClient.value = client
+  form.name    = client.name
+  form.email   = client.email
+  form.phone   = client.phone   ?? ''
+  form.company = client.company ?? ''
+  form.address = client.address ?? ''
+  form.attn    = client.attn    ?? ''
+  panelOpen.value = true
+}
+
 function closePanel() { panelOpen.value = false }
 
-async function addClient() {
+async function saveClient() {
   if (!form.name || !form.email) return showToast('Name and email required', 'danger')
-  await store.create({ ...form })
-  closePanel()
-  showToast('Client added!')
-  Object.assign(form, { name: '', email: '', phone: '', company: '', address: '', attn: '' })
+  saving.value = true
+  try {
+    if (editingClient.value) {
+      await store.update(editingClient.value.id, { ...form })
+      showToast('Client updated!')
+    } else {
+      await store.create({ ...form })
+      showToast('Client added!')
+    }
+    closePanel()
+  } catch (err: any) {
+    showToast(err?.message ?? 'Failed to save client', 'danger')
+  } finally {
+    saving.value = false
+  }
+}
+
+async function deleteClient(client: Client) {
+  const invoiceCount = store.clients.length
+  const ok = await confirm({
+    title: `Delete ${client.name}?`,
+    message: 'This will permanently delete this client. This cannot be undone.',
+    confirmText: 'Delete Client',
+    variant: 'danger',
+  })
+  if (!ok) return
+  await store.remove(client.id)
+  showToast('Client deleted')
 }
 </script>
 
 <style scoped>
-/* Client-specific styles */
 .client-cell {
   display: flex;
   align-items: center;
@@ -360,7 +394,6 @@ async function addClient() {
   letter-spacing: 0.3px;
 }
 
-/* Side panel */
 .panel-overlay {
   position: fixed;
   inset: 0;
@@ -421,21 +454,6 @@ async function addClient() {
   gap: 18px;
 }
 
-.panel-body .field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-
-.panel-body .field label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.req { color: #ef4444; }
-
 .panel-footer {
   display: flex;
   gap: 10px;
@@ -446,7 +464,6 @@ async function addClient() {
 
 .footer-btn { flex: 1; justify-content: center; }
 
-/* Panel transition */
 .panel-slide-enter-active,
 .panel-slide-leave-active { transition: opacity .2s; }
 .panel-slide-enter-active .side-panel,
@@ -456,9 +473,7 @@ async function addClient() {
 .panel-slide-enter-from .side-panel,
 .panel-slide-leave-to .side-panel { transform: translateX(100%); }
 
-/* Responsive */
 @media (max-width: 768px) {
-  .search-wrap { min-width: 0; max-width: 100%; flex: 1; }
   .side-panel { width: 100%; }
 }
 </style>

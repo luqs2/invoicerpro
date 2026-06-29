@@ -1,28 +1,28 @@
 <template>
   <div class="page">
     <div v-if="!loading && client">
+      <!-- Back link -->
+      <router-link
+        to="/app/clients"
+        class="back-link"
+      >
+        <ArrowLeft :size="16" />
+        Clients
+      </router-link>
+
       <!-- Header -->
       <div class="page-header">
-        <div class="header-left">
-          <router-link
-            to="/app/clients"
-            class="back-link"
-          >
-            <ArrowLeft :size="16" />
-            Clients
-          </router-link>
-          <div class="client-identity">
-            <div class="avatar">
-              {{ getInitials(client.name) }}
-            </div>
-            <div>
-              <h1 class="page-title">
-                {{ client.name }}
-              </h1>
-              <p class="page-sub">
-                {{ client.email }}
-              </p>
-            </div>
+        <div class="client-identity">
+          <div class="avatar">
+            {{ getInitials(client.name) }}
+          </div>
+          <div>
+            <h1 class="page-title">
+              {{ client.name }}
+            </h1>
+            <p class="page-sub">
+              {{ client.email }}
+            </p>
           </div>
         </div>
         <div class="header-actions">
@@ -51,9 +51,92 @@
         </div>
       </div>
 
-      <!-- Content grid -->
-      <div class="detail-layout">
-        <!-- Client info card -->
+      <!-- Stats row -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            style="background:#ede9fe;"
+          >
+            <Calendar
+              :size="16"
+              style="color:#6366f1;"
+            />
+          </div>
+          <div>
+            <p class="stat-label">
+              Member Since
+            </p>
+            <p class="stat-value">
+              {{ formatDate(client.created_at) }}
+            </p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            style="background:#d1fae5;"
+          >
+            <TrendingUp
+              :size="16"
+              style="color:#059669;"
+            />
+          </div>
+          <div>
+            <p class="stat-label">
+              Total Revenue
+            </p>
+            <p class="stat-value">
+              {{ formatCurrency(totalRevenue) }}
+            </p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            :style="{ background: outstandingCount > 0 ? '#fee2e2' : '#f1f5f9' }"
+          >
+            <Clock
+              :size="16"
+              :style="{ color: outstandingCount > 0 ? '#ef4444' : '#64748b' }"
+            />
+          </div>
+          <div>
+            <p class="stat-label">
+              Outstanding
+            </p>
+            <p
+              class="stat-value"
+              :class="{ 'stat-overdue': outstandingCount > 0 }"
+            >
+              {{ outstandingCount }}
+            </p>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div
+            class="stat-icon"
+            style="background:#dbeafe;"
+          >
+            <Wallet
+              :size="16"
+              style="color:#2563eb;"
+            />
+          </div>
+          <div>
+            <p class="stat-label">
+              Total Received
+            </p>
+            <p class="stat-value">
+              {{ formatCurrency(totalReceipts) }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two-column content -->
+      <div class="content-grid">
+        <!-- Contact details -->
         <div class="info-card">
           <div class="card-header">
             <h2 class="card-title">
@@ -76,9 +159,10 @@
               <span class="info-label">Phone</span>
               <span class="info-value">{{ client.phone }}</span>
             </div>
-            <template v-if="client.phone">
-              <div class="info-divider" />
-            </template>
+            <div
+              v-if="client.phone"
+              class="info-divider"
+            />
             <div
               v-if="client.company"
               class="info-row"
@@ -86,9 +170,10 @@
               <span class="info-label">Company</span>
               <span class="info-value">{{ client.company }}</span>
             </div>
-            <template v-if="client.company">
-              <div class="info-divider" />
-            </template>
+            <div
+              v-if="client.company"
+              class="info-divider"
+            />
             <div
               v-if="client.address"
               class="info-row"
@@ -96,6 +181,10 @@
               <span class="info-label">Address</span>
               <span class="info-value">{{ client.address }}</span>
             </div>
+            <div
+              v-if="client.address"
+              class="info-divider"
+            />
             <div
               v-if="client.attn"
               class="info-row"
@@ -106,116 +195,78 @@
           </div>
         </div>
 
-        <!-- Stats card -->
-        <div class="stats-col">
-          <div class="stat-card">
-            <p class="stat-label">
-              Member Since
-            </p>
-            <p class="stat-value">
-              {{ formatDate(client.created_at) }}
-            </p>
-          </div>
-          <div class="stat-card">
-            <div
-              class="stat-icon-inline"
-              style="background:#d1fae5;"
+        <!-- Invoices -->
+        <div class="invoices-card">
+          <div class="card-header">
+            <h2 class="card-title">
+              Invoices
+            </h2>
+            <router-link
+              to="/app/invoices/new"
+              class="card-link"
             >
-              <DollarSign
-                :size="16"
-                style="color:#059669;"
-              />
-            </div>
-            <p class="stat-label">
-              Total Revenue
-            </p>
-            <p class="stat-value">
-              {{ formatCurrency(totalRevenue) }}
-            </p>
+              <Plus :size="14" />
+              New
+            </router-link>
           </div>
-          <div class="stat-card">
-            <p class="stat-label">
-              Outstanding Invoices
-            </p>
-            <p
-              class="stat-value"
-              :class="{ 'overdue': outstandingCount > 0 }"
+          <div
+            v-if="invoices.length"
+            class="invoices-list"
+          >
+            <router-link
+              v-for="inv in invoices"
+              :key="inv.id"
+              :to="`/app/invoices/${inv.id}`"
+              class="invoice-row"
             >
-              {{ outstandingCount }}
-            </p>
-          </div>
-          <div class="stat-card">
-            <p class="stat-label">
-              Total Received
-            </p>
-            <p class="stat-value">
-              {{ formatCurrency(totalReceipts) }}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Invoices section -->
-      <div
-        v-if="invoices.length"
-        class="invoices-section"
-      >
-        <div class="section-header">
-          <h2 class="section-title">
-            Invoices
-          </h2>
-          <router-link
-            to="/app/invoices/new"
-            class="section-link"
-          >
-            <Plus :size="14" />
-            New
-          </router-link>
-        </div>
-        <div class="invoices-list">
-          <router-link
-            v-for="inv in invoices"
-            :key="inv.id"
-            :to="`/app/invoices/${inv.id}`"
-            class="invoice-row"
-          >
-            <div class="inv-left">
-              <FileText
-                :size="16"
-                class="inv-icon"
-              />
-              <div>
-                <p class="inv-number">
-                  {{ inv.invoice_number }}
-                </p>
-                <p class="inv-date">
-                  {{ formatDate(inv.issue_date) }}
-                </p>
+              <div class="inv-left">
+                <FileText
+                  :size="16"
+                  class="inv-icon"
+                />
+                <div>
+                  <p class="inv-number">
+                    {{ inv.invoice_number }}
+                  </p>
+                  <p class="inv-date">
+                    {{ formatDate(inv.issue_date) }}
+                  </p>
+                </div>
               </div>
-            </div>
-            <div class="inv-right">
-              <span class="inv-amount">{{ formatCurrency(inv.total, inv.currency) }}</span>
-              <span
-                class="status-badge"
-                :class="`status-${inv.status}`"
-              >{{ inv.status }}</span>
-            </div>
-          </router-link>
+              <div class="inv-right">
+                <span class="inv-amount">{{ formatCurrency(inv.total, inv.currency) }}</span>
+                <span
+                  class="status-badge"
+                  :class="`status-${inv.status}`"
+                >{{ inv.status }}</span>
+              </div>
+            </router-link>
+          </div>
+          <div
+            v-else
+            class="card-empty"
+          >
+            <FileText
+              :size="28"
+              style="color:#cbd5e1;"
+            />
+            <p>No invoices yet</p>
+          </div>
         </div>
       </div>
 
-      <!-- Receipts section -->
+      <!-- Receipts -->
       <div
         v-if="receipts.length"
-        class="invoices-section"
+        class="invoices-card"
       >
-        <div class="section-header">
-          <h2 class="section-title">
+        <div class="card-header">
+          <h2 class="card-title">
             Receipts
           </h2>
           <router-link
             to="/app/receipts/new"
-            class="section-link"
+            class="card-link"
           >
             <Plus :size="14" />
             New
@@ -252,36 +303,59 @@
 
     <!-- Loading state -->
     <div v-else>
-      <!-- Header skeleton -->
+      <Skeleton
+        variant="text"
+        width="60px"
+        style="margin-bottom:16px;"
+      />
       <div class="page-header">
-        <div class="header-left">
+        <div class="client-identity">
           <Skeleton
-            variant="text"
-            width="60px"
+            variant="rect"
+            width="52px"
+            height="52px"
+            style="border-radius:14px; flex-shrink:0;"
           />
-          <div class="client-identity">
+          <div style="display:flex; flex-direction:column; gap:6px;">
             <Skeleton
-              variant="rect"
-              width="52px"
-              height="52px"
-              style="border-radius:14px; flex-shrink:0;"
+              variant="text"
+              width="160px"
             />
-            <div style="display:flex; flex-direction:column; gap:4px;">
-              <Skeleton
-                variant="text"
-                width="160px"
-              />
-              <Skeleton
-                variant="text"
-                width="200px"
-              />
-            </div>
+            <Skeleton
+              variant="text"
+              width="200px"
+            />
           </div>
         </div>
       </div>
 
-      <!-- Content skeleton -->
-      <div class="detail-layout">
+      <div class="stats-row">
+        <div
+          v-for="i in 4"
+          :key="i"
+          class="stat-card"
+        >
+          <Skeleton
+            variant="rect"
+            width="32px"
+            height="32px"
+            style="border-radius:8px; flex-shrink:0;"
+          />
+          <div>
+            <Skeleton
+              variant="text"
+              width="80px"
+            />
+            <Skeleton
+              variant="text"
+              width="60px"
+              style="margin-top:4px;"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="content-grid">
         <div class="info-card">
           <div class="card-header">
             <Skeleton
@@ -307,66 +381,47 @@
             </div>
           </div>
         </div>
-        <div class="stats-col">
-          <div
-            v-for="i in 4"
-            :key="i"
-            class="stat-card"
-          >
+        <div class="invoices-card">
+          <div class="card-header">
             <Skeleton
               variant="text"
-              width="100px"
-            />
-            <Skeleton
-              variant="text"
-              width="80px"
-              style="margin-top:4px;"
+              width="70px"
             />
           </div>
-        </div>
-      </div>
-
-      <!-- Invoices section skeleton -->
-      <div class="invoices-section">
-        <div class="section-header">
-          <Skeleton
-            variant="text"
-            width="70px"
-          />
-        </div>
-        <div>
-          <div
-            v-for="i in 3"
-            :key="i"
-            class="invoice-row"
-          >
-            <div class="inv-left">
-              <Skeleton
-                variant="rect"
-                width="16px"
-                height="16px"
-                style="border-radius:4px;"
-              />
-              <div>
+          <div>
+            <div
+              v-for="i in 3"
+              :key="i"
+              class="invoice-row"
+            >
+              <div class="inv-left">
                 <Skeleton
-                  variant="text"
-                  width="100px"
+                  variant="rect"
+                  width="16px"
+                  height="16px"
+                  style="border-radius:4px;"
                 />
+                <div>
+                  <Skeleton
+                    variant="text"
+                    width="100px"
+                  />
+                  <Skeleton
+                    variant="text"
+                    width="80px"
+                  />
+                </div>
+              </div>
+              <div class="inv-right">
                 <Skeleton
                   variant="text"
                   width="80px"
                 />
+                <Skeleton
+                  variant="text"
+                  width="50px"
+                />
               </div>
-            </div>
-            <div class="inv-right">
-              <Skeleton
-                variant="text"
-                width="80px"
-              />
-              <Skeleton
-                variant="text"
-                width="50px"
-              />
             </div>
           </div>
         </div>
@@ -467,7 +522,7 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Plus, Trash2, Pencil, X, FileText, DollarSign } from '@lucide/vue'
+import { ArrowLeft, Plus, Trash2, Pencil, X, FileText, DollarSign, Calendar, TrendingUp, Clock, Wallet } from '@lucide/vue'
 import { clientService } from '@/services/clients'
 import { invoiceService } from '@/services/invoices'
 import { receiptService } from '@/services/receipts'
@@ -579,22 +634,8 @@ async function del() {
 
 <style scoped>
 .page {
-  padding: 32px 36px;
-  max-width: 900px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  padding-top: 40px;
 }
-
-/* Header */
-.page-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.header-left { display: flex; flex-direction: column; gap: 12px; }
 
 .back-link {
   display: inline-flex;
@@ -605,6 +646,7 @@ async function del() {
   color: #64748b;
   text-decoration: none;
   transition: color .12s;
+  margin-bottom: 20px;
 }
 .back-link:hover { color: #6366f1; }
 
@@ -628,10 +670,20 @@ async function del() {
   flex-shrink: 0;
 }
 
-.page-title { font-size: 22px; font-weight: 800; color: #0f172a; margin: 0 0 2px; letter-spacing: -0.4px; }
-.page-sub   { font-size: 14px; color: #64748b; margin: 0; }
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 28px;
+}
 
-.header-actions { display: flex; align-items: center; gap: 8px; }
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
 
 .btn-primary {
   display: inline-flex;
@@ -649,19 +701,69 @@ async function del() {
   transition: opacity .15s;
   box-shadow: 0 2px 8px rgba(99,102,241,.3);
   font-family: inherit;
+  white-space: nowrap;
 }
 .btn-primary:hover { opacity: .9; }
 
-/* Content layout */
-.detail-layout {
+/* Stats row */
+.stats-row {
   display: grid;
-  grid-template-columns: 1fr 220px;
-  gap: 20px;
-  align-items: start;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 24px;
 }
 
-/* Info card */
-.info-card {
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.stat-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stat-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 4px;
+}
+
+.stat-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.stat-overdue { color: #ef4444; }
+
+/* Content grid */
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+  margin-bottom: 24px;
+}
+
+.info-card,
+.invoices-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 14px;
@@ -670,22 +772,39 @@ async function del() {
 }
 
 .card-header {
-  padding: 14px 20px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px;
   border-bottom: 1px solid #f1f5f9;
 }
 
-.card-title { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0; }
-
-.card-body {
-  padding: 4px 0;
+.card-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
 }
+
+.card-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6366f1;
+  text-decoration: none;
+}
+.card-link:hover { text-decoration: underline; }
+
+.card-body { padding: 4px 0; }
 
 .info-row {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 16px;
-  padding: 13px 20px;
+  padding: 14px 20px;
 }
 
 .info-label {
@@ -715,79 +834,18 @@ async function del() {
   margin: 0 20px;
 }
 
-/* Stats */
-.stats-col { display: flex; flex-direction: column; gap: 12px; }
-
-.stat-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
-}
-
-.stat-label {
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin: 0 0 6px;
-}
-
-.stat-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-}
-
-.stat-value.overdue { color: #ef4444; }
-
-.stat-icon-inline {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+.card-empty {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  margin-bottom: 6px;
+  gap: 8px;
+  padding: 40px 20px;
 }
-
-/* Invoices section */
-.invoices-section {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
-  overflow: hidden;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 16px 20px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.section-title {
-  font-size: 14px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-}
-
-.section-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.card-empty p {
   font-size: 13px;
-  font-weight: 600;
-  color: #6366f1;
-  text-decoration: none;
+  color: #94a3b8;
+  margin: 0;
 }
-.section-link:hover { text-decoration: underline; }
 
 .invoices-list { display: flex; flex-direction: column; }
 
@@ -795,7 +853,7 @@ async function del() {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 20px;
+  padding: 16px 20px;
   text-decoration: none;
   color: inherit;
   border-bottom: 1px solid #f8fafc;
@@ -838,21 +896,6 @@ async function del() {
   color: #0f172a;
   font-variant-numeric: tabular-nums;
 }
-
-.status-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 6px;
-  text-transform: capitalize;
-  letter-spacing: 0.2px;
-}
-.status-draft    { background: #f1f5f9; color: #64748b; }
-.status-sent     { background: #dbeafe; color: #1d4ed8; }
-.status-paid     { background: #d1fae5; color: #065f46; }
-.status-overdue  { background: #fee2e2; color: #991b1b; }
-.status-cancelled{ background: #f1f5f9; color: #94a3b8; }
 
 /* Side panel */
 .panel-overlay {
@@ -913,27 +956,6 @@ async function del() {
   gap: 18px;
 }
 
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex: 1;
-}
-
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.field label {
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.req { color: #ef4444; }
-
 .panel-footer {
   display: flex;
   gap: 10px;
@@ -944,7 +966,6 @@ async function del() {
 
 .footer-btn { flex: 1; justify-content: center; }
 
-/* Panel transition */
 .panel-slide-enter-active,
 .panel-slide-leave-active { transition: opacity .2s; }
 .panel-slide-enter-active .side-panel,
@@ -954,12 +975,21 @@ async function del() {
 .panel-slide-enter-from .side-panel,
 .panel-slide-leave-to .side-panel { transform: translateX(100%); }
 
+@media (max-width: 1024px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .content-grid { grid-template-columns: 1fr; }
+}
+
 @media (max-width: 768px) {
-  .page { padding: 20px 16px; }
-  .detail-layout { grid-template-columns: 1fr; }
-  .page-header { flex-direction: column; }
+  .page { padding-top: 24px; }
+  .page-header { flex-direction: column; align-items: flex-start; }
   .header-actions { width: 100%; flex-wrap: wrap; }
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .content-grid { gap: 16px; }
   .side-panel { width: 100%; }
-  .field-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: 1fr; }
 }
 </style>
