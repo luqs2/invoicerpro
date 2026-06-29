@@ -347,7 +347,6 @@ async function saveClient() {
 }
 
 async function deleteClient(client: Client) {
-  const invoiceCount = store.clients.length
   const ok = await confirm({
     title: `Delete ${client.name}?`,
     message: 'This will permanently delete this client. This cannot be undone.',
