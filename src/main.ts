@@ -4,6 +4,9 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 
+/* shadcn CSS variables */
+import './assets/shadcn.css'
+
 /* Tailwind */
 import './assets/tailwind.css'
 

@@ -3,11 +3,10 @@
     v-if="total > pageSize"
     class="pagination-wrapper"
   >
-    <div class="pagination-info">
-      <span class="pagination-text">
-        Showing {{ startItem }}–{{ endItem }} of {{ total }}
-      </span>
-    </div>
+    <span class="pagination-text">
+      Showing {{ startItem }}–{{ endItem }} of {{ total }}
+    </span>
+
     <Pagination
       v-slot="{ page }"
       :items-per-page="pageSize"
@@ -18,32 +17,31 @@
       <PaginationContent v-slot="{ items }">
         <PaginationPrevious
           :disabled="currentPage === 1"
-          @click="$emit('update:currentPage', currentPage - 1)"
         />
         <template
           v-for="(item, index) in items"
           :key="index"
         >
+          <PaginationEllipsis
+            v-if="item.type === 'ellipsis'"
+            :index="index"
+          />
           <PaginationItem
-            v-if="item.type === 'page'"
+            v-else
             :value="item.value"
             :is-active="item.value === page"
-            @click="$emit('update:currentPage', item.value)"
           >
             {{ item.value }}
           </PaginationItem>
         </template>
         <PaginationNext
           :disabled="currentPage === totalPages"
-          @click="$emit('update:currentPage', currentPage + 1)"
         />
       </PaginationContent>
     </Pagination>
+
     <div class="pagination-size">
-      <label
-        class="size-label"
-        for="page-size-select"
-      >Per page:</label>
+      <label for="page-size-select">Per page:</label>
       <select
         id="page-size-select"
         class="size-select"
@@ -70,6 +68,7 @@ import {
   PaginationItem,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis,
 } from '@/components/ui/pagination'
 
 const props = withDefaults(defineProps<{
@@ -110,14 +109,11 @@ const endItem = computed(() => {
   flex-wrap: wrap;
 }
 
-.pagination-info {
-  flex-shrink: 0;
-}
-
 .pagination-text {
   font-size: 13px;
   color: #64748b;
   font-weight: 500;
+  flex-shrink: 0;
 }
 
 .pagination-size {
@@ -127,7 +123,7 @@ const endItem = computed(() => {
   flex-shrink: 0;
 }
 
-.size-label {
+.pagination-size label {
   font-size: 13px;
   color: #64748b;
   font-weight: 500;
@@ -139,14 +135,14 @@ const endItem = computed(() => {
   padding: 0 28px 0 10px;
   border: 1.5px solid #e2e8f0;
   border-radius: 8px;
-  background: #fff;
+  background-color: #ffffff;
   font-size: 13px;
   font-weight: 600;
   color: #374151;
   font-family: inherit;
   cursor: pointer;
   outline: none;
-  transition: border-color .15s;
+  transition: border-color 0.15s;
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
@@ -160,15 +156,9 @@ const endItem = computed(() => {
 @media (max-width: 768px) {
   .pagination-wrapper {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 12px;
     padding: 12px 16px;
-  }
-
-  .pagination-info,
-  .pagination-size {
-    justify-content: center;
-    text-align: center;
   }
 }
 </style>
