@@ -1,14 +1,20 @@
 <template>
   <div class="page">
-
     <!-- Page header -->
     <div class="page-header">
       <div class="page-header-left">
-        <p class="page-eyebrow">Good {{ timeOfDay }}</p>
-        <h1 class="page-title">Dashboard</h1>
+        <p class="page-eyebrow">
+          Good {{ timeOfDay }}
+        </p>
+        <h1 class="page-title">
+          Dashboard
+        </h1>
       </div>
       <div class="page-header-right">
-        <router-link to="/app/invoices/new" class="btn-primary">
+        <router-link
+          to="/app/invoices/new"
+          class="btn-primary"
+        >
           <Plus :size="16" />
           New Invoice
         </router-link>
@@ -16,17 +22,33 @@
     </div>
 
     <!-- Stats row -->
-    <div class="stats-row" v-if="fetched">
+    <div
+      v-if="fetched"
+      class="stats-row"
+    >
       <div class="stat-card stat-revenue">
         <div class="stat-icon-wrap">
           <DollarSign :size="22" />
         </div>
         <div class="stat-body">
-          <p class="stat-label">Total Revenue</p>
-          <p class="stat-value">{{ formatCurrency(stats.total_revenue) }}</p>
-          <p class="stat-trend" :class="trends.revenue >= 0 ? 'trend-up' : 'trend-down'">
-            <TrendingUp v-if="trends.revenue >= 0" :size="12" />
-            <TrendingDown v-else :size="12" />
+          <p class="stat-label">
+            Total Revenue
+          </p>
+          <p class="stat-value">
+            {{ formatCurrency(stats.total_revenue) }}
+          </p>
+          <p
+            class="stat-trend"
+            :class="trends.revenue >= 0 ? 'trend-up' : 'trend-down'"
+          >
+            <TrendingUp
+              v-if="trends.revenue >= 0"
+              :size="12"
+            />
+            <TrendingDown
+              v-else
+              :size="12"
+            />
             {{ trends.revenue >= 0 ? '+' : '' }}{{ trends.revenue }}% vs last month
           </p>
         </div>
@@ -36,11 +58,24 @@
           <FileText :size="22" />
         </div>
         <div class="stat-body">
-          <p class="stat-label">Invoices Sent</p>
-          <p class="stat-value">{{ stats.invoices_sent }}</p>
-          <p class="stat-trend" :class="trends.sent >= 0 ? 'trend-up' : 'trend-down'">
-            <TrendingUp v-if="trends.sent >= 0" :size="12" />
-            <TrendingDown v-else :size="12" />
+          <p class="stat-label">
+            Invoices Sent
+          </p>
+          <p class="stat-value">
+            {{ stats.invoices_sent }}
+          </p>
+          <p
+            class="stat-trend"
+            :class="trends.sent >= 0 ? 'trend-up' : 'trend-down'"
+          >
+            <TrendingUp
+              v-if="trends.sent >= 0"
+              :size="12"
+            />
+            <TrendingDown
+              v-else
+              :size="12"
+            />
             {{ trends.sent >= 0 ? '+' : '' }}{{ trends.sent }}% vs last month
           </p>
         </div>
@@ -50,11 +85,24 @@
           <Clock :size="22" />
         </div>
         <div class="stat-body">
-          <p class="stat-label">Awaiting Payment</p>
-          <p class="stat-value">{{ formatCurrency(stats.pending_amount) }}</p>
-          <p class="stat-trend" :class="trends.pending <= 0 ? 'trend-up' : 'trend-down'">
-            <TrendingUp v-if="trends.pending <= 0" :size="12" />
-            <TrendingDown v-else :size="12" />
+          <p class="stat-label">
+            Awaiting Payment
+          </p>
+          <p class="stat-value">
+            {{ formatCurrency(stats.pending_amount) }}
+          </p>
+          <p
+            class="stat-trend"
+            :class="trends.pending <= 0 ? 'trend-up' : 'trend-down'"
+          >
+            <TrendingUp
+              v-if="trends.pending <= 0"
+              :size="12"
+            />
+            <TrendingDown
+              v-else
+              :size="12"
+            />
             {{ trends.pending >= 0 ? '+' : '' }}{{ trends.pending }}% vs last month
           </p>
         </div>
@@ -64,11 +112,24 @@
           <AlertCircle :size="22" />
         </div>
         <div class="stat-body">
-          <p class="stat-label">Overdue</p>
-          <p class="stat-value overdue">{{ formatCurrency(stats.overdue_amount) }}</p>
-          <p class="stat-trend" :class="trends.overdue <= 0 ? 'trend-up' : 'trend-down'">
-            <TrendingUp v-if="trends.overdue <= 0" :size="12" />
-            <TrendingDown v-else :size="12" />
+          <p class="stat-label">
+            Overdue
+          </p>
+          <p class="stat-value overdue">
+            {{ formatCurrency(stats.overdue_amount) }}
+          </p>
+          <p
+            class="stat-trend"
+            :class="trends.overdue <= 0 ? 'trend-up' : 'trend-down'"
+          >
+            <TrendingUp
+              v-if="trends.overdue <= 0"
+              :size="12"
+            />
+            <TrendingDown
+              v-else
+              :size="12"
+            />
             {{ trends.overdue >= 0 ? '+' : '' }}{{ trends.overdue }}% vs last month
           </p>
         </div>
@@ -76,31 +137,69 @@
     </div>
 
     <!-- Stats skeleton -->
-    <div class="stats-row" v-else>
-      <div class="stat-card" v-for="i in 4" :key="i">
-        <Skeleton variant="rect" width="44px" height="44px" style="border-radius:12px; flex-shrink:0;" />
-        <div class="stat-body" style="flex:1;">
-          <Skeleton variant="text" width="80px" />
-          <Skeleton variant="title" width="100px" />
+    <div
+      v-else
+      class="stats-row"
+    >
+      <div
+        v-for="i in 4"
+        :key="i"
+        class="stat-card"
+      >
+        <Skeleton
+          variant="rect"
+          width="44px"
+          height="44px"
+          style="border-radius:12px; flex-shrink:0;"
+        />
+        <div
+          class="stat-body"
+          style="flex:1;"
+        >
+          <Skeleton
+            variant="text"
+            width="80px"
+          />
+          <Skeleton
+            variant="title"
+            width="100px"
+          />
         </div>
       </div>
     </div>
 
     <!-- Profile completion -->
-    <div class="profile-banner" v-if="profileCompletion < 100">
+    <div
+      v-if="profileCompletion < 100"
+      class="profile-banner"
+    >
       <div class="profile-banner-text">
-        <p class="profile-banner-title">Complete your profile</p>
-        <p class="profile-banner-sub">Your profile is {{ profileCompletion }}% complete. A complete profile makes your invoices look professional.</p>
+        <p class="profile-banner-title">
+          Complete your profile
+        </p>
+        <p class="profile-banner-sub">
+          Your profile is {{ profileCompletion }}% complete. A complete profile makes your invoices look professional.
+        </p>
       </div>
       <div class="profile-banner-right">
         <div class="progress-ring">
           <svg viewBox="0 0 36 36">
-            <path class="progress-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
-            <path class="progress-fill" :stroke-dasharray="`${profileCompletion}, 100`" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path
+              class="progress-bg"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
+            <path
+              class="progress-fill"
+              :stroke-dasharray="`${profileCompletion}, 100`"
+              d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
+            />
           </svg>
           <span class="progress-text">{{ profileCompletion }}%</span>
         </div>
-        <router-link to="/app/settings" class="profile-link">
+        <router-link
+          to="/app/settings"
+          class="profile-link"
+        >
           Complete now
           <ArrowRight :size="12" />
         </router-link>
@@ -108,46 +207,100 @@
     </div>
 
     <!-- Quick actions -->
-    <div class="quick-actions" v-if="fetched">
-      <router-link to="/app/invoices/new" class="qa-card">
+    <div
+      v-if="fetched"
+      class="quick-actions"
+    >
+      <router-link
+        to="/app/invoices/new"
+        class="qa-card"
+      >
         <div class="qa-icon qa-icon-purple">
           <FilePlus :size="18" />
         </div>
         <div class="qa-content">
-          <p class="qa-title">New Invoice</p>
-          <p class="qa-sub">Create and send an invoice</p>
+          <p class="qa-title">
+            New Invoice
+          </p>
+          <p class="qa-sub">
+            Create and send an invoice
+          </p>
         </div>
-        <ArrowRight :size="14" class="qa-arrow" />
+        <ArrowRight
+          :size="14"
+          class="qa-arrow"
+        />
       </router-link>
-      <router-link to="/app/clients" class="qa-card">
+      <router-link
+        to="/app/clients"
+        class="qa-card"
+      >
         <div class="qa-icon qa-icon-blue">
           <UserPlus :size="18" />
         </div>
         <div class="qa-content">
-          <p class="qa-title">Add Client</p>
-          <p class="qa-sub">Manage your clients</p>
+          <p class="qa-title">
+            Add Client
+          </p>
+          <p class="qa-sub">
+            Manage your clients
+          </p>
         </div>
-        <ArrowRight :size="14" class="qa-arrow" />
+        <ArrowRight
+          :size="14"
+          class="qa-arrow"
+        />
       </router-link>
-      <router-link to="/app/receipts/new" class="qa-card">
+      <router-link
+        to="/app/receipts/new"
+        class="qa-card"
+      >
         <div class="qa-icon qa-icon-green">
           <Receipt :size="18" />
         </div>
         <div class="qa-content">
-          <p class="qa-title">New Receipt</p>
-          <p class="qa-sub">Record a payment</p>
+          <p class="qa-title">
+            New Receipt
+          </p>
+          <p class="qa-sub">
+            Record a payment
+          </p>
         </div>
-        <ArrowRight :size="14" class="qa-arrow" />
+        <ArrowRight
+          :size="14"
+          class="qa-arrow"
+        />
       </router-link>
     </div>
 
     <!-- Quick actions skeleton -->
-    <div class="quick-actions" v-else>
-      <div class="qa-card" v-for="i in 3" :key="i">
-        <Skeleton variant="rect" width="40px" height="40px" style="border-radius:10px; flex-shrink:0;" />
-        <div class="qa-content" style="flex:1;">
-          <Skeleton variant="text" width="90px" />
-          <Skeleton variant="text" width="140px" />
+    <div
+      v-else
+      class="quick-actions"
+    >
+      <div
+        v-for="i in 3"
+        :key="i"
+        class="qa-card"
+      >
+        <Skeleton
+          variant="rect"
+          width="40px"
+          height="40px"
+          style="border-radius:10px; flex-shrink:0;"
+        />
+        <div
+          class="qa-content"
+          style="flex:1;"
+        >
+          <Skeleton
+            variant="text"
+            width="90px"
+          />
+          <Skeleton
+            variant="text"
+            width="140px"
+          />
         </div>
       </div>
     </div>
@@ -156,37 +309,115 @@
     <div class="section-card">
       <div class="section-head">
         <div class="section-head-left">
-          <h2 class="section-title">Recent Invoices</h2>
-          <span class="section-count" v-if="fetched && invoiceStore.invoices.length">
+          <h2 class="section-title">
+            Recent Invoices
+          </h2>
+          <span
+            v-if="fetched && invoiceStore.invoices.length"
+            class="section-count"
+          >
             {{ invoiceStore.invoices.length }}
           </span>
         </div>
-        <router-link to="/app/invoices" class="see-all-link">
+        <router-link
+          to="/app/invoices"
+          class="see-all-link"
+        >
           View all
           <ArrowRight :size="14" />
         </router-link>
       </div>
 
-      <div v-if="!fetched" style="padding: 16px 24px;">
-        <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:16px; padding:14px 0; border-bottom:1px solid #f8fafc;">
-          <Skeleton variant="text" width="80px" />
-          <Skeleton variant="text" width="120px" />
-          <Skeleton variant="text" width="90px" style="margin-left:auto;" />
-          <Skeleton variant="text" width="60px" />
-        </div>
+      <div v-if="!fetched">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Invoice #</th>
+              <th>Client</th>
+              <th>Date</th>
+              <th>Due Date</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th class="th-action" />
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="i in 5"
+              :key="i"
+              class="table-row"
+            >
+              <td>
+                <Skeleton
+                  variant="text"
+                  width="100px"
+                />
+              </td>
+              <td>
+                <Skeleton
+                  variant="text"
+                  width="130px"
+                />
+              </td>
+              <td>
+                <Skeleton
+                  variant="text"
+                  width="100px"
+                />
+              </td>
+              <td>
+                <Skeleton
+                  variant="text"
+                  width="100px"
+                />
+              </td>
+              <td>
+                <Skeleton
+                  variant="text"
+                  width="80px"
+                />
+              </td>
+              <td>
+                <Skeleton
+                  variant="rect"
+                  width="60px"
+                  height="22px"
+                />
+              </td>
+              <td class="td-action" />
+            </tr>
+          </tbody>
+        </table>
       </div>
       <div v-else-if="invoiceStore.invoices.length">
         <table class="data-table">
-          <caption class="sr-only">Recent invoices</caption>
+          <caption class="sr-only">
+            Recent invoices
+          </caption>
           <thead>
             <tr>
-              <th scope="col">Invoice #</th>
-              <th scope="col">Client</th>
-              <th scope="col">Date</th>
-              <th scope="col">Due Date</th>
-              <th scope="col">Amount</th>
-              <th scope="col">Status</th>
-              <th scope="col" class="th-action"></th>
+              <th scope="col">
+                Invoice #
+              </th>
+              <th scope="col">
+                Client
+              </th>
+              <th scope="col">
+                Date
+              </th>
+              <th scope="col">
+                Due Date
+              </th>
+              <th scope="col">
+                Amount
+              </th>
+              <th scope="col">
+                Status
+              </th>
+              <th
+                scope="col"
+                class="th-action"
+              />
             </tr>
           </thead>
           <tbody>
@@ -196,35 +427,61 @@
               class="table-row"
               @click="$router.push(`/app/invoices/${inv.id}`)"
             >
-              <td class="td-mono">{{ inv.invoice_number }}</td>
-              <td class="td-client">{{ inv.client?.name ?? '—' }}</td>
-              <td class="td-muted">{{ formatDate(inv.issue_date) }}</td>
-              <td class="td-muted">{{ formatDate(inv.due_date) }}</td>
-              <td class="td-mono td-bold">{{ formatCurrency(inv.total, inv.currency) }}</td>
+              <td class="td-mono">
+                {{ inv.invoice_number }}
+              </td>
+              <td class="td-client">
+                {{ inv.client?.name ?? '—' }}
+              </td>
+              <td class="td-muted">
+                {{ formatDate(inv.issue_date) }}
+              </td>
+              <td class="td-muted">
+                {{ formatDate(inv.due_date) }}
+              </td>
+              <td class="td-mono td-bold">
+                {{ formatCurrency(inv.total, inv.currency) }}
+              </td>
               <td>
-                <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
+                <span
+                  class="status-badge"
+                  :class="`status-${inv.status}`"
+                >{{ inv.status }}</span>
               </td>
               <td class="td-action">
-                <ChevronRight :size="14" class="row-arrow" />
+                <ChevronRight
+                  :size="14"
+                  class="row-arrow"
+                />
               </td>
             </tr>
           </tbody>
         </table>
       </div>
 
-      <div class="empty-state" v-else-if="!loading">
+      <div
+        v-else-if="!loading"
+        class="empty-state"
+      >
         <div class="empty-icon-wrap">
           <FileText :size="40" />
         </div>
-        <p class="empty-title">No invoices yet</p>
-        <p class="empty-sub">Create your first invoice to start tracking revenue.</p>
-        <router-link to="/app/invoices/new" class="btn-primary" style="margin-top:8px;">
+        <p class="empty-title">
+          No invoices yet
+        </p>
+        <p class="empty-sub">
+          Create your first invoice to start tracking revenue.
+        </p>
+        <router-link
+          to="/app/invoices/new"
+          class="btn-primary"
+          style="margin-top:8px;"
+        >
           <Plus :size="14" />
           Create Invoice
         </router-link>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -324,21 +581,7 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.page {
-  padding: 32px 36px;
-  max-width: 1200px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Page header */
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-}
+.page { gap: 24px; }
 
 .page-eyebrow {
   font-size: 13px;
@@ -347,38 +590,6 @@ onMounted(async () => {
   text-transform: capitalize;
   font-weight: 500;
 }
-
-.page-title {
-  font-size: 26px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0;
-  letter-spacing: -0.5px;
-}
-.dark .page-title { color: #f1f5f9; }
-
-/* Primary button */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  letter-spacing: 0.1px;
-  transition: opacity .15s, transform .1s, box-shadow .15s;
-  box-shadow: 0 2px 10px rgba(99,102,241,.35);
-  font-family: inherit;
-  white-space: nowrap;
-}
-.btn-primary:hover { opacity: .9; box-shadow: 0 4px 16px rgba(99,102,241,.45); }
-.btn-primary:active { transform: scale(.98); }
 
 /* Stats */
 .stats-row {
@@ -610,142 +821,7 @@ onMounted(async () => {
 }
 .profile-link:hover { text-decoration: underline; gap: 6px; }
 
-/* Section card */
-.section-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  overflow: hidden;
-}
-.dark .section-card { background: #1e293b; border-color: #334155; }
-
-.section-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 24px 14px;
-}
-
-.section-head-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #0f172a;
-  margin: 0;
-  letter-spacing: -0.2px;
-}
-.dark .section-title { color: #f1f5f9; }
-
-.section-count {
-  font-size: 11px;
-  font-weight: 700;
-  color: #6366f1;
-  background: #ede9fe;
-  padding: 2px 8px;
-  border-radius: 10px;
-}
-
-.see-all-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
-  color: #6366f1;
-  text-decoration: none;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: background .15s;
-}
-.see-all-link:hover { background: #f5f3ff; }
-
-/* Table */
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.data-table thead tr {
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.data-table th {
-  padding: 10px 16px 10px 24px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  text-align: left;
-}
-
-.th-action { width: 40px; }
-
-.data-table td {
-  padding: 14px 16px 14px 24px;
-  font-size: 14px;
-  color: #374151;
-  border-bottom: 1px solid #f8fafc;
-}
-.dark .data-table td { color: #e2e8f0; border-color: #1e293b; }
-
-.table-row {
-  cursor: pointer;
-  transition: background .1s;
-}
-.table-row:hover { background: #fafafa; }
-.table-row:last-child td { border-bottom: none; }
-
-.td-mono { font-variant-numeric: tabular-nums; font-weight: 600; color: #0f172a; }
-.dark .td-mono { color: #f1f5f9; }
-.td-client { font-weight: 500; color: #1e293b; }
-.dark .td-client { color: #e2e8f0; }
-.td-muted { color: #94a3b8; font-size: 13px; }
-.td-bold { font-weight: 700; color: #0f172a; }
-
-.td-action {
-  width: 40px;
-  text-align: right;
-  padding-right: 20px;
-}
-
-.row-arrow {
-  color: #cbd5e1;
-  transition: color .15s, transform .15s;
-}
-.table-row:hover .row-arrow { color: #6366f1; transform: translateX(2px); }
-
-/* Status badges */
-.status-badge {
-  display: inline-block;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 6px;
-  text-transform: capitalize;
-  letter-spacing: 0.2px;
-}
-.status-draft    { background: #f1f5f9; color: #64748b; }
-.status-sent     { background: #dbeafe; color: #1d4ed8; }
-.status-paid     { background: #d1fae5; color: #065f46; }
-.status-overdue  { background: #fee2e2; color: #991b1b; }
-.status-cancelled{ background: #f1f5f9; color: #94a3b8; }
-
-/* Empty state */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 60px 20px;
-  gap: 8px;
-}
-
+/* Dashboard-specific empty icon wrap */
 .empty-icon-wrap {
   width: 72px;
   height: 72px;
@@ -759,9 +835,14 @@ onMounted(async () => {
 }
 .dark .empty-icon-wrap { background: #334155; color: #475569; }
 
-.empty-title { font-size: 16px; font-weight: 700; color: #374151; margin: 0; }
-.dark .empty-title { color: #e2e8f0; }
-.empty-sub { font-size: 14px; color: #94a3b8; margin: 0; text-align: center; max-width: 320px; }
+/* Dashboard-specific table overrides */
+.data-table th {
+  padding: 10px 16px 10px 24px;
+  letter-spacing: 0.6px;
+}
+.data-table td {
+  padding: 14px 16px 14px 24px;
+}
 
 /* Responsive */
 @media (max-width: 1024px) {

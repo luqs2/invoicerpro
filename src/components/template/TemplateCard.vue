@@ -1,7 +1,17 @@
 <template>
-  <div class="tpl-card" :class="{ selected }">
-    <div class="tpl-thumb" :style="{ background: template.secondary_color, color: template.primary_color }">◫</div>
-    <div class="tpl-name">{{ template.name }}</div>
+  <div
+    class="tpl-card"
+    :class="{ selected }"
+  >
+    <div
+      class="tpl-thumb"
+      :style="{ background: template.secondary_color, color: template.primary_color }"
+    >
+      ◫
+    </div>
+    <div class="tpl-name">
+      {{ template.name }}
+    </div>
   </div>
 </template>
 <script setup lang="ts">

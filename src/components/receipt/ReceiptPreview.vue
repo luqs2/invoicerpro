@@ -1,6 +1,8 @@
 <template>
-  <div class="receipt-doc" :style="{ fontFamily: font }">
-
+  <div
+    class="receipt-doc"
+    :style="{ fontFamily: font }"
+  >
     <!-- Header -->
     <div class="rcp-head">
       <div>
@@ -11,45 +13,82 @@
             alt="logo"
             class="rcp-logo-img"
             :style="{ borderRadius: radius }"
-          />
+          >
           <div
             v-else
             class="rcp-logo"
             :style="{ background: primary, borderRadius: radius }"
-          >{{ getInitials(businessName) }}</div>
+          >
+            {{ getInitials(businessName) }}
+          </div>
         </div>
-        <div class="rcp-company">{{ businessName }}</div>
+        <div class="rcp-company">
+          {{ businessName }}
+        </div>
       </div>
       <div style="text-align:right;">
-        <div class="rcp-badge" :style="{ background: primary, borderRadius: radius }">RECEIPT</div>
-        <div class="rcp-number">{{ receipt.receipt_number }}</div>
-        <div class="rcp-date">{{ formatDate(receipt.payment_date ?? '') }}</div>
+        <div
+          class="rcp-badge"
+          :style="{ background: primary, borderRadius: radius }"
+        >
+          RECEIPT
+        </div>
+        <div class="rcp-number">
+          {{ receipt.receipt_number }}
+        </div>
+        <div class="rcp-date">
+          {{ formatDate(receipt.payment_date ?? '') }}
+        </div>
       </div>
     </div>
 
-    <div class="rcp-divider" :style="{ background: primary }" />
+    <div
+      class="rcp-divider"
+      :style="{ background: primary }"
+    />
 
     <!-- Parties -->
     <div class="rcp-parties">
       <div>
-        <div class="party-label">From</div>
-        <div class="party-name">{{ businessName }}</div>
-        <div class="party-detail" v-if="businessAddress">{{ businessAddress }}</div>
+        <div class="party-label">
+          From
+        </div>
+        <div class="party-name">
+          {{ businessName }}
+        </div>
+        <div
+          v-if="businessAddress"
+          class="party-detail"
+        >
+          {{ businessAddress }}
+        </div>
       </div>
       <div>
-        <div class="party-label">Received From</div>
-        <div class="party-name">{{ receipt.client?.name ?? '—' }}</div>
-        <div class="party-detail">{{ receipt.client?.address }}</div>
+        <div class="party-label">
+          Received From
+        </div>
+        <div class="party-name">
+          {{ receipt.client?.name ?? '—' }}
+        </div>
+        <div class="party-detail">
+          {{ receipt.client?.address }}
+        </div>
       </div>
     </div>
 
     <!-- Payment info box -->
-    <div class="rcp-info-box" :style="{ borderColor: primary }">
+    <div
+      class="rcp-info-box"
+      :style="{ borderColor: primary }"
+    >
       <div class="info-row">
         <span class="info-label">Payment Method</span>
         <span class="info-value">{{ methodLabel(receipt.payment_method) }}</span>
       </div>
-      <div class="info-row" v-if="receipt.invoice_number">
+      <div
+        v-if="receipt.invoice_number"
+        class="info-row"
+      >
         <span class="info-label">Invoice Reference</span>
         <span class="info-value">{{ receipt.invoice_number }}</span>
       </div>
@@ -60,53 +99,100 @@
     </div>
 
     <!-- Line items (if from invoice) -->
-    <table class="rcp-table" v-if="receipt.line_items && receipt.line_items.length">
+    <table
+      v-if="receipt.line_items && receipt.line_items.length"
+      class="rcp-table"
+    >
       <colgroup>
-        <col style="width: auto;" />
-        <col style="width: 52px;" />
-        <col style="width: 90px;" />
-        <col style="width: 90px;" />
+        <col style="width: auto;">
+        <col style="width: 52px;">
+        <col style="width: 90px;">
+        <col style="width: 90px;">
       </colgroup>
       <thead>
         <tr>
-          <th :style="{ background: secondary }">Description</th>
-          <th :style="{ background: secondary }" class="center">Qty</th>
-          <th :style="{ background: secondary }" class="right">Rate</th>
-          <th :style="{ background: secondary }" class="right">Amount</th>
+          <th :style="{ background: secondary }">
+            Description
+          </th>
+          <th
+            :style="{ background: secondary }"
+            class="center"
+          >
+            Qty
+          </th>
+          <th
+            :style="{ background: secondary }"
+            class="right"
+          >
+            Rate
+          </th>
+          <th
+            :style="{ background: secondary }"
+            class="right"
+          >
+            Amount
+          </th>
         </tr>
       </thead>
       <tbody>
-        <tr v-for="item in receipt.line_items" :key="item.id">
+        <tr
+          v-for="item in receipt.line_items"
+          :key="item.id"
+        >
           <td>{{ item.description }}</td>
-          <td class="center">{{ item.quantity }}</td>
-          <td class="right">{{ formatCurrency(item.unit_price, receipt.currency) }}</td>
-          <td class="right">{{ formatCurrency(item.amount, receipt.currency) }}</td>
+          <td class="center">
+            {{ item.quantity }}
+          </td>
+          <td class="right">
+            {{ formatCurrency(item.unit_price, receipt.currency) }}
+          </td>
+          <td class="right">
+            {{ formatCurrency(item.amount, receipt.currency) }}
+          </td>
         </tr>
       </tbody>
     </table>
 
     <!-- Amount block -->
     <div class="rcp-totals">
-      <div class="total-row" v-if="receipt.subtotal">
+      <div
+        v-if="receipt.subtotal"
+        class="total-row"
+      >
         <span>Subtotal</span>
         <span>{{ formatCurrency(receipt.subtotal ?? 0, receipt.currency) }}</span>
       </div>
-      <div class="total-row" v-if="receipt.tax_amount">
+      <div
+        v-if="receipt.tax_amount"
+        class="total-row"
+      >
         <span>Tax</span>
         <span>{{ formatCurrency(receipt.tax_amount ?? 0, receipt.currency) }}</span>
       </div>
-      <div class="total-row grand" :style="{ color: secondary }">
+      <div
+        class="total-row grand"
+        :style="{ color: secondary }"
+      >
         <span>Amount Paid</span>
         <span>{{ formatCurrency(receipt.amount ?? 0, receipt.currency) }}</span>
       </div>
     </div>
 
     <!-- Paid stamp -->
-    <div class="rcp-stamp" :style="{ borderColor: primary, color: primary }">PAID</div>
+    <div
+      class="rcp-stamp"
+      :style="{ borderColor: primary, color: primary }"
+    >
+      PAID
+    </div>
 
     <!-- Notes -->
-    <div class="rcp-footer" v-if="receipt.notes">{{ receipt.notes }}</div>
-
+    <div
+      v-if="receipt.notes"
+      class="rcp-footer"
+    >
+      {{ receipt.notes }}
+    </div>
   </div>
 </template>
 

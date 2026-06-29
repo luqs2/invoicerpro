@@ -55,4 +55,7 @@ withDefaults(defineProps<{
   0% { transform: translateX(-100%); }
   100% { transform: translateX(100%); }
 }
+
+.dark .skeleton { background: #334155; }
+.dark .skeleton-shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent); }
 </style>

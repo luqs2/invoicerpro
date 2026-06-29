@@ -1,14 +1,29 @@
 <template>
-  <div class="invoice-item" @click="go">
+  <div
+    class="invoice-item"
+    @click="go"
+  >
     <div class="item-left">
-      <p class="inv-number">{{ invoice.invoice_number }}</p>
-      <p class="inv-meta">{{ invoice.client?.name ?? 'Unknown Client' }} · {{ formatDate(invoice.issue_date) }}</p>
+      <p class="inv-number">
+        {{ invoice.invoice_number }}
+      </p>
+      <p class="inv-meta">
+        {{ invoice.client?.name ?? 'Unknown Client' }} · {{ formatDate(invoice.issue_date) }}
+      </p>
     </div>
     <div class="item-right">
-      <p class="inv-amount">{{ formatCurrency(invoice.total, invoice.currency) }}</p>
-      <span class="status-badge" :class="`status-${invoice.status}`">{{ invoice.status }}</span>
+      <p class="inv-amount">
+        {{ formatCurrency(invoice.total, invoice.currency) }}
+      </p>
+      <span
+        class="status-badge"
+        :class="`status-${invoice.status}`"
+      >{{ invoice.status }}</span>
     </div>
-    <ChevronRight :size="14" class="item-chevron" />
+    <ChevronRight
+      :size="14"
+      class="item-chevron"
+    />
   </div>
 </template>
 

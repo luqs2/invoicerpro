@@ -1,11 +1,24 @@
 <template>
-  <SelectRoot v-model="model" :disabled="disabled">
-    <SelectTrigger :class="cn(triggerClass)" :title="selectedLabel">
+  <SelectRoot
+    v-model="model"
+    :disabled="disabled"
+  >
+    <SelectTrigger
+      :class="cn(triggerClass)"
+      :title="selectedLabel"
+    >
       <SelectValue :placeholder="placeholder" />
-      <ChevronsUpDown :size="14" class="select-chevron" />
+      <ChevronsUpDown
+        :size="14"
+        class="select-chevron"
+      />
     </SelectTrigger>
     <SelectPortal>
-      <SelectContent :class="cn('select-content')" position="popper" :side-offset="4">
+      <SelectContent
+        :class="cn('select-content')"
+        position="popper"
+        :side-offset="4"
+      >
         <SelectViewport class="select-viewport">
           <SelectItem
             v-for="opt in options"

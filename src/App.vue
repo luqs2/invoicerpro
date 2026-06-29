@@ -1,6 +1,9 @@
 <template>
   <router-view v-slot="{ Component }">
-    <transition name="page" mode="out-in">
+    <transition
+      name="page"
+      mode="out-in"
+    >
       <component :is="Component" />
     </transition>
   </router-view>
@@ -15,7 +18,10 @@
     @confirm="handleConfirm"
     @cancel="handleCancel"
   />
-  <Toast :toasts="toasts" @remove="removeToast" />
+  <Toast
+    :toasts="toasts"
+    @remove="removeToast"
+  />
 </template>
 
 <script setup lang="ts">

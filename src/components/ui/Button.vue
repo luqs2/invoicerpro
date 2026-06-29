@@ -6,7 +6,10 @@
     :class="['btn', `btn-${variant}`, `btn-${size}`, { 'btn-loading': loading }]"
     v-bind="$attrs"
   >
-    <span v-if="loading" class="btn-spinner" />
+    <span
+      v-if="loading"
+      class="btn-spinner"
+    />
     <slot />
   </component>
 </template>

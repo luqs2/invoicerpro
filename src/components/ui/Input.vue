@@ -7,7 +7,7 @@
     :disabled="disabled"
     :class="['ui-input', { 'ui-input-error': error }]"
     @input="$emit('update:modelValue', ($event.target as HTMLInputElement).value)"
-  />
+  >
 </template>
 
 <script setup lang="ts">
@@ -52,4 +52,13 @@ defineEmits<{ (e: 'update:modelValue', v: string): void }>()
 
 .ui-input-error { border-color: #ef4444; }
 .ui-input-error:focus { box-shadow: 0 0 0 3px rgba(239,68,68,.1); }
+
+.dark .ui-input {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark .ui-input::placeholder { color: #64748b; }
+.dark .ui-input:focus { border-color: #6366f1; background: #0f172a; }
+.dark .ui-input:hover:not(:disabled) { border-color: #4f46e5; }
 </style>

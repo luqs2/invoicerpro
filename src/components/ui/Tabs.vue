@@ -1,5 +1,8 @@
 <template>
-  <TabsRoot v-model="model" class="tabs-root">
+  <TabsRoot
+    v-model="model"
+    class="tabs-root"
+  >
     <TabsList class="tabs-list">
       <TabsTrigger
         v-for="tab in tabs"
@@ -8,7 +11,10 @@
         class="tabs-trigger"
       >
         {{ tab.label }}
-        <span v-if="tab.count != null" class="tab-badge">{{ tab.count }}</span>
+        <span
+          v-if="tab.count != null"
+          class="tab-badge"
+        >{{ tab.count }}</span>
       </TabsTrigger>
     </TabsList>
     <slot />
@@ -83,4 +89,11 @@ const model = defineModel<string>()
   background: #ede9fe;
   color: #6366f1;
 }
+
+.dark .tabs-list { background: #1e293b; }
+.dark .tabs-trigger { color: #94a3b8; }
+.dark .tabs-trigger:hover { color: #e2e8f0; background: rgba(255,255,255,.05); }
+.dark .tabs-trigger[data-state="active"] { background: #0f172a; color: #f1f5f9; }
+.dark .tab-badge { background: #334155; color: #94a3b8; }
+.dark .tabs-trigger[data-state="active"] .tab-badge { background: #312e81; color: #818cf8; }
 </style>

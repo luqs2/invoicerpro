@@ -1,26 +1,84 @@
 <template>
   <div class="app-shell">
+    <!-- Skip to content -->
+    <a
+      href="#main-content"
+      class="skip-link"
+    >Skip to content</a>
 
     <!-- ── Sidebar ─────────────────────────────────────── -->
-    <aside class="sidebar" :class="{ collapsed: sidebarCollapsed }">
+    <aside
+      class="sidebar"
+      :class="{ collapsed: sidebarCollapsed }"
+    >
       <div class="sidebar-header">
         <div class="brand-logo">
           <div class="brand-icon">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-              <line x1="16" y1="13" x2="8" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="16" y1="17" x2="8" y2="17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <polyline points="10,9 9,9 8,9" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <polyline
+                points="14,2 14,8 20,8"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+              <line
+                x1="16"
+                y1="13"
+                x2="8"
+                y2="13"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <line
+                x1="16"
+                y1="17"
+                x2="8"
+                y2="17"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
+              <polyline
+                points="10,9 9,9 8,9"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              />
             </svg>
           </div>
-          <span class="brand-text" v-show="!sidebarCollapsed">
+          <span
+            v-show="!sidebarCollapsed"
+            class="brand-text"
+          >
             Invoicer<span>Pro</span>
           </span>
         </div>
-        <button class="collapse-btn" @click="sidebarCollapsed = !sidebarCollapsed" :aria-label="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
-          <ChevronLeft v-if="!sidebarCollapsed" :size="14" />
-          <ChevronRight v-else :size="14" />
+        <button
+          class="collapse-btn"
+          :aria-label="sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'"
+          @click="sidebarCollapsed = !sidebarCollapsed"
+        >
+          <ChevronLeft
+            v-if="!sidebarCollapsed"
+            :size="14"
+          />
+          <ChevronRight
+            v-else
+            :size="14"
+          />
         </button>
       </div>
 
@@ -33,25 +91,52 @@
           :class="{ active: isActive(item.path) }"
           :title="sidebarCollapsed ? item.label : ''"
         >
-          <component :is="item.icon" :size="18" class="nav-icon" />
-          <span class="nav-label" v-show="!sidebarCollapsed">{{ item.label }}</span>
-          <span v-if="item.badge && !sidebarCollapsed" class="nav-badge">{{ item.badge }}</span>
+          <component
+            :is="item.icon"
+            :size="18"
+            class="nav-icon"
+          />
+          <span
+            v-show="!sidebarCollapsed"
+            class="nav-label"
+          >{{ item.label }}</span>
+          <span
+            v-if="item.badge && !sidebarCollapsed"
+            class="nav-badge"
+          >{{ item.badge }}</span>
         </router-link>
       </nav>
 
-      <div class="sidebar-footer" v-show="!sidebarCollapsed">
-        <router-link to="/app/settings" class="nav-item" :class="{ active: isActive('/app/settings') }">
-          <Settings :size="18" class="nav-icon" />
+      <div
+        v-show="!sidebarCollapsed"
+        class="sidebar-footer"
+      >
+        <router-link
+          to="/app/settings"
+          class="nav-item"
+          :class="{ active: isActive('/app/settings') }"
+        >
+          <Settings
+            :size="18"
+            class="nav-icon"
+          />
           <span class="nav-label">Settings</span>
         </router-link>
       </div>
     </aside>
 
     <!-- ── Main content ────────────────────────────────── -->
-    <main class="main-content">
+    <main
+      id="main-content"
+      class="main-content"
+    >
       <!-- Mobile top bar -->
       <div class="mobile-topbar">
-        <button class="mobile-menu-btn" @click="mobileOpen = !mobileOpen" aria-label="Open navigation menu">
+        <button
+          class="mobile-menu-btn"
+          aria-label="Open navigation menu"
+          @click="mobileOpen = !mobileOpen"
+        >
           <Menu :size="20" />
         </button>
         <span class="mobile-brand">Invoicer<span>Pro</span></span>
@@ -62,18 +147,38 @@
 
     <!-- Mobile overlay nav -->
     <transition name="overlay-fade">
-      <div v-if="mobileOpen" class="mobile-overlay" @click="mobileOpen = false">
-        <aside class="mobile-drawer" @click.stop>
+      <div
+        v-if="mobileOpen"
+        class="mobile-overlay"
+        @click="mobileOpen = false"
+      >
+        <aside
+          class="mobile-drawer"
+          @click.stop
+        >
           <div class="sidebar-header">
             <div class="brand-logo">
               <div class="brand-icon">
-                <svg viewBox="0 0 24 24" fill="none">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                >
+                  <path
+                    d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
                 </svg>
               </div>
               <span class="brand-text">Invoicer<span>Pro</span></span>
             </div>
-            <button class="collapse-btn" @click="mobileOpen = false" aria-label="Close navigation menu">
+            <button
+              class="collapse-btn"
+              aria-label="Close navigation menu"
+              @click="mobileOpen = false"
+            >
               <X :size="16" />
             </button>
           </div>
@@ -86,13 +191,25 @@
               :class="{ active: isActive(item.path) }"
               @click="mobileOpen = false"
             >
-              <component :is="item.icon" :size="18" class="nav-icon" />
+              <component
+                :is="item.icon"
+                :size="18"
+                class="nav-icon"
+              />
               <span class="nav-label">{{ item.label }}</span>
             </router-link>
           </nav>
           <div class="sidebar-footer">
-            <router-link to="/app/settings" class="nav-item" :class="{ active: isActive('/app/settings') }" @click="mobileOpen = false">
-              <Settings :size="18" class="nav-icon" />
+            <router-link
+              to="/app/settings"
+              class="nav-item"
+              :class="{ active: isActive('/app/settings') }"
+              @click="mobileOpen = false"
+            >
+              <Settings
+                :size="18"
+                class="nav-icon"
+              />
               <span class="nav-label">Settings</span>
             </router-link>
           </div>
@@ -101,7 +218,10 @@
     </transition>
 
     <!-- Mobile bottom nav -->
-    <nav class="bottom-nav" v-if="isMobile">
+    <nav
+      v-if="isMobile"
+      class="bottom-nav"
+    >
       <router-link
         v-for="item in bottomNavItems"
         :key="item.path"
@@ -109,11 +229,13 @@
         class="bottom-nav-item"
         :class="{ active: isActive(item.path) }"
       >
-        <component :is="item.icon" :size="20" />
+        <component
+          :is="item.icon"
+          :size="20"
+        />
         <span>{{ item.label }}</span>
       </router-link>
     </nav>
-
   </div>
 </template>
 
@@ -200,6 +322,27 @@ function isActive(path: string) {
   background: #f8fafc;
 }
 .dark .app-shell { background: #0f172a; }
+
+/* Skip to content link */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 8px;
+  z-index: 10000;
+  padding: 8px 16px;
+  background: #6366f1;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 0 0 8px 8px;
+  text-decoration: none;
+  transition: top .2s;
+}
+.skip-link:focus {
+  top: 0;
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
 
 /* ── Sidebar ───────────────────────────────────────────────── */
 .sidebar {

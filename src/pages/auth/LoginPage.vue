@@ -8,12 +8,21 @@
       <p>Sign in to your account</p>
     </div>
 
-    <form @submit.prevent="login" novalidate>
+    <form
+      novalidate
+      @submit.prevent="login"
+    >
       <div class="field-group">
-        <div class="field" :class="{ 'field-error': errors.email }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.email }"
+        >
           <label for="login-email">Email</label>
           <div class="input-wrap">
-            <Mail :size="16" class="field-icon" />
+            <Mail
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="login-email"
               v-model="email"
@@ -22,20 +31,35 @@
               autocomplete="email"
               :disabled="loading"
               @blur="validateEmail"
-            />
+            >
           </div>
-          <p class="field-error-text" v-if="errors.email">{{ errors.email }}</p>
+          <p
+            v-if="errors.email"
+            class="field-error-text"
+          >
+            {{ errors.email }}
+          </p>
         </div>
 
-        <div class="field" :class="{ 'field-error': errors.password }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.password }"
+        >
           <div class="label-row">
             <label for="login-password">Password</label>
-            <button type="button" class="forgot-link" @click="showForgotHint">
+            <button
+              type="button"
+              class="forgot-link"
+              @click="showForgotHint"
+            >
               Forgot password?
             </button>
           </div>
           <div class="input-wrap">
-            <Lock :size="16" class="field-icon" />
+            <Lock
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="login-password"
               v-model="password"
@@ -44,19 +68,30 @@
               autocomplete="current-password"
               :disabled="loading"
               @blur="validatePassword"
-            />
+            >
             <button
               type="button"
               class="toggle-password"
-              @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
               tabindex="-1"
+              @click="showPassword = !showPassword"
             >
-              <EyeOff v-if="showPassword" :size="16" />
-              <Eye v-else :size="16" />
+              <EyeOff
+                v-if="showPassword"
+                :size="16"
+              />
+              <Eye
+                v-else
+                :size="16"
+              />
             </button>
           </div>
-          <p class="field-error-text" v-if="errors.password">{{ errors.password }}</p>
+          <p
+            v-if="errors.password"
+            class="field-error-text"
+          >
+            {{ errors.password }}
+          </p>
         </div>
       </div>
 
@@ -77,7 +112,9 @@
 
     <p class="switch-link">
       Don't have an account?
-      <router-link to="/auth/register">Create one free</router-link>
+      <router-link to="/auth/register">
+        Create one free
+      </router-link>
     </p>
 
     <div class="demo-hint">

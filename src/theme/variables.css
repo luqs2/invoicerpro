@@ -1,10 +1,9 @@
 /* ============================================================
-   InvoicerPro — Light-only theme  (system dark mode disabled)
+   InvoicerPro — Theme variables
    ============================================================ */
 
-/* Force light mode regardless of OS preference */
 :root {
-  color-scheme: light only;
+  color-scheme: light dark;
 }
 
 /* ── Brand palette ─────────────────────────────────────────── */
@@ -71,19 +70,16 @@
   --ion-border-color:              var(--color-border);
 }
 
-/* Prevent dark-mode OS override */
-@media (prefers-color-scheme: dark) {
-  :root {
-    color-scheme: light only;
-    --ion-background-color:        var(--color-bg);
-    --ion-background-color-rgb:    248, 250, 252;
-    --ion-text-color:              var(--color-text);
-    --ion-toolbar-background:      var(--color-surface);
-    --ion-toolbar-color:           var(--color-text);
-    --ion-item-background:         var(--color-surface);
-    --ion-card-background:         var(--color-surface);
-    --ion-border-color:            var(--color-border);
-  }
+/* Dark mode Ionic overrides */
+.dark {
+  --ion-background-color:        #0f172a;
+  --ion-background-color-rgb:    15, 23, 42;
+  --ion-text-color:              #f1f5f9;
+  --ion-toolbar-background:      #1e293b;
+  --ion-toolbar-color:           #f1f5f9;
+  --ion-item-background:         #1e293b;
+  --ion-card-background:         #1e293b;
+  --ion-border-color:            #334155;
 }
 
 /* ── App shell reset ───────────────────────────────────────── */

@@ -8,12 +8,21 @@
       <p>Start invoicing professionally today</p>
     </div>
 
-    <form @submit.prevent="register" novalidate>
+    <form
+      novalidate
+      @submit.prevent="register"
+    >
       <div class="field-group">
-        <div class="field" :class="{ 'field-error': errors.fullName }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.fullName }"
+        >
           <label for="reg-name">Full Name</label>
           <div class="input-wrap">
-            <User :size="16" class="field-icon" />
+            <User
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="reg-name"
               v-model="fullName"
@@ -21,15 +30,26 @@
               autocomplete="name"
               :disabled="loading"
               @blur="validateName"
-            />
+            >
           </div>
-          <p class="field-error-text" v-if="errors.fullName">{{ errors.fullName }}</p>
+          <p
+            v-if="errors.fullName"
+            class="field-error-text"
+          >
+            {{ errors.fullName }}
+          </p>
         </div>
 
-        <div class="field" :class="{ 'field-error': errors.email }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.email }"
+        >
           <label for="reg-email">Email</label>
           <div class="input-wrap">
-            <Mail :size="16" class="field-icon" />
+            <Mail
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="reg-email"
               v-model="email"
@@ -38,15 +58,26 @@
               autocomplete="email"
               :disabled="loading"
               @blur="validateEmail"
-            />
+            >
           </div>
-          <p class="field-error-text" v-if="errors.email">{{ errors.email }}</p>
+          <p
+            v-if="errors.email"
+            class="field-error-text"
+          >
+            {{ errors.email }}
+          </p>
         </div>
 
-        <div class="field" :class="{ 'field-error': errors.password }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.password }"
+        >
           <label for="reg-password">Password</label>
           <div class="input-wrap">
-            <Lock :size="16" class="field-icon" />
+            <Lock
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="reg-password"
               v-model="password"
@@ -55,24 +86,45 @@
               autocomplete="new-password"
               :disabled="loading"
               @blur="validatePassword"
-            />
+            >
             <button
               type="button"
               class="toggle-password"
-              @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
               tabindex="-1"
+              @click="showPassword = !showPassword"
             >
-              <EyeOff v-if="showPassword" :size="16" />
-              <Eye v-else :size="16" />
+              <EyeOff
+                v-if="showPassword"
+                :size="16"
+              />
+              <Eye
+                v-else
+                :size="16"
+              />
             </button>
           </div>
-          <p class="field-error-text" v-if="errors.password">{{ errors.password }}</p>
-          <div class="password-strength" v-if="password.length > 0">
+          <p
+            v-if="errors.password"
+            class="field-error-text"
+          >
+            {{ errors.password }}
+          </p>
+          <div
+            v-if="password.length > 0"
+            class="password-strength"
+          >
             <div class="strength-bar">
-              <div class="strength-fill" :style="{ width: passwordStrength.percent + '%' }" :class="passwordStrength.class" />
+              <div
+                class="strength-fill"
+                :style="{ width: passwordStrength.percent + '%' }"
+                :class="passwordStrength.class"
+              />
             </div>
-            <span class="strength-text" :class="passwordStrength.class">{{ passwordStrength.label }}</span>
+            <span
+              class="strength-text"
+              :class="passwordStrength.class"
+            >{{ passwordStrength.label }}</span>
           </div>
         </div>
       </div>
@@ -90,7 +142,9 @@
 
     <p class="switch-link">
       Already have an account?
-      <router-link to="/auth/login">Sign in</router-link>
+      <router-link to="/auth/login">
+        Sign in
+      </router-link>
     </p>
   </div>
 </template>

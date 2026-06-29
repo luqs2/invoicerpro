@@ -1,16 +1,42 @@
 <template>
   <Teleport to="body">
-    <div class="toast-container">
+    <div
+      class="toast-container"
+      aria-live="polite"
+      aria-atomic="false"
+    >
       <TransitionGroup name="toast">
         <div
           v-for="t in toasts"
           :key="t.id"
           class="toast"
           :class="`toast-${t.type}`"
+          role="status"
         >
-          <component :is="iconMap[t.type]" :size="16" class="toast-icon" />
+          <component
+            :is="iconMap[t.type]"
+            :size="16"
+            class="toast-icon"
+          />
           <span class="toast-message">{{ t.message }}</span>
-          <button class="toast-close" @click="remove(t.id)" aria-label="Dismiss">
+          <div
+            v-if="t.actions?.length"
+            class="toast-actions"
+          >
+            <button
+              v-for="(action, i) in t.actions"
+              :key="i"
+              class="toast-action-btn"
+              @click="action.handler(); remove(t.id)"
+            >
+              {{ action.label }}
+            </button>
+          </div>
+          <button
+            class="toast-close"
+            aria-label="Dismiss"
+            @click="remove(t.id)"
+          >
             <X :size="14" />
           </button>
         </div>
@@ -22,10 +48,16 @@
 <script setup lang="ts">
 import { CheckCircle, AlertCircle, AlertTriangle, Info, X } from '@lucide/vue'
 
+interface ToastAction {
+  label: string
+  handler: () => void
+}
+
 interface Toast {
   id: number
   message: string
   type: 'success' | 'danger' | 'warning' | 'info'
+  actions?: ToastAction[]
 }
 
 defineProps<{ toasts: Toast[] }>()
@@ -107,6 +139,27 @@ function remove(id: number) {
   border-radius: 6px;
   transition: color .12s, background .12s;
 }
+.toast-actions {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.toast-action-btn {
+  padding: 4px 10px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 6px;
+  background: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4f46e5;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all .12s;
+  white-space: nowrap;
+}
+.toast-action-btn:hover { background: #f5f3ff; border-color: #c7d2fe; }
+
 .toast-close:hover { color: #64748b; background: #f1f5f9; }
 
 /* Transitions */
@@ -161,4 +214,6 @@ function remove(id: number) {
 }
 .dark .toast-close { color: #64748b; }
 .dark .toast-close:hover { color: #94a3b8; background: #334155; }
+.dark .toast-action-btn { background: #334155; border-color: #475569; color: #818cf8; }
+.dark .toast-action-btn:hover { background: #312e81; border-color: #4f46e5; }
 </style>

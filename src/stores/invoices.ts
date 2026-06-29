@@ -74,7 +74,7 @@ export const useInvoiceStore = defineStore('invoices', () => {
     if (!auth.user) return
     loading.value = true
     try {
-      const payload = { ...current.value, user_id: auth.user.id }
+      const { client: _client, ...payload } = { ...current.value, user_id: auth.user.id }
 
       if (current.value.id) {
         const { data, error } = await invoiceService.update(current.value.id, payload)

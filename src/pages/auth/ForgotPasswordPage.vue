@@ -5,28 +5,51 @@
         <KeyRound :size="20" />
       </div>
       <h2>Reset password</h2>
-      <p v-if="!success">Enter your email and a new password</p>
-      <p v-else>Your password has been updated</p>
+      <p v-if="!success">
+        Enter your email and a new password
+      </p>
+      <p v-else>
+        Your password has been updated
+      </p>
     </div>
 
     <!-- Success state -->
-    <div v-if="success" class="success-state">
+    <div
+      v-if="success"
+      class="success-state"
+    >
       <div class="success-icon">
         <CheckCircle :size="32" />
       </div>
-      <p class="success-text">Password reset successful</p>
-      <UiButton size="lg" class="submit-btn" @click="router.replace('/auth/login')">
+      <p class="success-text">
+        Password reset successful
+      </p>
+      <UiButton
+        size="lg"
+        class="submit-btn"
+        @click="router.replace('/auth/login')"
+      >
         Back to Sign In
       </UiButton>
     </div>
 
     <!-- Form state -->
-    <form v-else @submit.prevent="resetPassword" novalidate>
+    <form
+      v-else
+      novalidate
+      @submit.prevent="resetPassword"
+    >
       <div class="field-group">
-        <div class="field" :class="{ 'field-error': errors.email }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.email }"
+        >
           <label for="rp-email">Email</label>
           <div class="input-wrap">
-            <Mail :size="16" class="field-icon" />
+            <Mail
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="rp-email"
               v-model="email"
@@ -35,15 +58,26 @@
               autocomplete="email"
               :disabled="loading"
               @blur="validateEmail"
-            />
+            >
           </div>
-          <p class="field-error-text" v-if="errors.email">{{ errors.email }}</p>
+          <p
+            v-if="errors.email"
+            class="field-error-text"
+          >
+            {{ errors.email }}
+          </p>
         </div>
 
-        <div class="field" :class="{ 'field-error': errors.newPassword }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.newPassword }"
+        >
           <label for="rp-password">New Password</label>
           <div class="input-wrap">
-            <Lock :size="16" class="field-icon" />
+            <Lock
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="rp-password"
               v-model="newPassword"
@@ -52,25 +86,42 @@
               autocomplete="new-password"
               :disabled="loading"
               @blur="validatePassword"
-            />
+            >
             <button
               type="button"
               class="toggle-password"
-              @click="showPassword = !showPassword"
               :aria-label="showPassword ? 'Hide password' : 'Show password'"
               tabindex="-1"
+              @click="showPassword = !showPassword"
             >
-              <EyeOff v-if="showPassword" :size="16" />
-              <Eye v-else :size="16" />
+              <EyeOff
+                v-if="showPassword"
+                :size="16"
+              />
+              <Eye
+                v-else
+                :size="16"
+              />
             </button>
           </div>
-          <p class="field-error-text" v-if="errors.newPassword">{{ errors.newPassword }}</p>
+          <p
+            v-if="errors.newPassword"
+            class="field-error-text"
+          >
+            {{ errors.newPassword }}
+          </p>
         </div>
 
-        <div class="field" :class="{ 'field-error': errors.confirmPassword }">
+        <div
+          class="field"
+          :class="{ 'field-error': errors.confirmPassword }"
+        >
           <label for="rp-confirm">Confirm Password</label>
           <div class="input-wrap">
-            <Lock :size="16" class="field-icon" />
+            <Lock
+              :size="16"
+              class="field-icon"
+            />
             <input
               id="rp-confirm"
               v-model="confirmPassword"
@@ -79,9 +130,14 @@
               autocomplete="new-password"
               :disabled="loading"
               @blur="validateConfirm"
-            />
+            >
           </div>
-          <p class="field-error-text" v-if="errors.confirmPassword">{{ errors.confirmPassword }}</p>
+          <p
+            v-if="errors.confirmPassword"
+            class="field-error-text"
+          >
+            {{ errors.confirmPassword }}
+          </p>
         </div>
       </div>
 
@@ -96,9 +152,14 @@
       </UiButton>
     </form>
 
-    <p class="switch-link" v-if="!success">
+    <p
+      v-if="!success"
+      class="switch-link"
+    >
       Remember your password?
-      <router-link to="/auth/login">Sign in</router-link>
+      <router-link to="/auth/login">
+        Sign in
+      </router-link>
     </p>
   </div>
 </template>

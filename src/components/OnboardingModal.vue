@@ -1,70 +1,151 @@
 <template>
   <teleport to="body">
     <transition name="onb-fade">
-      <div v-if="show" class="onb-overlay" @click.self="skip">
-        <div class="onb-modal">
+      <div
+        v-if="show"
+        class="onb-overlay"
+        @click.self="skip"
+      >
+        <div
+          ref="modalRef"
+          class="onb-modal"
+        >
           <!-- Progress -->
           <div class="onb-progress">
-            <div class="onb-step" :class="{ active: step >= 1, complete: step > 1 }">
+            <div
+              class="onb-step"
+              :class="{ active: step >= 1, complete: step > 1 }"
+            >
               <span v-if="step <= 1">1</span>
-              <svg v-else width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                v-else
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              ><path
+                d="M3 7l3 3 5-5"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg>
             </div>
-            <div class="onb-line" :class="{ active: step > 1 }" />
-            <div class="onb-step" :class="{ active: step >= 2, complete: step > 2 }">
+            <div
+              class="onb-line"
+              :class="{ active: step > 1 }"
+            />
+            <div
+              class="onb-step"
+              :class="{ active: step >= 2, complete: step > 2 }"
+            >
               <span v-if="step <= 2">2</span>
-              <svg v-else width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7l3 3 5-5" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <svg
+                v-else
+                width="14"
+                height="14"
+                viewBox="0 0 14 14"
+                fill="none"
+              ><path
+                d="M3 7l3 3 5-5"
+                stroke="white"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              /></svg>
             </div>
-            <div class="onb-line" :class="{ active: step > 2 }" />
-            <div class="onb-step" :class="{ active: step >= 3 }">
+            <div
+              class="onb-line"
+              :class="{ active: step > 2 }"
+            />
+            <div
+              class="onb-step"
+              :class="{ active: step >= 3 }"
+            >
               <span>3</span>
             </div>
           </div>
 
           <!-- Step 1: Welcome -->
-          <div v-if="step === 1" class="onb-content">
+          <div
+            v-if="step === 1"
+            class="onb-content"
+          >
             <div class="onb-icon onb-icon-brand">
               <FileText :size="28" />
             </div>
-            <h2 class="onb-title">Welcome to InvoicerPro</h2>
-            <p class="onb-desc">Let's get you set up in just a few steps. First, add your business details so they appear on your invoices.</p>
+            <h2 class="onb-title">
+              Welcome to InvoicerPro
+            </h2>
+            <p class="onb-desc">
+              Let's get you set up in just a few steps. First, add your business details so they appear on your invoices.
+            </p>
             <div class="onb-form">
               <div class="onb-field">
                 <label>Business Name</label>
-                <input v-model="profile.name" placeholder="Acme Co." />
+                <input
+                  v-model="profile.name"
+                  placeholder="Acme Co."
+                >
               </div>
               <div class="onb-field">
                 <label>Email</label>
-                <input v-model="profile.email" type="email" placeholder="hello@acme.com" />
+                <input
+                  v-model="profile.email"
+                  type="email"
+                  placeholder="hello@acme.com"
+                >
               </div>
             </div>
           </div>
 
           <!-- Step 2: Add client -->
-          <div v-if="step === 2" class="onb-content">
+          <div
+            v-if="step === 2"
+            class="onb-content"
+          >
             <div class="onb-icon onb-icon-purple">
               <Users :size="28" />
             </div>
-            <h2 class="onb-title">Add your first client</h2>
-            <p class="onb-desc">Adding clients now makes invoice creation faster later. You can always skip this.</p>
+            <h2 class="onb-title">
+              Add your first client
+            </h2>
+            <p class="onb-desc">
+              Adding clients now makes invoice creation faster later. You can always skip this.
+            </p>
             <div class="onb-form">
               <div class="onb-field">
                 <label>Client Name</label>
-                <input v-model="client.name" placeholder="Jane Smith" />
+                <input
+                  v-model="client.name"
+                  placeholder="Jane Smith"
+                >
               </div>
               <div class="onb-field">
                 <label>Email</label>
-                <input v-model="client.email" type="email" placeholder="jane@company.com" />
+                <input
+                  v-model="client.email"
+                  type="email"
+                  placeholder="jane@company.com"
+                >
               </div>
             </div>
           </div>
 
           <!-- Step 3: Ready -->
-          <div v-if="step === 3" class="onb-content">
+          <div
+            v-if="step === 3"
+            class="onb-content"
+          >
             <div class="onb-icon onb-icon-green">
               <CheckCircle :size="28" />
             </div>
-            <h2 class="onb-title">You're all set!</h2>
-            <p class="onb-desc">Start creating professional invoices and tracking payments. Here are some tips:</p>
+            <h2 class="onb-title">
+              You're all set!
+            </h2>
+            <p class="onb-desc">
+              Start creating professional invoices and tracking payments. Here are some tips:
+            </p>
             <ul class="onb-tips">
               <li>Press <kbd>N</kbd> to create a new invoice</li>
               <li>Use Templates to customise your invoice look</li>
@@ -74,8 +155,17 @@
 
           <!-- Actions -->
           <div class="onb-actions">
-            <button class="onb-skip" @click="skip">Skip for now</button>
-            <button class="onb-next" @click="next" :disabled="step === 1 && !profile.name">
+            <button
+              class="onb-skip"
+              @click="skip"
+            >
+              Skip for now
+            </button>
+            <button
+              class="onb-next"
+              :disabled="step === 1 && !profile.name"
+              @click="next"
+            >
               {{ step === 3 ? 'Get Started' : 'Continue' }}
             </button>
           </div>
@@ -93,6 +183,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useClientStore } from '@/stores/clients'
 import { useToast } from '@/composables/useToast'
+import { useEscapeKey, useFocusTrap } from '@/composables/useFocusTrap'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -102,6 +193,10 @@ const { showToast } = useToast()
 
 const show = ref(false)
 const step = ref(1)
+const modalRef = ref<HTMLElement | null>(null)
+
+useEscapeKey(() => { if (show.value) skip() })
+useFocusTrap(modalRef)
 
 const profile = reactive({ name: '', email: '' })
 const client  = reactive({ name: '', email: '' })

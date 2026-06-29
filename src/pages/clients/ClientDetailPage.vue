@@ -1,32 +1,50 @@
 <template>
   <div class="page">
-
     <div v-if="!loading && client">
       <!-- Header -->
       <div class="page-header">
         <div class="header-left">
-          <router-link to="/app/clients" class="back-link">
+          <router-link
+            to="/app/clients"
+            class="back-link"
+          >
             <ArrowLeft :size="16" />
             Clients
           </router-link>
           <div class="client-identity">
-            <div class="avatar">{{ getInitials(client.name) }}</div>
+            <div class="avatar">
+              {{ getInitials(client.name) }}
+            </div>
             <div>
-              <h1 class="page-title">{{ client.name }}</h1>
-              <p class="page-sub">{{ client.email }}</p>
+              <h1 class="page-title">
+                {{ client.name }}
+              </h1>
+              <p class="page-sub">
+                {{ client.email }}
+              </p>
             </div>
           </div>
         </div>
         <div class="header-actions">
-          <router-link to="/app/invoices/new" class="btn-primary">
+          <router-link
+            to="/app/invoices/new"
+            class="btn-primary"
+          >
             <Plus :size="14" />
             New Invoice
           </router-link>
-          <UiButton variant="outline" @click="openEdit">
+          <UiButton
+            variant="outline"
+            @click="openEdit"
+          >
             <Pencil :size="14" />
             Edit
           </UiButton>
-          <UiButton variant="danger" @click="del" :loading="deleting">
+          <UiButton
+            variant="danger"
+            :loading="deleting"
+            @click="del"
+          >
             <Trash2 :size="14" />
             Delete
           </UiButton>
@@ -35,29 +53,46 @@
 
       <!-- Content grid -->
       <div class="detail-layout">
-
         <!-- Client info card -->
         <div class="info-card">
           <div class="card-header">
-            <h2 class="card-title">Contact Details</h2>
+            <h2 class="card-title">
+              Contact Details
+            </h2>
           </div>
           <div class="card-body">
             <div class="info-row">
               <span class="info-label">Email</span>
-              <a :href="`mailto:${client.email}`" class="info-value info-link">{{ client.email }}</a>
+              <a
+                :href="`mailto:${client.email}`"
+                class="info-value info-link"
+              >{{ client.email }}</a>
             </div>
             <div class="info-divider" />
-            <div class="info-row" v-if="client.phone">
+            <div
+              v-if="client.phone"
+              class="info-row"
+            >
               <span class="info-label">Phone</span>
               <span class="info-value">{{ client.phone }}</span>
             </div>
-            <template v-if="client.phone"><div class="info-divider" /></template>
-            <div class="info-row" v-if="client.company">
+            <template v-if="client.phone">
+              <div class="info-divider" />
+            </template>
+            <div
+              v-if="client.company"
+              class="info-row"
+            >
               <span class="info-label">Company</span>
               <span class="info-value">{{ client.company }}</span>
             </div>
-            <template v-if="client.company"><div class="info-divider" /></template>
-            <div class="info-row" v-if="client.address">
+            <template v-if="client.company">
+              <div class="info-divider" />
+            </template>
+            <div
+              v-if="client.address"
+              class="info-row"
+            >
               <span class="info-label">Address</span>
               <span class="info-value">{{ client.address }}</span>
             </div>
@@ -67,33 +102,65 @@
         <!-- Stats card -->
         <div class="stats-col">
           <div class="stat-card">
-            <p class="stat-label">Member Since</p>
-            <p class="stat-value">{{ formatDate(client.created_at) }}</p>
+            <p class="stat-label">
+              Member Since
+            </p>
+            <p class="stat-value">
+              {{ formatDate(client.created_at) }}
+            </p>
           </div>
           <div class="stat-card">
-            <div class="stat-icon-inline" style="background:#d1fae5;">
-              <DollarSign :size="16" style="color:#059669;" />
+            <div
+              class="stat-icon-inline"
+              style="background:#d1fae5;"
+            >
+              <DollarSign
+                :size="16"
+                style="color:#059669;"
+              />
             </div>
-            <p class="stat-label">Total Revenue</p>
-            <p class="stat-value">{{ formatCurrency(totalRevenue) }}</p>
+            <p class="stat-label">
+              Total Revenue
+            </p>
+            <p class="stat-value">
+              {{ formatCurrency(totalRevenue) }}
+            </p>
           </div>
           <div class="stat-card">
-            <p class="stat-label">Outstanding Invoices</p>
-            <p class="stat-value" :class="{ 'overdue': outstandingCount > 0 }">{{ outstandingCount }}</p>
+            <p class="stat-label">
+              Outstanding Invoices
+            </p>
+            <p
+              class="stat-value"
+              :class="{ 'overdue': outstandingCount > 0 }"
+            >
+              {{ outstandingCount }}
+            </p>
           </div>
           <div class="stat-card">
-            <p class="stat-label">Total Received</p>
-            <p class="stat-value">{{ formatCurrency(totalReceipts) }}</p>
+            <p class="stat-label">
+              Total Received
+            </p>
+            <p class="stat-value">
+              {{ formatCurrency(totalReceipts) }}
+            </p>
           </div>
         </div>
-
       </div>
 
       <!-- Invoices section -->
-      <div class="invoices-section" v-if="invoices.length">
+      <div
+        v-if="invoices.length"
+        class="invoices-section"
+      >
         <div class="section-header">
-          <h2 class="section-title">Invoices</h2>
-          <router-link to="/app/invoices/new" class="section-link">
+          <h2 class="section-title">
+            Invoices
+          </h2>
+          <router-link
+            to="/app/invoices/new"
+            class="section-link"
+          >
             <Plus :size="14" />
             New
           </router-link>
@@ -106,25 +173,43 @@
             class="invoice-row"
           >
             <div class="inv-left">
-              <FileText :size="16" class="inv-icon" />
+              <FileText
+                :size="16"
+                class="inv-icon"
+              />
               <div>
-                <p class="inv-number">{{ inv.invoice_number }}</p>
-                <p class="inv-date">{{ formatDate(inv.issue_date) }}</p>
+                <p class="inv-number">
+                  {{ inv.invoice_number }}
+                </p>
+                <p class="inv-date">
+                  {{ formatDate(inv.issue_date) }}
+                </p>
               </div>
             </div>
             <div class="inv-right">
               <span class="inv-amount">{{ formatCurrency(inv.total, inv.currency) }}</span>
-              <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
+              <span
+                class="status-badge"
+                :class="`status-${inv.status}`"
+              >{{ inv.status }}</span>
             </div>
           </router-link>
         </div>
       </div>
 
       <!-- Receipts section -->
-      <div class="invoices-section" v-if="receipts.length">
+      <div
+        v-if="receipts.length"
+        class="invoices-section"
+      >
         <div class="section-header">
-          <h2 class="section-title">Receipts</h2>
-          <router-link to="/app/receipts/new" class="section-link">
+          <h2 class="section-title">
+            Receipts
+          </h2>
+          <router-link
+            to="/app/receipts/new"
+            class="section-link"
+          >
             <Plus :size="14" />
             New
           </router-link>
@@ -137,10 +222,17 @@
             class="invoice-row"
           >
             <div class="inv-left">
-              <DollarSign :size="16" class="inv-icon" />
+              <DollarSign
+                :size="16"
+                class="inv-icon"
+              />
               <div>
-                <p class="inv-number">{{ r.receipt_number }}</p>
-                <p class="inv-date">{{ formatDate(r.payment_date) }}</p>
+                <p class="inv-number">
+                  {{ r.receipt_number }}
+                </p>
+                <p class="inv-date">
+                  {{ formatDate(r.payment_date) }}
+                </p>
               </div>
             </div>
             <div class="inv-right">
@@ -156,12 +248,26 @@
       <!-- Header skeleton -->
       <div class="page-header">
         <div class="header-left">
-          <Skeleton variant="text" width="60px" />
+          <Skeleton
+            variant="text"
+            width="60px"
+          />
           <div class="client-identity">
-            <Skeleton variant="rect" width="52px" height="52px" style="border-radius:14px; flex-shrink:0;" />
+            <Skeleton
+              variant="rect"
+              width="52px"
+              height="52px"
+              style="border-radius:14px; flex-shrink:0;"
+            />
             <div style="display:flex; flex-direction:column; gap:4px;">
-              <Skeleton variant="text" width="160px" />
-              <Skeleton variant="text" width="200px" />
+              <Skeleton
+                variant="text"
+                width="160px"
+              />
+              <Skeleton
+                variant="text"
+                width="200px"
+              />
             </div>
           </div>
         </div>
@@ -170,18 +276,45 @@
       <!-- Content skeleton -->
       <div class="detail-layout">
         <div class="info-card">
-          <div class="card-header"><Skeleton variant="text" width="110px" /></div>
+          <div class="card-header">
+            <Skeleton
+              variant="text"
+              width="110px"
+            />
+          </div>
           <div class="card-body">
-            <div v-for="i in 3" :key="i" style="padding:13px 20px;">
-              <Skeleton variant="text" width="60px" />
-              <Skeleton variant="text" width="180px" style="margin-top:4px;" />
+            <div
+              v-for="i in 3"
+              :key="i"
+              style="padding:13px 20px;"
+            >
+              <Skeleton
+                variant="text"
+                width="60px"
+              />
+              <Skeleton
+                variant="text"
+                width="180px"
+                style="margin-top:4px;"
+              />
             </div>
           </div>
         </div>
         <div class="stats-col">
-          <div class="stat-card" v-for="i in 4" :key="i">
-            <Skeleton variant="text" width="100px" />
-            <Skeleton variant="text" width="80px" style="margin-top:4px;" />
+          <div
+            v-for="i in 4"
+            :key="i"
+            class="stat-card"
+          >
+            <Skeleton
+              variant="text"
+              width="100px"
+            />
+            <Skeleton
+              variant="text"
+              width="80px"
+              style="margin-top:4px;"
+            />
           </div>
         </div>
       </div>
@@ -189,20 +322,44 @@
       <!-- Invoices section skeleton -->
       <div class="invoices-section">
         <div class="section-header">
-          <Skeleton variant="text" width="70px" />
+          <Skeleton
+            variant="text"
+            width="70px"
+          />
         </div>
         <div>
-          <div v-for="i in 3" :key="i" class="invoice-row">
+          <div
+            v-for="i in 3"
+            :key="i"
+            class="invoice-row"
+          >
             <div class="inv-left">
-              <Skeleton variant="rect" width="16px" height="16px" style="border-radius:4px;" />
+              <Skeleton
+                variant="rect"
+                width="16px"
+                height="16px"
+                style="border-radius:4px;"
+              />
               <div>
-                <Skeleton variant="text" width="100px" />
-                <Skeleton variant="text" width="80px" />
+                <Skeleton
+                  variant="text"
+                  width="100px"
+                />
+                <Skeleton
+                  variant="text"
+                  width="80px"
+                />
               </div>
             </div>
             <div class="inv-right">
-              <Skeleton variant="text" width="80px" />
-              <Skeleton variant="text" width="50px" />
+              <Skeleton
+                variant="text"
+                width="80px"
+              />
+              <Skeleton
+                variant="text"
+                width="50px"
+              />
             </div>
           </div>
         </div>
@@ -211,11 +368,20 @@
 
     <!-- Edit side panel -->
     <transition name="panel-slide">
-      <div v-if="panelOpen" class="panel-overlay" @click.self="closePanel">
+      <div
+        v-if="panelOpen"
+        class="panel-overlay"
+        @click.self="closePanel"
+      >
         <div class="side-panel">
           <div class="panel-header">
-            <h2 class="panel-title">Edit Client</h2>
-            <button class="panel-close" @click="closePanel">
+            <h2 class="panel-title">
+              Edit Client
+            </h2>
+            <button
+              class="panel-close"
+              @click="closePanel"
+            >
               <X :size="16" />
             </button>
           </div>
@@ -223,36 +389,64 @@
           <div class="panel-body">
             <div class="field">
               <label>Full Name <span class="req">*</span></label>
-              <UiInput v-model="form.name" placeholder="Jane Smith" />
+              <UiInput
+                v-model="form.name"
+                placeholder="Jane Smith"
+              />
             </div>
             <div class="field">
               <label>Email <span class="req">*</span></label>
-              <UiInput v-model="form.email" type="email" placeholder="jane@company.com" />
+              <UiInput
+                v-model="form.email"
+                type="email"
+                placeholder="jane@company.com"
+              />
             </div>
             <div class="field-row">
               <div class="field">
                 <label>Phone</label>
-                <UiInput v-model="form.phone" placeholder="+1 (555) 000-0000" />
+                <UiInput
+                  v-model="form.phone"
+                  placeholder="+1 (555) 000-0000"
+                />
               </div>
               <div class="field">
                 <label>Company</label>
-                <UiInput v-model="form.company" placeholder="Acme Corp" />
+                <UiInput
+                  v-model="form.company"
+                  placeholder="Acme Corp"
+                />
               </div>
             </div>
             <div class="field">
               <label>Address</label>
-              <UiTextarea v-model="form.address" placeholder="123 Main St, City, Country" :rows="3" />
+              <UiTextarea
+                v-model="form.address"
+                placeholder="123 Main St, City, Country"
+                :rows="3"
+              />
             </div>
           </div>
 
           <div class="panel-footer">
-            <UiButton variant="outline" @click="closePanel" class="footer-btn">Cancel</UiButton>
-            <UiButton @click="saveEdit" :loading="saving" class="footer-btn">Save Changes</UiButton>
+            <UiButton
+              variant="outline"
+              class="footer-btn"
+              @click="closePanel"
+            >
+              Cancel
+            </UiButton>
+            <UiButton
+              :loading="saving"
+              class="footer-btn"
+              @click="saveEdit"
+            >
+              Save Changes
+            </UiButton>
           </div>
         </div>
       </div>
     </transition>
-
   </div>
 </template>
 

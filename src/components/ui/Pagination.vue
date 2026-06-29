@@ -1,5 +1,8 @@
 <template>
-  <div class="pagination-wrapper" v-if="total > pageSize">
+  <div
+    v-if="total > pageSize"
+    class="pagination-wrapper"
+  >
     <div class="pagination-info">
       <span class="pagination-text">
         Showing {{ startItem }}–{{ endItem }} of {{ total }}
@@ -17,7 +20,10 @@
           :disabled="currentPage === 1"
           @click="$emit('update:currentPage', currentPage - 1)"
         />
-        <template v-for="(item, index) in items" :key="index">
+        <template
+          v-for="(item, index) in items"
+          :key="index"
+        >
           <PaginationItem
             v-if="item.type === 'page'"
             :value="item.value"
@@ -34,14 +40,23 @@
       </PaginationContent>
     </Pagination>
     <div class="pagination-size">
-      <label class="size-label" for="page-size-select">Per page:</label>
+      <label
+        class="size-label"
+        for="page-size-select"
+      >Per page:</label>
       <select
         id="page-size-select"
         class="size-select"
         :value="pageSize"
         @change="$emit('update:pageSize', Number(($event.target as HTMLSelectElement).value))"
       >
-        <option v-for="s in pageSizeOptions" :key="s" :value="s">{{ s }}</option>
+        <option
+          v-for="s in pageSizeOptions"
+          :key="s"
+          :value="s"
+        >
+          {{ s }}
+        </option>
       </select>
     </div>
   </div>

@@ -1,43 +1,76 @@
 <template>
   <div class="page">
-
     <div class="page-header">
       <div>
-        <h1 class="page-title">Settings</h1>
-        <p class="page-sub">Manage your business profile and preferences</p>
+        <h1 class="page-title">
+          Settings
+        </h1>
+        <p class="page-sub">
+          Manage your business profile and preferences
+        </p>
       </div>
-      <button class="btn-primary" @click="saveProfile" :disabled="saving">
-        <span v-if="saving" class="spinner" />
+      <button
+        class="btn-primary"
+        :disabled="saving"
+        @click="saveProfile"
+      >
+        <span
+          v-if="saving"
+          class="spinner"
+        />
         {{ saving ? 'Saving…' : 'Save Changes' }}
       </button>
     </div>
 
-    <div class="settings-layout" v-if="!loading">
-
+    <div
+      v-if="!loading"
+      class="settings-layout"
+    >
       <!-- Left column -->
       <div class="settings-main">
-
         <!-- Business Profile -->
         <div class="settings-card">
           <div class="card-header">
-            <h2 class="card-title">Business Profile</h2>
-            <p class="card-desc">This info appears on your invoices and receipts.</p>
+            <h2 class="card-title">
+              Business Profile
+            </h2>
+            <p class="card-desc">
+              This info appears on your invoices and receipts.
+            </p>
           </div>
           <div class="card-body">
-
             <!-- Logo upload -->
             <div class="logo-section">
-              <div class="logo-preview" @click="triggerLogoUpload">
-                <img v-if="form.logo_url" :src="form.logo_url" alt="Business logo" class="logo-img" />
-                <div v-else class="logo-initials">{{ nameInitials }}</div>
+              <div
+                class="logo-preview"
+                @click="triggerLogoUpload"
+              >
+                <img
+                  v-if="form.logo_url"
+                  :src="form.logo_url"
+                  alt="Business logo"
+                  class="logo-img"
+                >
+                <div
+                  v-else
+                  class="logo-initials"
+                >
+                  {{ nameInitials }}
+                </div>
                 <div class="logo-overlay">
                   <Upload :size="18" />
                   <span>{{ form.logo_url ? 'Change' : 'Upload' }}</span>
                 </div>
               </div>
               <div class="logo-info">
-                <p class="logo-hint">PNG, JPG, or SVG · Max 2 MB</p>
-                <button v-if="form.logo_url" class="logo-remove" @click="form.logo_url = ''">
+                <p class="logo-hint">
+                  PNG, JPG, or SVG · Max 2 MB
+                </p>
+                <button
+                  v-if="form.logo_url"
+                  class="logo-remove"
+                  @click="form.logo_url = ''"
+                >
                   Remove logo
                 </button>
               </div>
@@ -47,28 +80,41 @@
                 accept="image/png,image/jpeg,image/svg+xml,image/webp"
                 style="display:none"
                 @change="handleLogoUpload"
-              />
+              >
             </div>
 
             <div class="field-row">
               <div class="field">
                 <label>Business Name</label>
-                <UiInput v-model="form.name" placeholder="Acme Co." />
+                <UiInput
+                  v-model="form.name"
+                  placeholder="Acme Co."
+                />
               </div>
               <div class="field">
                 <label>Email</label>
-                <UiInput v-model="form.email" type="email" placeholder="hello@acme.com" />
+                <UiInput
+                  v-model="form.email"
+                  type="email"
+                  placeholder="hello@acme.com"
+                />
               </div>
             </div>
 
             <div class="field-row">
               <div class="field">
                 <label>Phone</label>
-                <UiInput v-model="form.phone" placeholder="+60 12-345 6789" />
+                <UiInput
+                  v-model="form.phone"
+                  placeholder="+60 12-345 6789"
+                />
               </div>
               <div class="field">
                 <label>Address</label>
-                <UiInput v-model="form.address" placeholder="123 Main St, City" />
+                <UiInput
+                  v-model="form.address"
+                  placeholder="123 Main St, City"
+                />
               </div>
             </div>
           </div>
@@ -77,70 +123,128 @@
         <!-- Invoice & Receipt Defaults -->
         <div class="settings-card">
           <div class="card-header">
-            <h2 class="card-title">Invoice & Receipt Defaults</h2>
-            <p class="card-desc">Applied automatically when you create new documents.</p>
+            <h2 class="card-title">
+              Invoice & Receipt Defaults
+            </h2>
+            <p class="card-desc">
+              Applied automatically when you create new documents.
+            </p>
           </div>
           <div class="card-body">
             <div class="field-row">
               <div class="field">
                 <label>Default Currency</label>
-                <UiSelect v-model="form.default_currency" :options="currencyOptions" />
+                <UiSelect
+                  v-model="form.default_currency"
+                  :options="currencyOptions"
+                />
               </div>
               <div class="field">
                 <label>Default Tax Rate (%)</label>
-                <UiInput v-model="form.default_tax_rate" type="number" min="0" max="100" step="0.5" />
+                <UiInput
+                  v-model="form.default_tax_rate"
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="0.5"
+                />
               </div>
             </div>
             <div class="field-row">
               <div class="field">
                 <label>Invoice Prefix</label>
-                <UiInput v-model="form.invoice_prefix" placeholder="INV" />
+                <UiInput
+                  v-model="form.invoice_prefix"
+                  placeholder="INV"
+                />
               </div>
               <div class="field">
                 <label>Receipt Prefix</label>
-                <UiInput v-model="form.receipt_prefix" placeholder="RCP" />
+                <UiInput
+                  v-model="form.receipt_prefix"
+                  placeholder="RCP"
+                />
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
       <!-- Right column -->
       <div class="settings-aside">
-
         <!-- Preview card -->
         <div class="settings-card">
           <div class="card-header">
-            <h2 class="card-title">Preview</h2>
-            <p class="card-desc">How your business appears on documents.</p>
+            <h2 class="card-title">
+              Preview
+            </h2>
+            <p class="card-desc">
+              How your business appears on documents.
+            </p>
           </div>
           <div class="preview-body">
             <div class="preview-logo-wrap">
-              <img v-if="form.logo_url" :src="form.logo_url" alt="logo" class="preview-logo-img" />
-              <div v-else class="preview-logo-initials">{{ nameInitials }}</div>
+              <img
+                v-if="form.logo_url"
+                :src="form.logo_url"
+                alt="logo"
+                class="preview-logo-img"
+              >
+              <div
+                v-else
+                class="preview-logo-initials"
+              >
+                {{ nameInitials }}
+              </div>
             </div>
-            <p class="preview-name">{{ form.name || 'Your Business Name' }}</p>
-            <p class="preview-email">{{ form.email || 'your@email.com' }}</p>
-            <p class="preview-address" v-if="form.address">{{ form.address }}</p>
+            <p class="preview-name">
+              {{ form.name || 'Your Business Name' }}
+            </p>
+            <p class="preview-email">
+              {{ form.email || 'your@email.com' }}
+            </p>
+            <p
+              v-if="form.address"
+              class="preview-address"
+            >
+              {{ form.address }}
+            </p>
           </div>
         </div>
 
         <!-- Account -->
         <div class="settings-card">
           <div class="card-header">
-            <h2 class="card-title">Account</h2>
+            <h2 class="card-title">
+              Account
+            </h2>
           </div>
-          <div class="card-body" style="padding-top:0">
+          <div
+            class="card-body"
+            style="padding-top:0"
+          >
             <div class="theme-toggle-row">
               <span class="theme-label">Appearance</span>
-              <button class="theme-toggle" @click="toggleTheme" :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`">
-                <Sun v-if="theme === 'dark'" :size="16" />
-                <Moon v-else :size="16" />
+              <button
+                class="theme-toggle"
+                :aria-label="`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`"
+                @click="toggleTheme"
+              >
+                <Sun
+                  v-if="theme === 'dark'"
+                  :size="16"
+                />
+                <Moon
+                  v-else
+                  :size="16"
+                />
                 <span>{{ theme === 'light' ? 'Dark' : 'Light' }} mode</span>
               </button>
             </div>
-            <button class="danger-btn" @click="logout">
+            <button
+              class="danger-btn"
+              @click="logout"
+            >
               <LogOut :size="16" />
               Sign Out
             </button>
@@ -148,66 +252,175 @@
         </div>
 
         <div class="info-card">
-          <p class="info-title">InvoicerPro</p>
-          <p class="info-version">Version 0.1.0</p>
+          <p class="info-title">
+            InvoicerPro
+          </p>
+          <p class="info-version">
+            Version 0.1.0
+          </p>
         </div>
-
       </div>
     </div>
 
     <!-- Skeleton loading state -->
-    <div v-else class="settings-layout">
+    <div
+      v-else
+      class="settings-layout"
+    >
       <div class="settings-main">
         <div class="settings-card">
           <div class="card-header">
-            <Skeleton variant="text" width="120px" />
+            <Skeleton
+              variant="text"
+              width="120px"
+            />
           </div>
           <div class="card-body">
             <div class="logo-section">
-              <Skeleton variant="rect" width="72px" height="72px" style="border-radius:14px; flex-shrink:0;" />
+              <Skeleton
+                variant="rect"
+                width="72px"
+                height="72px"
+                style="border-radius:14px; flex-shrink:0;"
+              />
               <div style="display:flex; flex-direction:column; gap:4px;">
-                <Skeleton variant="text" width="140px" />
-                <Skeleton variant="text" width="100px" />
+                <Skeleton
+                  variant="text"
+                  width="140px"
+                />
+                <Skeleton
+                  variant="text"
+                  width="100px"
+                />
               </div>
             </div>
             <div class="field-row">
-              <div class="field"><Skeleton variant="text" width="60px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
-              <div class="field"><Skeleton variant="text" width="40px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="60px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="40px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
             </div>
             <div class="field-row">
-              <div class="field"><Skeleton variant="text" width="40px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
-              <div class="field"><Skeleton variant="text" width="50px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="40px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="50px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
             </div>
           </div>
         </div>
         <div class="settings-card">
           <div class="card-header">
-            <Skeleton variant="text" width="180px" />
+            <Skeleton
+              variant="text"
+              width="180px"
+            />
           </div>
           <div class="card-body">
             <div class="field-row">
-              <div class="field"><Skeleton variant="text" width="100px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
-              <div class="field"><Skeleton variant="text" width="110px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="100px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="110px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
             </div>
             <div class="field-row">
-              <div class="field"><Skeleton variant="text" width="90px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
-              <div class="field"><Skeleton variant="text" width="90px" /><Skeleton variant="rect" height="38px" style="border-radius:9px;" /></div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="90px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
+              <div class="field">
+                <Skeleton
+                  variant="text"
+                  width="90px"
+                /><Skeleton
+                  variant="rect"
+                  height="38px"
+                  style="border-radius:9px;"
+                />
+              </div>
             </div>
           </div>
         </div>
       </div>
       <div class="settings-aside">
         <div class="settings-card">
-          <div class="card-header"><Skeleton variant="text" width="60px" /></div>
+          <div class="card-header">
+            <Skeleton
+              variant="text"
+              width="60px"
+            />
+          </div>
           <div class="preview-body">
-            <Skeleton variant="circle" width="56px" height="56px" />
-            <Skeleton variant="text" width="120px" />
-            <Skeleton variant="text" width="160px" />
+            <Skeleton
+              variant="circle"
+              width="56px"
+              height="56px"
+            />
+            <Skeleton
+              variant="text"
+              width="120px"
+            />
+            <Skeleton
+              variant="text"
+              width="160px"
+            />
           </div>
         </div>
       </div>
     </div>
-
   </div>
 </template>
 
@@ -329,24 +542,9 @@ async function logout() {
 </script>
 
 <style scoped>
-.page {
-  padding: 32px 36px;
-  max-width: 1100px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
+.page { gap: 24px; }
 
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-}
-.page-title  { font-size: 26px; font-weight: 800; color: #0f172a; margin: 0 0 2px; letter-spacing: -0.5px; }
-.page-sub    { font-size: 13px; color: #94a3b8; margin: 0; font-weight: 500; }
-
-/* Layout */
+/* Settings layout */
 .settings-layout {
   display: grid;
   grid-template-columns: 1fr 260px;
@@ -356,7 +554,7 @@ async function logout() {
 .settings-main  { display: flex; flex-direction: column; gap: 20px; }
 .settings-aside { display: flex; flex-direction: column; gap: 16px; position: sticky; top: 20px; }
 
-/* Cards */
+/* Settings cards */
 .settings-card {
   background: #fff;
   border: 1px solid #e2e8f0;
@@ -435,34 +633,11 @@ async function logout() {
 }
 .logo-remove:hover { text-decoration: underline; }
 
-/* Fields */
-.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
-.field     { display: flex; flex-direction: column; gap: 6px; }
-.field label {
+/* Settings-specific field overrides */
+.settings-card .field label {
   font-size: 12px; font-weight: 700; color: #64748b;
   text-transform: uppercase; letter-spacing: 0.4px;
 }
-.field input,
-.field textarea {
-  padding: 9px 12px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 9px;
-  font-size: 14px;
-  color: #0f172a;
-  background: #f8fafc;
-  outline: none;
-  font-family: inherit;
-  resize: none;
-  transition: border-color .15s, box-shadow .15s, background .15s;
-}
-.field input:focus,
-.field textarea:focus {
-  border-color: #6366f1;
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.1);
-}
-.field input::placeholder,
-.field textarea::placeholder { color: #94a3b8; }
 
 /* Preview card */
 .preview-body {
@@ -539,16 +714,6 @@ async function logout() {
 }
 .theme-toggle:hover { background: #f8fafc; border-color: #c7d2fe; }
 
-.spinner {
-  width: 14px; height: 14px;
-  border: 2px solid rgba(255,255,255,.4);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: spin .6s linear infinite;
-  display: inline-block;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
-
 .info-card    { padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
 .info-title   { font-size: 13px; font-weight: 700; color: #374151; margin: 0 0 2px; }
 .info-version { font-size: 12px; color: #94a3b8; margin: 0; }
@@ -558,9 +723,6 @@ async function logout() {
   .settings-aside  { position: static; }
 }
 @media (max-width: 768px) {
-  .page       { padding: 20px 16px; }
-  .page-title { font-size: 20px; }
-  .field-row  { grid-template-columns: 1fr; }
   .page-header { flex-direction: column; align-items: flex-start; }
 }
 </style>

@@ -1,22 +1,39 @@
 <template>
   <div class="page">
-
     <!-- Header -->
     <div class="page-header">
       <div class="header-left">
-        <router-link to="/app/invoices" class="back-link">
+        <router-link
+          to="/app/invoices"
+          class="back-link"
+        >
           <ArrowLeft :size="16" />
           <span class="back-text">Invoices</span>
         </router-link>
-        <h1 class="page-title">{{ isEdit ? 'Edit Invoice' : 'New Invoice' }}</h1>
+        <h1 class="page-title">
+          {{ isEdit ? 'Edit Invoice' : 'New Invoice' }}
+        </h1>
       </div>
       <div class="header-actions desktop-only">
-        <UiButton variant="outline" @click="saveDraft" :loading="saving === 'draft'">Save Draft</UiButton>
-        <UiButton @click="saveInvoice" :loading="saving === 'save'">
+        <UiButton
+          variant="outline"
+          :loading="saving === 'draft'"
+          @click="saveDraft"
+        >
+          Save Draft
+        </UiButton>
+        <UiButton
+          :loading="saving === 'save'"
+          @click="saveInvoice"
+        >
           <Save :size="14" />
           Save Invoice
         </UiButton>
-        <UiButton variant="outline" @click="send" :loading="saving === 'send'">
+        <UiButton
+          variant="outline"
+          :loading="saving === 'send'"
+          @click="send"
+        >
           <Send :size="14" />
           Send
         </UiButton>
@@ -25,43 +42,58 @@
 
     <!-- Two-column layout -->
     <div class="builder-layout">
-
       <!-- Left: form -->
       <div class="builder-form">
-
         <!-- Tab nav -->
-        <UiTabs v-model="tab" :tabs="[
-          { value: 'form',    label: 'Details' },
-          { value: 'preview', label: 'Preview' },
-        ]" />
+        <UiTabs
+          v-model="tab"
+          :tabs="[
+            { value: 'form', label: 'Details' },
+            { value: 'preview', label: 'Preview' },
+          ]"
+        />
 
         <!-- Details tab -->
         <template v-if="tab === 'form'">
-
           <!-- Invoice metadata -->
           <div class="form-card">
             <div class="card-header">
-              <h2 class="card-title">Invoice Details</h2>
+              <h2 class="card-title">
+                Invoice Details
+              </h2>
             </div>
             <div class="card-body">
               <div class="field-row">
                 <div class="field">
                   <label>Invoice Number</label>
-                  <UiInput v-model="store.current.invoice_number" placeholder="INV-0001" />
+                  <UiInput
+                    v-model="store.current.invoice_number"
+                    placeholder="INV-0001"
+                  />
                 </div>
                 <div class="field">
                   <label>Currency</label>
-                  <UiSelect v-model="store.current.currency" :options="currencyOptions" placeholder="Select currency" />
+                  <UiSelect
+                    v-model="store.current.currency"
+                    :options="currencyOptions"
+                    placeholder="Select currency"
+                  />
                 </div>
               </div>
               <div class="field-row">
                 <div class="field">
                   <label>Issue Date</label>
-                  <UiInput v-model="store.current.issue_date" type="date" />
+                  <UiInput
+                    v-model="store.current.issue_date"
+                    type="date"
+                  />
                 </div>
                 <div class="field">
                   <label>Due Date</label>
-                  <UiInput v-model="store.current.due_date" type="date" />
+                  <UiInput
+                    v-model="store.current.due_date"
+                    type="date"
+                  />
                 </div>
               </div>
             </div>
@@ -70,7 +102,9 @@
           <!-- Client -->
           <div class="form-card">
             <div class="card-header">
-              <h2 class="card-title">Bill To</h2>
+              <h2 class="card-title">
+                Bill To
+              </h2>
             </div>
             <div class="card-body">
               <div class="field">
@@ -87,7 +121,9 @@
           <!-- Line items -->
           <div class="form-card">
             <div class="card-header">
-              <h2 class="card-title">Line Items</h2>
+              <h2 class="card-title">
+                Line Items
+              </h2>
             </div>
             <div class="card-body">
               <div class="line-items-table">
@@ -96,7 +132,7 @@
                   <span class="li-col-qty">Qty</span>
                   <span class="li-col-rate">Rate</span>
                   <span class="li-col-amt">Amount</span>
-                  <span class="li-col-del"></span>
+                  <span class="li-col-del" />
                 </div>
                 <div
                   v-for="(item, idx) in store.current.line_items"
@@ -108,14 +144,14 @@
                     :value="item.description"
                     placeholder="Service or product…"
                     @input="debouncedUpdateLineItem(idx, { description: ($event.target as HTMLInputElement).value })"
-                  />
+                  >
                   <input
                     class="li-input li-input-num"
                     type="number"
                     :value="item.quantity"
                     min="0"
                     @input="debouncedUpdateLineItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
-                  />
+                  >
                   <input
                     class="li-input li-input-num"
                     type="number"
@@ -124,15 +160,25 @@
                     step="0.01"
                     placeholder="0.00"
                     @input="debouncedUpdateLineItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
-                  />
+                  >
                   <span class="li-amount">{{ formatCurrency(item.amount, store.current.currency) }}</span>
-                  <button class="li-del" @click="store.removeLineItem(idx)" title="Remove" :aria-label="`Remove line item ${idx + 1}`">
+                  <button
+                    class="li-del"
+                    title="Remove"
+                    :aria-label="`Remove line item ${idx + 1}`"
+                    @click="store.removeLineItem(idx)"
+                  >
                     <Trash2 :size="14" />
                   </button>
                 </div>
               </div>
 
-              <UiButton variant="outline" size="sm" @click="store.addLineItem()" class="add-item-btn">
+              <UiButton
+                variant="outline"
+                size="sm"
+                class="add-item-btn"
+                @click="store.addLineItem()"
+              >
                 <Plus :size="14" />
                 Add Item
               </UiButton>
@@ -154,7 +200,7 @@
                         min="0"
                         max="100"
                         @input="store.current.tax_rate = Number(($event.target as HTMLInputElement).value); debouncedRecalcTotals()"
-                      />
+                      >
                       <span class="tax-suffix">%</span>
                     </div>
                   </div>
@@ -171,7 +217,9 @@
           <!-- Notes -->
           <div class="form-card">
             <div class="card-header">
-              <h2 class="card-title">Notes</h2>
+              <h2 class="card-title">
+                Notes
+              </h2>
             </div>
             <div class="card-body">
               <UiTextarea
@@ -181,27 +229,37 @@
               />
             </div>
           </div>
-
         </template>
 
         <!-- Preview tab -->
-        <div v-if="tab === 'preview'" class="preview-card">
+        <div
+          v-if="tab === 'preview'"
+          class="preview-card"
+        >
           <div class="preview-actions">
-            <UiButton variant="outline" @click="exportPdf">
+            <UiButton
+              variant="outline"
+              @click="exportPdf"
+            >
               <Download :size="14" />
               Export PDF
             </UiButton>
           </div>
-          <InvoicePreview id="invoice-preview" :invoice="store.current" :template="templateStore.active" />
+          <InvoicePreview
+            id="invoice-preview"
+            :invoice="store.current"
+            :template="templateStore.active"
+          />
         </div>
-
       </div>
 
       <!-- Right: live summary sidebar -->
       <div class="builder-sidebar">
         <div class="summary-card">
           <div class="card-header">
-            <h2 class="card-title">Summary</h2>
+            <h2 class="card-title">
+              Summary
+            </h2>
           </div>
           <div class="summary-body">
             <div class="s-row">
@@ -233,7 +291,6 @@
           </div>
         </div>
       </div>
-
     </div>
 
     <!-- Mobile floating summary bar -->
@@ -242,7 +299,11 @@
         <span class="msb-label">Total</span>
         <span class="msb-value">{{ formatCurrency(store.current.total ?? 0, store.current.currency) }}</span>
       </div>
-      <UiButton size="sm" @click="saveInvoice" :loading="saving === 'save'">
+      <UiButton
+        size="sm"
+        :loading="saving === 'save'"
+        @click="saveInvoice"
+      >
         Save
       </UiButton>
     </div>
@@ -260,6 +321,7 @@ import { useTemplateStore } from '@/stores/templates'
 import { useFormatters } from '@/composables/useFormatters'
 import { usePdf } from '@/composables/usePdf'
 import { useToast } from '@/composables/useToast'
+import { useRouter } from 'vue-router'
 import { useConfirm } from '@/composables/useConfirm'
 import { debounce } from '@/utils/debounce'
 import UiButton from '@/components/ui/Button.vue'
@@ -271,6 +333,7 @@ import UiInput from '@/components/ui/Input.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 
 const route         = useRoute()
+const router        = useRouter()
 const store         = useInvoiceStore()
 const clientStore   = useClientStore()
 const templateStore = useTemplateStore()
@@ -384,7 +447,10 @@ async function saveInvoice() {
     if (!store.current.status) store.current.status = 'draft'
     await store.save()
     hasUnsavedChanges.value = false
-    showToast('Invoice saved!')
+    showToast('Invoice saved!', 'success', 4000, [
+      { label: 'View', handler: () => { if (store.current.id) router.push(`/app/invoices/${store.current.id}`) } },
+      { label: 'Send', handler: send },
+    ])
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to save invoice', 'danger')
   } finally {

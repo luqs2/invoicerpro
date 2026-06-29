@@ -1,26 +1,42 @@
 <template>
   <div class="page">
-
     <!-- Header -->
     <div class="page-header">
       <div class="header-left">
-        <router-link to="/app/receipts" class="back-link">
+        <router-link
+          to="/app/receipts"
+          class="back-link"
+        >
           <ArrowLeft :size="16" />
           <span class="back-text">Receipts</span>
         </router-link>
-        <h1 class="page-title">{{ isEdit ? 'Edit Receipt' : 'New Receipt' }}</h1>
+        <h1 class="page-title">
+          {{ isEdit ? 'Edit Receipt' : 'New Receipt' }}
+        </h1>
       </div>
       <div class="header-actions desktop-only">
-        <UiButton variant="outline" @click="exportPdf" :disabled="saving">
+        <UiButton
+          variant="outline"
+          :disabled="saving"
+          @click="exportPdf"
+        >
           <Download :size="14" />
           Export PDF
         </UiButton>
-        <UiButton @click="save" :loading="saving">Save Receipt</UiButton>
+        <UiButton
+          :loading="saving"
+          @click="save"
+        >
+          Save Receipt
+        </UiButton>
       </div>
     </div>
 
     <!-- Import from invoice banner -->
-    <div class="import-banner" v-if="!isEdit && !importedFromInvoice">
+    <div
+      v-if="!isEdit && !importedFromInvoice"
+      class="import-banner"
+    >
       <div class="import-banner-text">
         <FileText :size="16" />
         <span>Have an existing invoice? Pre-fill this receipt from it.</span>
@@ -31,36 +47,51 @@
         placeholder="Select invoice to import…"
         class="import-select"
       />
-      <UiButton variant="outline" size="sm" @click="importFromInvoice" :disabled="!selectedImportInvoiceId">
+      <UiButton
+        variant="outline"
+        size="sm"
+        :disabled="!selectedImportInvoiceId"
+        @click="importFromInvoice"
+      >
         Import
       </UiButton>
     </div>
 
     <!-- Imported badge -->
-    <div class="imported-badge" v-if="importedFromInvoice">
+    <div
+      v-if="importedFromInvoice"
+      class="imported-badge"
+    >
       <CheckCircle :size="14" />
       Pre-filled from invoice <strong>{{ form.invoice_number }}</strong>
-      <button class="clear-import" @click="clearImport">✕</button>
+      <button
+        class="clear-import"
+        @click="clearImport"
+      >
+        ✕
+      </button>
     </div>
 
     <!-- Two-column layout -->
     <div class="builder-layout">
-
       <!-- Left: form + preview tabs -->
       <div class="builder-form">
-
-        <UiTabs v-model="tab" :tabs="[
-          { value: 'form',    label: 'Details' },
-          { value: 'preview', label: 'Preview' },
-        ]" />
+        <UiTabs
+          v-model="tab"
+          :tabs="[
+            { value: 'form', label: 'Details' },
+            { value: 'preview', label: 'Preview' },
+          ]"
+        />
 
         <!-- Details tab -->
         <template v-if="tab === 'form'">
-
           <!-- Receipt details -->
           <div class="form-card">
             <div class="card-header">
-              <h2 class="card-title">Receipt Details</h2>
+              <h2 class="card-title">
+                Receipt Details
+              </h2>
             </div>
             <div class="card-body">
               <div class="field-row">
@@ -85,11 +116,20 @@
               <div class="field-row">
                 <div class="field">
                   <label>Amount Paid</label>
-                  <UiInput v-model="form.amount" type="number" placeholder="0.00" min="0" step="0.01" />
+                  <UiInput
+                    v-model="form.amount"
+                    type="number"
+                    placeholder="0.00"
+                    min="0"
+                    step="0.01"
+                  />
                 </div>
                 <div class="field">
                   <label>Payment Date</label>
-                  <UiInput v-model="form.payment_date" type="date" />
+                  <UiInput
+                    v-model="form.payment_date"
+                    type="date"
+                  />
                 </div>
               </div>
 
@@ -102,17 +142,28 @@
                 />
               </div>
 
-              <div class="field" v-if="form.invoice_number">
+              <div
+                v-if="form.invoice_number"
+                class="field"
+              >
                 <label>Invoice Reference</label>
-                <UiInput v-model="form.invoice_number" placeholder="INV-0001" />
+                <UiInput
+                  v-model="form.invoice_number"
+                  placeholder="INV-0001"
+                />
               </div>
             </div>
           </div>
 
           <!-- Line items (from invoice, editable) -->
-          <div class="form-card" v-if="form.line_items && form.line_items.length">
+          <div
+            v-if="form.line_items && form.line_items.length"
+            class="form-card"
+          >
             <div class="card-header">
-              <h2 class="card-title">Line Items</h2>
+              <h2 class="card-title">
+                Line Items
+              </h2>
               <span class="card-subtitle">Imported from invoice</span>
             </div>
             <div class="card-body">
@@ -122,22 +173,26 @@
                   <span class="li-col-qty">Qty</span>
                   <span class="li-col-rate">Rate</span>
                   <span class="li-col-amt">Amount</span>
-                  <span class="li-col-del"></span>
+                  <span class="li-col-del" />
                 </div>
-                <div v-for="(item, idx) in form.line_items" :key="item.id" class="li-row">
+                <div
+                  v-for="(item, idx) in form.line_items"
+                  :key="item.id"
+                  class="li-row"
+                >
                   <input
                     class="li-input"
                     :value="item.description"
                     placeholder="Description…"
                     @input="debouncedUpdateItem(idx, { description: ($event.target as HTMLInputElement).value })"
-                  />
+                  >
                   <input
                     class="li-input li-input-num"
                     type="number"
                     :value="item.quantity"
                     min="0"
                     @input="debouncedUpdateItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
-                  />
+                  >
                   <input
                     class="li-input li-input-num"
                     type="number"
@@ -146,9 +201,14 @@
                     step="0.01"
                     placeholder="0.00"
                     @input="debouncedUpdateItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
-                  />
+                  >
                   <span class="li-amount">{{ formatCurrency(item.amount, form.currency) }}</span>
-                  <button class="li-del" @click="removeItem(idx)" title="Remove" :aria-label="`Remove line item ${idx + 1}`">
+                  <button
+                    class="li-del"
+                    title="Remove"
+                    :aria-label="`Remove line item ${idx + 1}`"
+                    @click="removeItem(idx)"
+                  >
                     <Trash2 :size="14" />
                   </button>
                 </div>
@@ -160,7 +220,10 @@
                   <span class="t-label">Subtotal</span>
                   <span class="t-value">{{ formatCurrency(form.subtotal ?? 0, form.currency) }}</span>
                 </div>
-                <div class="t-row" v-if="form.tax_amount">
+                <div
+                  v-if="form.tax_amount"
+                  class="t-row"
+                >
                   <span class="t-label">Tax ({{ form.tax_rate }}%)</span>
                   <span class="t-value">{{ formatCurrency(form.tax_amount ?? 0, form.currency) }}</span>
                 </div>
@@ -175,7 +238,9 @@
           <!-- Notes -->
           <div class="form-card">
             <div class="card-header">
-              <h2 class="card-title">Notes</h2>
+              <h2 class="card-title">
+                Notes
+              </h2>
             </div>
             <div class="card-body">
               <UiTextarea
@@ -185,25 +250,28 @@
               />
             </div>
           </div>
-
         </template>
 
         <!-- Preview tab -->
-        <div v-if="tab === 'preview'" class="preview-card">
+        <div
+          v-if="tab === 'preview'"
+          class="preview-card"
+        >
           <ReceiptPreview
             id="receipt-preview"
             :receipt="previewData"
             :template="templateStore.active"
           />
         </div>
-
       </div>
 
       <!-- Right: summary sidebar -->
       <div class="builder-sidebar">
         <div class="summary-card">
           <div class="card-header">
-            <h2 class="card-title">Summary</h2>
+            <h2 class="card-title">
+              Summary
+            </h2>
           </div>
           <div class="summary-body">
             <div class="s-row">
@@ -218,13 +286,22 @@
               <span class="s-label">Date</span>
               <span class="s-value">{{ form.payment_date || '—' }}</span>
             </div>
-            <div class="s-row" v-if="form.invoice_number">
+            <div
+              v-if="form.invoice_number"
+              class="s-row"
+            >
               <span class="s-label">Invoice</span>
               <span class="s-value mono">{{ form.invoice_number }}</span>
             </div>
-            <div class="s-row" v-if="form.invoice_id">
+            <div
+              v-if="form.invoice_id"
+              class="s-row"
+            >
               <span class="s-label">Invoice Status</span>
-              <span class="inv-status-badge" :class="`inv-status-${linkedInvoiceStatus}`">
+              <span
+                class="inv-status-badge"
+                :class="`inv-status-${linkedInvoiceStatus}`"
+              >
                 {{ linkedInvoiceStatus }}
               </span>
             </div>
@@ -236,7 +313,6 @@
           </div>
         </div>
       </div>
-
     </div>
   </div>
 </template>

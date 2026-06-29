@@ -1,16 +1,42 @@
 <template>
   <div class="page">
-
     <!-- Page header -->
     <div class="page-header">
       <div>
-        <h1 class="page-title">Clients</h1>
-        <p class="page-sub">{{ store.clients.length }} client{{ store.clients.length !== 1 ? 's' : '' }}</p>
+        <h1 class="page-title">
+          Clients
+        </h1>
+        <p class="page-sub">
+          {{ store.clients.length }} client{{ store.clients.length !== 1 ? 's' : '' }}
+        </p>
       </div>
-      <button class="btn-primary" @click="openPanel()">
-        <svg viewBox="0 0 24 24" fill="none" class="btn-icon">
-          <line x1="12" y1="5" x2="12" y2="19" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
-          <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+      <button
+        class="btn-primary"
+        @click="openPanel()"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          class="btn-icon"
+        >
+          <line
+            x1="12"
+            y1="5"
+            x2="12"
+            y2="19"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          />
+          <line
+            x1="5"
+            y1="12"
+            x2="19"
+            y2="12"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          />
         </svg>
         Add Client
       </button>
@@ -19,36 +45,64 @@
     <!-- Search -->
     <div class="toolbar">
       <div class="search-wrap">
-        <Search :size="15" class="search-icon" />
-        <input
-          class="search-input"
-          v-model="search"
-          placeholder="Search by name or email..."
+        <Search
+          :size="15"
+          class="search-icon"
         />
+        <input
+          v-model="search"
+          class="search-input"
+          placeholder="Search by name or email..."
+        >
       </div>
     </div>
 
     <!-- Table skeleton -->
-    <div class="section-card" v-if="!fetched">
+    <div
+      v-if="!fetched"
+      class="section-card"
+    >
       <div style="padding: 16px 20px;">
-        <div v-for="i in 5" :key="i" style="display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f8fafc;">
-          <Skeleton variant="rect" width="34px" height="34px" style="border-radius:8px; flex-shrink:0;" />
-          <Skeleton variant="text" width="120px" />
-          <Skeleton variant="text" width="140px" style="margin-left:auto;" />
+        <div
+          v-for="i in 5"
+          :key="i"
+          style="display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f8fafc;"
+        >
+          <Skeleton
+            variant="rect"
+            width="34px"
+            height="34px"
+            style="border-radius:8px; flex-shrink:0;"
+          />
+          <Skeleton
+            variant="text"
+            width="120px"
+          />
+          <Skeleton
+            variant="text"
+            width="140px"
+            style="margin-left:auto;"
+          />
         </div>
       </div>
     </div>
 
     <!-- Table -->
-    <div class="section-card" v-else-if="filtered.length">
-      <table class="data-table">
+    <div
+      v-else-if="filtered.length"
+      class="section-card"
+    >
+      <table
+        class="data-table"
+        aria-live="polite"
+      >
         <thead>
           <tr>
             <th>Client</th>
             <th>Email</th>
             <th>Phone</th>
             <th>Company</th>
-            <th></th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -60,15 +114,27 @@
           >
             <td>
               <div class="client-cell">
-                <div class="avatar">{{ getInitials(c.name) }}</div>
+                <div class="avatar">
+                  {{ getInitials(c.name) }}
+                </div>
                 <span class="client-name">{{ c.name }}</span>
               </div>
             </td>
-            <td class="td-muted">{{ c.email }}</td>
-            <td class="td-muted">{{ c.phone || '—' }}</td>
+            <td class="td-muted">
+              {{ c.email }}
+            </td>
+            <td class="td-muted">
+              {{ c.phone || '—' }}
+            </td>
             <td>
-              <span v-if="c.company" class="company-badge">{{ c.company }}</span>
-              <span v-else class="td-muted">—</span>
+              <span
+                v-if="c.company"
+                class="company-badge"
+              >{{ c.company }}</span>
+              <span
+                v-else
+                class="td-muted"
+              >—</span>
             </td>
             <td class="td-action">
               <ChevronRight :size="14" />
@@ -86,20 +152,47 @@
     </div>
 
     <!-- Empty -->
-    <div class="empty-state" v-else-if="fetched">
-      <Users :size="52" class="empty-icon" />
-      <p class="empty-title">{{ search ? 'No matching clients' : 'No clients yet' }}</p>
-      <p class="empty-sub">{{ search ? 'Try a different search.' : 'Add your first client to get started.' }}</p>
-      <button v-if="!search" class="btn-primary" @click="openPanel()" style="margin-top:8px;">Add Client</button>
+    <div
+      v-else-if="fetched"
+      class="empty-state"
+    >
+      <Users
+        :size="52"
+        class="empty-icon"
+      />
+      <p class="empty-title">
+        {{ search ? 'No matching clients' : 'No clients yet' }}
+      </p>
+      <p class="empty-sub">
+        {{ search ? 'Try a different search.' : 'Add your first client to get started.' }}
+      </p>
+      <button
+        v-if="!search"
+        class="btn-primary"
+        style="margin-top:8px;"
+        @click="openPanel()"
+      >
+        Add Client
+      </button>
     </div>
 
     <!-- ── Add/Edit side panel ─────────────────────────── -->
     <transition name="panel-slide">
-      <div v-if="panelOpen" class="panel-overlay" @click.self="closePanel">
+      <div
+        v-if="panelOpen"
+        class="panel-overlay"
+        @click.self="closePanel"
+      >
         <div class="side-panel">
           <div class="panel-header">
-            <h2 class="panel-title">Add Client</h2>
-            <button class="panel-close" @click="closePanel" aria-label="Close panel">
+            <h2 class="panel-title">
+              Add Client
+            </h2>
+            <button
+              class="panel-close"
+              aria-label="Close panel"
+              @click="closePanel"
+            >
               <X :size="16" />
             </button>
           </div>
@@ -107,36 +200,63 @@
           <div class="panel-body">
             <div class="field">
               <label>Full Name <span class="req">*</span></label>
-              <UiInput v-model="form.name" placeholder="Jane Smith" />
+              <UiInput
+                v-model="form.name"
+                placeholder="Jane Smith"
+              />
             </div>
             <div class="field">
               <label>Email <span class="req">*</span></label>
-              <UiInput v-model="form.email" type="email" placeholder="jane@company.com" />
+              <UiInput
+                v-model="form.email"
+                type="email"
+                placeholder="jane@company.com"
+              />
             </div>
             <div class="field-row">
               <div class="field">
                 <label>Phone</label>
-                <UiInput v-model="form.phone" placeholder="+1 (555) 000-0000" />
+                <UiInput
+                  v-model="form.phone"
+                  placeholder="+1 (555) 000-0000"
+                />
               </div>
               <div class="field">
                 <label>Company</label>
-                <UiInput v-model="form.company" placeholder="Acme Corp" />
+                <UiInput
+                  v-model="form.company"
+                  placeholder="Acme Corp"
+                />
               </div>
             </div>
             <div class="field">
               <label>Address</label>
-              <UiTextarea v-model="form.address" placeholder="123 Main St, City, Country" :rows="3" />
+              <UiTextarea
+                v-model="form.address"
+                placeholder="123 Main St, City, Country"
+                :rows="3"
+              />
             </div>
           </div>
 
           <div class="panel-footer">
-            <UiButton variant="outline" @click="closePanel" class="footer-btn">Cancel</UiButton>
-            <UiButton @click="addClient" class="footer-btn">Save Client</UiButton>
+            <UiButton
+              variant="outline"
+              class="footer-btn"
+              @click="closePanel"
+            >
+              Cancel
+            </UiButton>
+            <UiButton
+              class="footer-btn"
+              @click="addClient"
+            >
+              Save Client
+            </UiButton>
           </div>
         </div>
       </div>
     </transition>
-
   </div>
 </template>
 
@@ -199,128 +319,7 @@ async function addClient() {
 </script>
 
 <style scoped>
-.page {
-  padding: 32px 36px;
-  max-width: 1200px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-}
-
-/* Header */
-.page-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.page-title {
-  font-size: 26px;
-  font-weight: 800;
-  color: #0f172a;
-  margin: 0 0 2px;
-  letter-spacing: -0.5px;
-}
-
-.page-sub {
-  font-size: 13px;
-  color: #94a3b8;
-  margin: 0;
-  font-weight: 500;
-}
-
-/* Button */
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #ffffff;
-  border: none;
-  border-radius: 10px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  text-decoration: none;
-  transition: opacity .15s, transform .1s;
-  box-shadow: 0 2px 10px rgba(99,102,241,.35);
-  font-family: inherit;
-  white-space: nowrap;
-}
-.btn-primary:hover { opacity: .9; }
-.btn-primary:active { transform: scale(.98); }
-.btn-icon { width: 16px; height: 16px; flex-shrink: 0; }
-
-/* Toolbar */
-.toolbar { display: flex; gap: 12px; align-items: center; }
-
-.search-wrap {
-  position: relative;
-  min-width: 280px;
-  max-width: 400px;
-}
-.search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 16px;
-  color: #94a3b8;
-  pointer-events: none;
-}
-.search-input {
-  width: 100%;
-  height: 38px;
-  padding: 0 14px 0 38px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 9px;
-  font-size: 14px;
-  color: #0f172a;
-  background: #ffffff;
-  outline: none;
-  font-family: inherit;
-  transition: border-color .15s, box-shadow .15s;
-}
-.search-input:focus {
-  border-color: #6366f1;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.1);
-}
-.search-input::placeholder { color: #94a3b8; }
-
-/* Section card */
-.section-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.05);
-  overflow: hidden;
-}
-
-/* Table */
-.data-table { width: 100%; border-collapse: collapse; }
-.data-table thead tr { border-bottom: 1px solid #f1f5f9; }
-.data-table th {
-  padding: 11px 16px 11px 20px;
-  font-size: 11px;
-  font-weight: 700;
-  color: #94a3b8;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  text-align: left;
-  background: #fafafa;
-}
-.data-table td {
-  padding: 14px 16px 14px 20px;
-  font-size: 14px;
-  color: #374151;
-  border-bottom: 1px solid #f8fafc;
-}
-.table-row { cursor: pointer; transition: background .1s; }
-.table-row:hover { background: #fafafa; }
-.table-row:last-child td { border-bottom: none; }
-
+/* Client-specific styles */
 .client-cell {
   display: flex;
   align-items: center;
@@ -343,9 +342,6 @@ async function addClient() {
 
 .client-name { font-weight: 600; color: #0f172a; }
 
-.td-muted { color: #94a3b8; font-size: 13px; }
-.td-action { color: #cbd5e1; font-size: 14px; width: 40px; text-align: right; }
-
 .company-badge {
   display: inline-block;
   background: #f5f3ff;
@@ -357,22 +353,7 @@ async function addClient() {
   letter-spacing: 0.3px;
 }
 
-/* Empty state */
-.empty-state {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 80px 20px;
-  gap: 8px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 16px;
-}
-.empty-icon  { font-size: 52px; color: #cbd5e1; margin-bottom: 4px; }
-.empty-title { font-size: 16px; font-weight: 700; color: #374151; margin: 0; }
-.empty-sub   { font-size: 14px; color: #94a3b8; margin: 0; text-align: center; max-width: 280px; }
-
-/* ── Side panel ──────────────────────────────────────── */
+/* Side panel */
 .panel-overlay {
   position: fixed;
   inset: 0;
@@ -433,48 +414,20 @@ async function addClient() {
   gap: 18px;
 }
 
-.field {
+.panel-body .field {
   display: flex;
   flex-direction: column;
   gap: 6px;
   flex: 1;
 }
 
-.field-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-.field label {
+.panel-body .field label {
   font-size: 13px;
   font-weight: 600;
   color: #374151;
 }
 
 .req { color: #ef4444; }
-
-.field input,
-.field textarea {
-  padding: 10px 13px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 9px;
-  font-size: 14px;
-  color: #0f172a;
-  background: #f8fafc;
-  outline: none;
-  font-family: inherit;
-  resize: none;
-  transition: border-color .15s, box-shadow .15s;
-}
-.field input:focus,
-.field textarea:focus {
-  border-color: #6366f1;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.1);
-}
-.field input::placeholder,
-.field textarea::placeholder { color: #94a3b8; }
 
 .panel-footer {
   display: flex;
@@ -498,14 +451,7 @@ async function addClient() {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .page { padding: 20px 16px; }
-  .page-title { font-size: 20px; }
   .search-wrap { min-width: 0; max-width: 100%; flex: 1; }
   .side-panel { width: 100%; }
-  .field-row { grid-template-columns: 1fr; }
-  .data-table th:nth-child(3),
-  .data-table th:nth-child(4),
-  .data-table td:nth-child(3),
-  .data-table td:nth-child(4) { display: none; }
 }
 </style>

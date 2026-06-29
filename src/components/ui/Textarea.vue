@@ -44,4 +44,13 @@ defineEmits<{ (e: 'update:modelValue', v: string): void }>()
   box-shadow: 0 0 0 3px rgba(99,102,241,.1);
 }
 .ui-textarea::placeholder { color: #94a3b8; }
+
+.dark .ui-textarea {
+  background: #1e293b;
+  border-color: #334155;
+  color: #f1f5f9;
+}
+.dark .ui-textarea::placeholder { color: #64748b; }
+.dark .ui-textarea:focus { border-color: #6366f1; background: #0f172a; }
+.dark .ui-textarea:hover:not(:disabled) { border-color: #4f46e5; }
 </style>

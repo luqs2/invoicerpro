@@ -31,4 +31,14 @@ withDefaults(defineProps<{
 .badge-success    { background: #d1fae5; color: #065f46; }
 .badge-warning    { background: #fef3c7; color: #92400e; }
 .badge-danger     { background: #fee2e2; color: #991b1b; }
+
+.dark .badge-default    { background: #334155; color: #94a3b8; }
+.dark .badge-draft      { background: #334155; color: #94a3b8; }
+.dark .badge-sent       { background: #1e3a5f; color: #60a5fa; }
+.dark .badge-paid       { background: #064e3b; color: #34d399; }
+.dark .badge-overdue    { background: #450a0a; color: #f87171; }
+.dark .badge-cancelled  { background: #334155; color: #64748b; }
+.dark .badge-success    { background: #064e3b; color: #34d399; }
+.dark .badge-warning    { background: #451a03; color: #fbbf24; }
+.dark .badge-danger     { background: #450a0a; color: #f87171; }
 </style>

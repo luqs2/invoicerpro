@@ -1,26 +1,54 @@
 <template>
   <teleport to="body">
     <transition name="confirm-fade">
-      <div v-if="modelValue" class="confirm-overlay" @click.self="cancel">
-        <div class="confirm-dialog" role="alertdialog" aria-modal="true" ref="dialogRef">
-          <div class="confirm-icon" :class="`confirm-icon-${variant}`">
-            <AlertTriangle v-if="variant === 'danger'" :size="22" />
-            <Info v-else-if="variant === 'warning'" :size="22" />
-            <CheckCircle v-else :size="22" />
+      <div
+        v-if="modelValue"
+        class="confirm-overlay"
+        @click.self="cancel"
+      >
+        <div
+          ref="dialogRef"
+          class="confirm-dialog"
+          role="alertdialog"
+          aria-modal="true"
+        >
+          <div
+            class="confirm-icon"
+            :class="`confirm-icon-${variant}`"
+          >
+            <AlertTriangle
+              v-if="variant === 'danger'"
+              :size="22"
+            />
+            <Info
+              v-else-if="variant === 'warning'"
+              :size="22"
+            />
+            <CheckCircle
+              v-else
+              :size="22"
+            />
           </div>
           <div class="confirm-body">
-            <h3 class="confirm-title">{{ title }}</h3>
-            <p class="confirm-message">{{ message }}</p>
+            <h3 class="confirm-title">
+              {{ title }}
+            </h3>
+            <p class="confirm-message">
+              {{ message }}
+            </p>
           </div>
           <div class="confirm-actions">
-            <button class="confirm-btn confirm-btn-cancel" @click="cancel">
+            <button
+              class="confirm-btn confirm-btn-cancel"
+              @click="cancel"
+            >
               {{ cancelText }}
             </button>
             <button
+              ref="confirmBtn"
               class="confirm-btn"
               :class="`confirm-btn-${variant}`"
               @click="confirm"
-              ref="confirmBtn"
             >
               {{ confirmText }}
             </button>
@@ -190,4 +218,13 @@ function cancel() {
 .confirm-fade-leave-to { opacity: 0; }
 .confirm-fade-enter-from .confirm-dialog { transform: scale(0.95); opacity: 0; }
 .confirm-fade-leave-to .confirm-dialog { transform: scale(0.95); opacity: 0; }
+
+.dark .confirm-dialog { background: #1e293b; }
+.dark .confirm-title { color: #f1f5f9; }
+.dark .confirm-message { color: #94a3b8; }
+.dark .confirm-btn-cancel { background: #334155; color: #e2e8f0; }
+.dark .confirm-btn-cancel:hover { background: #475569; }
+.dark .confirm-icon-danger { background: #450a0a; color: #f87171; }
+.dark .confirm-icon-warning { background: #451a03; color: #fbbf24; }
+.dark .confirm-icon-info { background: #1e3a5f; color: #60a5fa; }
 </style>

@@ -1,13 +1,30 @@
 <template>
-  <div class="client-card" @click="go">
+  <div
+    class="client-card"
+    @click="go"
+  >
     <div class="card-top">
-      <div class="avatar">{{ getInitials(client.name) }}</div>
-      <ChevronRight :size="16" class="card-chevron" />
+      <div class="avatar">
+        {{ getInitials(client.name) }}
+      </div>
+      <ChevronRight
+        :size="16"
+        class="card-chevron"
+      />
     </div>
     <div class="card-body">
-      <p class="client-name">{{ client.name }}</p>
-      <p class="client-email">{{ client.email }}</p>
-      <p v-if="client.company" class="client-company">{{ client.company }}</p>
+      <p class="client-name">
+        {{ client.name }}
+      </p>
+      <p class="client-email">
+        {{ client.email }}
+      </p>
+      <p
+        v-if="client.company"
+        class="client-company"
+      >
+        {{ client.company }}
+      </p>
     </div>
   </div>
 </template>
@@ -94,4 +111,9 @@ function go() {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+
+.dark .client-card { background: #1e293b; border-color: #334155; }
+.dark .client-name { color: #f1f5f9; }
+.dark .client-email { color: #94a3b8; }
+.dark .card-chevron { color: #475569; }
 </style>
