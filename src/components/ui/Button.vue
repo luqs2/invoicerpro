@@ -36,30 +36,29 @@ withDefaults(defineProps<{
   font-family: inherit;
   font-weight: 600;
   border: none;
-  border-radius: 9px;
+  border-radius: 12px;
   cursor: pointer;
   text-decoration: none;
-  transition: opacity .15s, transform .1s, background .12s, border-color .12s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
   white-space: nowrap;
   outline: none;
 }
 
 .btn:focus-visible { box-shadow: 0 0 0 3px rgba(99,102,241,.25); }
-.btn:active:not(:disabled) { transform: scale(.98); }
+.btn:active:not(:disabled) { transform: scale(0.98); }
 .btn:disabled { opacity: .55; cursor: not-allowed; }
 
 /* Sizes */
-.btn-sm { height: 32px; padding: 0 12px; font-size: 12px; border-radius: 7px; }
-.btn-md { height: 38px; padding: 0 16px; font-size: 14px; }
-.btn-lg { height: 46px; padding: 0 22px; font-size: 15px; border-radius: 11px; font-weight: 700; }
+.btn-sm { height: 32px; padding: 0 12px; font-size: 12px; border-radius: 8px; }
+.btn-md { height: 44px; padding: 0 16px; font-size: 14px; }
+.btn-lg { height: 48px; padding: 0 22px; font-size: 15px; border-radius: 14px; font-weight: 700; }
 
 /* Variants */
 .btn-primary {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #6366f1;
   color: #ffffff;
-  box-shadow: 0 2px 8px rgba(99,102,241,.3);
 }
-.btn-primary:hover:not(:disabled) { opacity: .9; }
+.btn-primary:hover:not(:disabled) { background: #4f46e5; transform: translateY(-1px); box-shadow: 0 4px 12px rgba(99,102,241,.25); }
 
 .btn-secondary {
   background: #f1f5f9;

@@ -26,7 +26,7 @@
       v-if="fetched"
       class="stats-row"
     >
-      <div class="stat-card stat-revenue">
+      <div class="stat-card stat-revenue animate-in">
         <div class="stat-icon-wrap">
           <DollarSign :size="22" />
         </div>
@@ -53,7 +53,7 @@
           </p>
         </div>
       </div>
-      <div class="stat-card stat-sent">
+      <div class="stat-card stat-sent animate-in">
         <div class="stat-icon-wrap">
           <FileText :size="22" />
         </div>
@@ -80,7 +80,7 @@
           </p>
         </div>
       </div>
-      <div class="stat-card stat-pending">
+      <div class="stat-card stat-pending animate-in">
         <div class="stat-icon-wrap">
           <Clock :size="22" />
         </div>
@@ -107,7 +107,7 @@
           </p>
         </div>
       </div>
-      <div class="stat-card stat-overdue">
+      <div class="stat-card stat-overdue animate-in">
         <div class="stat-icon-wrap">
           <AlertCircle :size="22" />
         </div>
@@ -141,11 +141,70 @@
       v-else
       class="stats-row"
     >
-      <div
-        v-for="i in 4"
-        :key="i"
-        class="stat-card"
-      >
+      <div class="stat-card">
+        <Skeleton
+          variant="rect"
+          width="44px"
+          height="44px"
+          style="border-radius:12px; flex-shrink:0;"
+        />
+        <div
+          class="stat-body"
+          style="flex:1;"
+        >
+          <Skeleton
+            variant="text"
+            width="80px"
+          />
+          <Skeleton
+            variant="title"
+            width="100px"
+          />
+        </div>
+      </div>
+      <div class="stat-card">
+        <Skeleton
+          variant="rect"
+          width="44px"
+          height="44px"
+          style="border-radius:12px; flex-shrink:0;"
+        />
+        <div
+          class="stat-body"
+          style="flex:1;"
+        >
+          <Skeleton
+            variant="text"
+            width="80px"
+          />
+          <Skeleton
+            variant="title"
+            width="100px"
+          />
+        </div>
+      </div>
+      <div class="stat-card">
+        <Skeleton
+          variant="rect"
+          width="44px"
+          height="44px"
+          style="border-radius:12px; flex-shrink:0;"
+        />
+        <div
+          class="stat-body"
+          style="flex:1;"
+        >
+          <Skeleton
+            variant="text"
+            width="80px"
+          />
+          <Skeleton
+            variant="title"
+            width="100px"
+          />
+        </div>
+      </div>
+      <div class="stat-card">
         <Skeleton
           variant="rect"
           width="44px"
@@ -213,7 +272,7 @@
     >
       <router-link
         to="/app/invoices/new"
-        class="qa-card"
+        class="qa-card animate-in"
       >
         <div class="qa-icon qa-icon-purple">
           <FilePlus :size="18" />
@@ -233,7 +292,7 @@
       </router-link>
       <router-link
         to="/app/clients"
-        class="qa-card"
+        class="qa-card animate-in"
       >
         <div class="qa-icon qa-icon-blue">
           <UserPlus :size="18" />
@@ -253,7 +312,7 @@
       </router-link>
       <router-link
         to="/app/receipts/new"
-        class="qa-card"
+        class="qa-card animate-in"
       >
         <div class="qa-icon qa-icon-green">
           <Receipt :size="18" />
@@ -581,6 +640,72 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+/* ── Animations ──────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-in {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-fade {
+  animation: fadeIn 0.3s ease-out both;
+}
+
+/* Stagger delays for stats cards */
+.stat-card:nth-child(1) { animation-delay: 0ms; }
+.stat-card:nth-child(2) { animation-delay: 60ms; }
+.stat-card:nth-child(3) { animation-delay: 120ms; }
+.stat-card:nth-child(4) { animation-delay: 180ms; }
+
+/* Stagger delays for quick actions */
+.qa-card:nth-child(1) { animation-delay: 0ms; }
+.qa-card:nth-child(2) { animation-delay: 50ms; }
+.qa-card:nth-child(3) { animation-delay: 100ms; }
+
+/* Table row stagger */
+.table-row {
+  animation: fadeSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+.table-row:nth-child(1) { animation-delay: 0ms; }
+.table-row:nth-child(2) { animation-delay: 30ms; }
+.table-row:nth-child(3) { animation-delay: 60ms; }
+.table-row:nth-child(4) { animation-delay: 90ms; }
+.table-row:nth-child(5) { animation-delay: 120ms; }
+.table-row:nth-child(6) { animation-delay: 150ms; }
+.table-row:nth-child(7) { animation-delay: 180ms; }
+.table-row:nth-child(8) { animation-delay: 210ms; }
+
+/* Profile banner entrance */
+.profile-banner {
+  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .animate-in,
+  .animate-fade,
+  .stat-card,
+  .qa-card,
+  .table-row,
+  .profile-banner {
+    animation: none !important;
+  }
+}
+
 .page { gap: 24px; }
 
 .page-eyebrow {
@@ -595,39 +720,22 @@ onMounted(async () => {
 .stats-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 14px;
+  gap: 16px;
 }
 
 .stat-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 14px;
+  border-radius: 16px;
   padding: 20px;
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  transition: box-shadow .2s, transform .15s;
-  position: relative;
-  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .dark .stat-card { background: #1e293b; border-color: #334155; }
 
-.stat-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  border-radius: 14px 14px 0 0;
-}
 .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-1px); }
-
-.stat-revenue::before  { background: linear-gradient(90deg, #6366f1, #8b5cf6); }
-.stat-sent::before     { background: linear-gradient(90deg, #3b82f6, #60a5fa); }
-.stat-pending::before  { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
-.stat-overdue::before  { background: linear-gradient(90deg, #ef4444, #f87171); }
 
 .stat-icon-wrap {
   width: 44px;
@@ -696,9 +804,7 @@ onMounted(async () => {
   border: 1px solid #e2e8f0;
   border-radius: 14px;
   text-decoration: none;
-  transition: box-shadow .2s, border-color .2s, transform .15s;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
-  position: relative;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .dark .qa-card { background: #1e293b; border-color: #334155; }
 .qa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: #c7d2fe; transform: translateY(-1px); }
@@ -853,7 +959,7 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .page { padding: 20px 16px; gap: 20px; }
   .page-title { font-size: 20px; }
-  .stats-row { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stats-row { grid-template-columns: 1fr 1fr; gap: 12px; }
   .stat-card { padding: 14px; gap: 10px; }
   .stat-value { font-size: 18px; }
   .quick-actions { grid-template-columns: 1fr; }

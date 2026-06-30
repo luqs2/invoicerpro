@@ -26,23 +26,22 @@ defineEmits<{ (e: 'update:modelValue', v: string): void }>()
 <style scoped>
 .ui-input {
   width: 100%;
-  height: 38px;
-  padding: 0 12px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 9px;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
   font-size: 14px;
   color: #0f172a;
-  background: #f8fafc;
+  background: #ffffff;
   outline: none;
   font-family: inherit;
-  transition: border-color .15s, box-shadow .15s, background .15s;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .ui-input:hover:not(:disabled) { border-color: #c7d2fe; }
 
 .ui-input:focus {
   border-color: #6366f1;
-  background: #ffffff;
   box-shadow: 0 0 0 3px rgba(99,102,241,.1);
 }
 

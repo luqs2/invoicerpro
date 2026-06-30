@@ -15,12 +15,13 @@ withDefaults(defineProps<{
   display: inline-flex;
   align-items: center;
   font-size: 11px;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: 6px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 8px;
   text-transform: capitalize;
   letter-spacing: 0.2px;
   white-space: nowrap;
+  transition: all 0.2s ease;
 }
 .badge-default    { background: #f1f5f9; color: #64748b; }
 .badge-draft      { background: #f1f5f9; color: #64748b; }

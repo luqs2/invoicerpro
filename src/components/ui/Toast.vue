@@ -93,11 +93,11 @@ function remove(id: number) {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 12px 16px;
-  border-radius: 12px;
+  padding: 14px 18px;
+  border-radius: 14px;
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
+  box-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
   font-size: 14px;
   font-weight: 500;
   color: #374151;
@@ -127,8 +127,8 @@ function remove(id: number) {
 
 .toast-close {
   flex-shrink: 0;
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -136,8 +136,8 @@ function remove(id: number) {
   background: none;
   cursor: pointer;
   color: #94a3b8;
-  border-radius: 6px;
-  transition: color .12s, background .12s;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 .toast-actions {
   display: flex;
@@ -146,16 +146,16 @@ function remove(id: number) {
 }
 
 .toast-action-btn {
-  padding: 4px 10px;
-  border: 1.5px solid #e2e8f0;
-  border-radius: 6px;
+  padding: 6px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
   background: #fff;
   font-size: 12px;
   font-weight: 600;
   color: #4f46e5;
   cursor: pointer;
   font-family: inherit;
-  transition: all .12s;
+  transition: all 0.2s ease;
   white-space: nowrap;
 }
 .toast-action-btn:hover { background: #f5f3ff; border-color: #c7d2fe; }

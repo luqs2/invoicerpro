@@ -1,6 +1,9 @@
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 
+/* Geist font (premium typography) */
+import '@fontsource-variable/geist'
+
 import App from './App.vue'
 import router from './router'
 

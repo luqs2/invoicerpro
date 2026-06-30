@@ -31,7 +31,7 @@ withDefaults(defineProps<{
 <style scoped>
 .skeleton {
   background: #e2e8f0;
-  border-radius: 6px;
+  border-radius: 8px;
   position: relative;
   overflow: hidden;
 }
@@ -40,7 +40,7 @@ withDefaults(defineProps<{
 
 .skeleton-text { height: 14px; }
 .skeleton-title { height: 20px; }
-.skeleton-avatar { width: 40px; height: 40px; border-radius: 10px; }
+.skeleton-avatar { width: 40px; height: 40px; border-radius: 12px; }
 .skeleton-rect { height: 80px; }
 .skeleton-circle { width: 40px; height: 40px; border-radius: 50%; }
 
