@@ -430,11 +430,10 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { Upload, LogOut, Sun, Moon } from '@lucide/vue'
+import { Upload, LogOut } from '@lucide/vue'
 import { useAuthStore }            from '@/stores/auth'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useToast }                from '@/composables/useToast'
-import { useTheme }                 from '@/composables/useTheme'
 import { useMinDelay }              from '@/composables/useMinDelay'
 import UiSelect from '@/components/ui/Select.vue'
 import UiInput from '@/components/ui/Input.vue'
@@ -444,7 +443,6 @@ const auth          = useAuthStore()
 const bpStore       = useBusinessProfileStore()
 const { showToast } = useToast()
 const router        = useRouter()
-const { theme, toggleTheme } = useTheme()
 const { loading, wrap } = useMinDelay()
 
 const saving    = ref(false)
