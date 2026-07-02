@@ -40,7 +40,7 @@ const model = defineModel<string>()
 .tabs-list {
   display: inline-flex;
   gap: 2px;
-  background: #f1f5f9;
+  background: #f4ede3;
   border-radius: 10px;
   padding: 3px;
 }
@@ -55,7 +55,7 @@ const model = defineModel<string>()
   background: transparent;
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: #414846;
   cursor: pointer;
   font-family: inherit;
   transition: all .12s;
@@ -69,14 +69,14 @@ const model = defineModel<string>()
 }
 
 .tabs-trigger[data-state="active"] {
-  background: #ffffff;
-  color: #0f172a;
+  background: #F7F4EC;
+  color: #1e1b15;
   box-shadow: 0 1px 3px rgba(0,0,0,.08);
 }
 
 .tab-badge {
-  background: #e2e8f0;
-  color: #64748b;
+  background: #D6D0C2;
+  color: #414846;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
@@ -86,14 +86,14 @@ const model = defineModel<string>()
 }
 
 .tabs-trigger[data-state="active"] .tab-badge {
-  background: #ede9fe;
-  color: #6366f1;
+  background: #cbe9e0;
+  color: #08241f;
 }
 
-.dark .tabs-list { background: #1e293b; }
-.dark .tabs-trigger { color: #94a3b8; }
-.dark .tabs-trigger:hover { color: #e2e8f0; background: rgba(255,255,255,.05); }
-.dark .tabs-trigger[data-state="active"] { background: #0f172a; color: #f1f5f9; }
-.dark .tab-badge { background: #334155; color: #94a3b8; }
-.dark .tabs-trigger[data-state="active"] .tab-badge { background: #312e81; color: #818cf8; }
+.dark .tabs-list { background: #1d201f; }
+.dark .tabs-trigger { color: #c0c8c4; }
+.dark .tabs-trigger:hover { color: #e1e3e1; background: rgba(255,255,255,.05); }
+.dark .tabs-trigger[data-state="active"] { background: #111413; color: #e1e3e1; }
+.dark .tab-badge { background: #404945; color: #c0c8c4; }
+.dark .tabs-trigger[data-state="active"] .tab-badge { background: #a0d0c2; color: #F7F4EC; }
 </style>

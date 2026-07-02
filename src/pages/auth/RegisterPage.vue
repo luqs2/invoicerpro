@@ -255,25 +255,25 @@ async function register() {
   width: 48px;
   height: 48px;
   margin: 0 auto 16px;
-  background: linear-gradient(135deg, #d1fae5, #dbeafe);
+  background: linear-gradient(135deg, #cbe9e0, #dbeafe);
   border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #059669;
+  color: #08241f;
 }
 
 .form-header h2 {
   font-size: 22px;
   font-weight: 800;
-  color: #0f172a;
+  color: #1e1b15;
   margin: 0 0 6px;
   letter-spacing: -0.4px;
 }
 
 .form-header p {
   font-size: 14px;
-  color: #64748b;
+  color: #414846;
   margin: 0;
 }
 
@@ -298,7 +298,7 @@ form {
 .field label {
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: #1e1b15;
   letter-spacing: 0.1px;
 }
 
@@ -311,7 +311,7 @@ form {
 .field-icon {
   position: absolute;
   left: 14px;
-  color: #94a3b8;
+  color: #414846;
   pointer-events: none;
   transition: color .15s;
 }
@@ -320,11 +320,11 @@ form {
   width: 100%;
   height: 46px;
   padding: 0 14px 0 42px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #D6D0C2;
   border-radius: 11px;
   font-size: 15px;
-  color: #0f172a;
-  background: #f8fafc;
+  color: #1e1b15;
+  background: #EDE8DE;
   outline: none;
   transition: border-color .15s, box-shadow .15s, background .15s;
   font-family: inherit;
@@ -333,12 +333,12 @@ form {
 .input-wrap input:hover:not(:disabled) { border-color: #c7d2fe; }
 
 .input-wrap input:focus {
-  border-color: #6366f1;
-  background: #ffffff;
+  border-color: #08241f;
+  background: #F7F4EC;
   box-shadow: 0 0 0 3px rgba(99,102,241,.12);
 }
 
-.input-wrap input::placeholder { color: #94a3b8; }
+.input-wrap input::placeholder { color: #414846; }
 .input-wrap input:disabled { opacity: .55; cursor: not-allowed; }
 
 .toggle-password {
@@ -352,11 +352,11 @@ form {
   border: none;
   background: none;
   cursor: pointer;
-  color: #94a3b8;
+  color: #414846;
   border-radius: 6px;
   transition: color .12s, background .12s;
 }
-.toggle-password:hover { color: #64748b; background: #f1f5f9; }
+.toggle-password:hover { color: #414846; background: #f4ede3; }
 
 /* Error state */
 .field-error .input-wrap input {
@@ -385,7 +385,7 @@ form {
 .strength-bar {
   flex: 1;
   height: 4px;
-  background: #e2e8f0;
+  background: #D6D0C2;
   border-radius: 2px;
   overflow: hidden;
 }
@@ -421,17 +421,17 @@ form {
 .switch-link {
   text-align: center;
   font-size: 14px;
-  color: #64748b;
+  color: #414846;
   margin: 0;
 }
 
 .switch-link a {
-  color: #6366f1;
+  color: #08241f;
   font-weight: 600;
   text-decoration: none;
   transition: color .12s;
 }
-.switch-link a:hover { color: #4f46e5; text-decoration: underline; }
+.switch-link a:hover { color: #08241f; text-decoration: underline; }
 
 @media (max-width: 480px) {
   .auth-form { padding: 24px 20px; }

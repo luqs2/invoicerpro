@@ -95,12 +95,12 @@ function remove(id: number) {
   gap: 10px;
   padding: 14px 18px;
   border-radius: 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   box-shadow: 0 20px 40px -15px rgba(0,0,0,0.1);
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: #1e1b15;
   pointer-events: auto;
   transform-origin: bottom right;
 }
@@ -110,14 +110,14 @@ function remove(id: number) {
 }
 
 .toast-success .toast-icon { color: #16a34a; }
-.toast-danger .toast-icon  { color: #ef4444; }
-.toast-warning .toast-icon { color: #f59e0b; }
-.toast-info .toast-icon    { color: #3b82f6; }
+.toast-danger .toast-icon  { color: #dc2626; }
+.toast-warning .toast-icon { color: #d97706; }
+.toast-info .toast-icon    { color: #0284c7; }
 
-.toast-success { border-color: #bbf7d0; }
-.toast-danger  { border-color: #fecaca; }
-.toast-warning { border-color: #fde68a; }
-.toast-info    { border-color: #bfdbfe; }
+.toast-success { border-color: #86efac; }
+.toast-danger  { border-color: #fca5a5; }
+.toast-warning { border-color: #fcd34d; }
+.toast-info    { border-color: #7dd3fc; }
 
 .toast-message {
   flex: 1;
@@ -135,7 +135,7 @@ function remove(id: number) {
   border: none;
   background: none;
   cursor: pointer;
-  color: #94a3b8;
+  color: #414846;
   border-radius: 8px;
   transition: all 0.2s ease;
 }
@@ -147,20 +147,20 @@ function remove(id: number) {
 
 .toast-action-btn {
   padding: 6px 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #D6D0C2;
   border-radius: 8px;
-  background: #fff;
+  background: #F7F4EC;
   font-size: 12px;
   font-weight: 600;
-  color: #4f46e5;
+  color: #08241f;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.2s ease;
   white-space: nowrap;
 }
-.toast-action-btn:hover { background: #f5f3ff; border-color: #c7d2fe; }
+.toast-action-btn:hover { background: #cbe9e0; border-color: #08241f; }
 
-.toast-close:hover { color: #64748b; background: #f1f5f9; }
+.toast-close:hover { color: #414846; background: #EDE8DE; }
 
 /* Transitions */
 .toast-enter-active {
@@ -208,12 +208,12 @@ function remove(id: number) {
 
 /* Dark mode */
 .dark .toast {
-  background: #1e293b;
-  border-color: #334155;
-  color: #e2e8f0;
+  background: #1d201f;
+  border-color: #404945;
+  color: #e1e3e1;
 }
-.dark .toast-close { color: #64748b; }
-.dark .toast-close:hover { color: #94a3b8; background: #334155; }
-.dark .toast-action-btn { background: #334155; border-color: #475569; color: #818cf8; }
-.dark .toast-action-btn:hover { background: #312e81; border-color: #4f46e5; }
+.dark .toast-close { color: #414846; }
+.dark .toast-close:hover { color: #c0c8c4; background: #404945; }
+.dark .toast-action-btn { background: #404945; border-color: #505050; color: #a0d0c2; }
+.dark .toast-action-btn:hover { background: #a0d0c2; border-color: #a0d0c2; color: #111413; }
 </style>

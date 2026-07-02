@@ -594,7 +594,7 @@
           cx="7"
           cy="7"
           r="7"
-          fill="#6366f1"
+          fill="#08241f"
         />
         <path
           d="M4 7l2 2 4-4"
@@ -641,7 +641,7 @@ const layoutDesc = computed(() => {
   box-shadow: 0 2px 8px rgba(99,102,241,.08);
 }
 .tpl-card.selected {
-  border-color: #6366f1;
+  border-color: #08241f;
   box-shadow: 0 0 0 3px rgba(99,102,241,.1);
 }
 

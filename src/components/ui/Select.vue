@@ -1,9 +1,9 @@
 <template>
   <Select v-model="model">
-    <SelectTrigger :class="triggerClass" style="color: #0f172a">
+    <SelectTrigger :class="triggerClass" style="color: #1e1b15; background: #EDE8DE; border-color: #D6D0C2;">
       <span>{{ selectedLabel || placeholder }}</span>
     </SelectTrigger>
-    <SelectContent class="bg-white border border-gray-200 shadow-lg text-gray-900">
+    <SelectContent style="background: #F7F4EC; border-color: #D6D0C2; color: #1e1b15;">
       <SelectItem
         v-for="opt in options"
         :key="opt.value"
@@ -48,3 +48,27 @@ const selectedLabel = computed(() =>
   props.options.find(o => o.value === props.modelValue)?.label ?? ''
 )
 </script>
+
+<style scoped>
+:deep(.select-trigger) {
+  background: #EDE8DE !important;
+  border-color: #D6D0C2 !important;
+  color: #1e1b15 !important;
+}
+.dark :deep(.select-trigger) {
+  background: #1d201f !important;
+  border-color: #404945 !important;
+  color: #e1e3e1 !important;
+}
+
+:deep(.select-content) {
+  background: #F7F4EC !important;
+  border-color: #D6D0C2 !important;
+  color: #1e1b15 !important;
+}
+.dark :deep(.select-content) {
+  background: #1d201f !important;
+  border-color: #404945 !important;
+  color: #e1e3e1 !important;
+}
+</style>

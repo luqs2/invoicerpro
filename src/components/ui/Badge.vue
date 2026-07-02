@@ -23,23 +23,23 @@ withDefaults(defineProps<{
   white-space: nowrap;
   transition: all 0.2s ease;
 }
-.badge-default    { background: #f1f5f9; color: #64748b; }
-.badge-draft      { background: #f1f5f9; color: #64748b; }
+.badge-default    { background: #EDE8DE; color: #414846; }
+.badge-draft      { background: #f4ede3; color: #6B6558; }
 .badge-sent       { background: #dbeafe; color: #1d4ed8; }
 .badge-paid       { background: #d1fae5; color: #065f46; }
-.badge-overdue    { background: #fee2e2; color: #991b1b; }
-.badge-cancelled  { background: #f1f5f9; color: #94a3b8; }
+.badge-overdue    { background: #ffdad6; color: #A6432E; }
+.badge-cancelled  { background: #EDE8DE; color: #414846; }
 .badge-success    { background: #d1fae5; color: #065f46; }
 .badge-warning    { background: #fef3c7; color: #92400e; }
-.badge-danger     { background: #fee2e2; color: #991b1b; }
+.badge-danger     { background: #ffdad6; color: #93000a; }
 
-.dark .badge-default    { background: #334155; color: #94a3b8; }
-.dark .badge-draft      { background: #334155; color: #94a3b8; }
-.dark .badge-sent       { background: #1e3a5f; color: #60a5fa; }
-.dark .badge-paid       { background: #064e3b; color: #34d399; }
-.dark .badge-overdue    { background: #450a0a; color: #f87171; }
-.dark .badge-cancelled  { background: #334155; color: #64748b; }
-.dark .badge-success    { background: #064e3b; color: #34d399; }
+.dark .badge-default    { background: #323534; color: #c0c8c4; }
+.dark .badge-draft      { background: #323534; color: #c0c8c4; }
+.dark .badge-sent       { background: #0c4a6e; color: #38bdf8; }
+.dark .badge-paid       { background: #14532d; color: #4ade80; }
+.dark .badge-overdue    { background: #450a0a; color: #fca5a5; }
+.dark .badge-cancelled  { background: #323534; color: #c0c8c4; }
+.dark .badge-success    { background: #14532d; color: #4ade80; }
 .dark .badge-warning    { background: #451a03; color: #fbbf24; }
-.dark .badge-danger     { background: #450a0a; color: #f87171; }
+.dark .badge-danger     { background: #450a0a; color: #fca5a5; }
 </style>

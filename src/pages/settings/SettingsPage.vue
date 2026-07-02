@@ -29,7 +29,7 @@
       <!-- Left column -->
       <div class="settings-main">
         <!-- Business Profile -->
-        <div class="settings-card">
+        <div class="settings-card animate-in">
           <div class="card-header">
             <h2 class="card-title">
               Business Profile
@@ -223,6 +223,8 @@
             class="card-body"
             style="padding-top:0"
           >
+            <!-- Dark mode toggle hidden for v1 ship -->
+            <!--
             <div class="theme-toggle-row">
               <span class="theme-label">Appearance</span>
               <button
@@ -241,6 +243,7 @@
                 <span>{{ theme === 'light' ? 'Dark' : 'Light' }} mode</span>
               </button>
             </div>
+            -->
             <button
               class="danger-btn"
               @click="logout"
@@ -556,15 +559,15 @@ async function logout() {
 
 /* Settings cards */
 .settings-card {
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   border-radius: 16px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
   overflow: hidden;
 }
-.card-header  { padding: 18px 22px 14px; border-bottom: 1px solid #f1f5f9; }
-.card-title   { font-size: 15px; font-weight: 700; color: #0f172a; margin: 0 0 2px; }
-.card-desc    { font-size: 12px; color: #94a3b8; margin: 0; }
+.card-header  { padding: 18px 22px 14px; border-bottom: 1px solid #f4ede3; }
+.card-title   { font-size: 15px; font-weight: 700; color: #1e1b15; margin: 0 0 2px; }
+.card-desc    { font-size: 12px; color: #414846; margin: 0; }
 .card-body    { padding: 18px 22px; display: flex; flex-direction: column; gap: 16px; }
 
 /* Logo upload */
@@ -579,14 +582,14 @@ async function logout() {
   width: 72px;
   height: 72px;
   border-radius: 14px;
-  border: 2px dashed #e2e8f0;
+  border: 2px dashed #D6D0C2;
   cursor: pointer;
   overflow: hidden;
   flex-shrink: 0;
   transition: border-color .15s;
-  background: #f8fafc;
+  background: #EDE8DE;
 }
-.logo-preview:hover { border-color: #6366f1; }
+.logo-preview:hover { border-color: #08241f; }
 .logo-preview:hover .logo-overlay { opacity: 1; }
 
 .logo-img {
@@ -604,7 +607,7 @@ async function logout() {
   justify-content: center;
   font-weight: 800;
   font-size: 22px;
-  color: #6366f1;
+  color: #08241f;
   background: #eef2ff;
 }
 
@@ -625,7 +628,7 @@ async function logout() {
 }
 
 .logo-info    { display: flex; flex-direction: column; gap: 4px; }
-.logo-hint    { font-size: 12px; color: #94a3b8; margin: 0; }
+.logo-hint    { font-size: 12px; color: #414846; margin: 0; }
 .logo-remove  {
   background: none; border: none; padding: 0;
   font-size: 12px; color: #ef4444; cursor: pointer;
@@ -635,7 +638,7 @@ async function logout() {
 
 /* Settings-specific field overrides */
 .settings-card .field label {
-  font-size: 12px; font-weight: 700; color: #64748b;
+  font-size: 12px; font-weight: 700; color: #414846;
   text-transform: uppercase; letter-spacing: 0.4px;
 }
 
@@ -649,24 +652,24 @@ async function logout() {
   text-align: center;
 }
 .preview-logo-wrap    { margin-bottom: 4px; }
-.preview-logo-img     { width: 56px; height: 56px; object-fit: contain; border-radius: 10px; border: 1px solid #e2e8f0; padding: 4px; }
+.preview-logo-img     { width: 56px; height: 56px; object-fit: contain; border-radius: 10px; border: 1px solid #D6D0C2; padding: 4px; }
 .preview-logo-initials {
   width: 56px; height: 56px;
   border-radius: 10px;
   background: #eef2ff;
   display: flex; align-items: center; justify-content: center;
-  font-weight: 800; font-size: 20px; color: #6366f1;
+  font-weight: 800; font-size: 20px; color: #08241f;
 }
-.preview-name    { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0; }
-.preview-email   { font-size: 12px; color: #64748b; margin: 0; }
-.preview-address { font-size: 11px; color: #94a3b8; margin: 0; white-space: pre-line; }
+.preview-name    { font-size: 14px; font-weight: 700; color: #1e1b15; margin: 0; }
+.preview-email   { font-size: 12px; color: #414846; margin: 0; }
+.preview-address { font-size: 11px; color: #414846; margin: 0; white-space: pre-line; }
 
 /* Buttons */
 .btn-primary {
   display: inline-flex; align-items: center; gap: 7px;
   padding: 10px 24px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff; border: none; border-radius: 10px;
+  background: linear-gradient(135deg, #08241f, #B5652D);
+  color: #F7F4EC; border: none; border-radius: 10px;
   font-size: 14px; font-weight: 600; cursor: pointer;
   font-family: inherit; transition: opacity .15s;
   box-shadow: 0 2px 10px rgba(99,102,241,.35);
@@ -694,7 +697,7 @@ async function logout() {
 .theme-label {
   font-size: 14px;
   font-weight: 500;
-  color: #374151;
+  color: #1e1b15;
 }
 
 .theme-toggle {
@@ -702,21 +705,21 @@ async function logout() {
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #D6D0C2;
   border-radius: 8px;
-  background: #fff;
+  background: #F7F4EC;
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: #1e1b15;
   cursor: pointer;
   font-family: inherit;
   transition: all .12s;
 }
-.theme-toggle:hover { background: #f8fafc; border-color: #c7d2fe; }
+.theme-toggle:hover { background: #EDE8DE; border-color: #c7d2fe; }
 
-.info-card    { padding: 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
-.info-title   { font-size: 13px; font-weight: 700; color: #374151; margin: 0 0 2px; }
-.info-version { font-size: 12px; color: #94a3b8; margin: 0; }
+.info-card    { padding: 16px; background: #EDE8DE; border: 1px solid #D6D0C2; border-radius: 12px; }
+.info-title   { font-size: 13px; font-weight: 700; color: #1e1b15; margin: 0 0 2px; }
+.info-version { font-size: 12px; color: #414846; margin: 0; }
 
 @media (max-width: 900px) {
   .settings-layout { grid-template-columns: 1fr; }

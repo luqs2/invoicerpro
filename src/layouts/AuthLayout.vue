@@ -82,7 +82,7 @@ import { RouterView } from 'vue-router'
 
 .auth-left {
   flex: 1;
-  background: linear-gradient(140deg, #4f46e5 0%, #7c3aed 60%, #6d28d9 100%);
+  background: linear-gradient(140deg, #1f3a34 0%, #08241f 60%, #08241f 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -159,7 +159,7 @@ import { RouterView } from 'vue-router'
 .auth-right {
   width: 480px;
   min-width: 480px;
-  background: #f8fafc;
+  background: #fafafa;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -173,7 +173,7 @@ import { RouterView } from 'vue-router'
   background: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 24px rgba(0,0,0,.08), 0 1px 4px rgba(0,0,0,.04);
-  border: 1px solid #e2e8f0;
+  border: 1px solid #e5e5e5;
   overflow: hidden;
 }
 
@@ -183,7 +183,7 @@ import { RouterView } from 'vue-router'
     flex: none;
     padding: 28px 24px;
     min-height: auto;
-    background: linear-gradient(135deg, #4f46e5, #7c3aed);
+    background: linear-gradient(135deg, #1f3a34, #08241f);
   }
   .auth-left-inner { gap: 0; }
   .brand-mark { margin-bottom: 0; }

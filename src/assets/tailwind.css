@@ -5,7 +5,7 @@
 /* ── Base resets ─────────────────────────────────────────── */
 @layer base {
   html, body {
-    color-scheme: light only;
+    color-scheme: light dark;
   }
 
   * {

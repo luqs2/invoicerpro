@@ -243,7 +243,7 @@
 import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
 import {
-  LayoutGrid, FileText, Receipt, Users, Palette,
+  LayoutGrid, FileText, Receipt, Users, Palette, ShoppingCart,
   ChevronLeft, ChevronRight,
   Menu, X, Settings,
 } from '@lucide/vue'
@@ -294,11 +294,12 @@ onUnmounted(() => {
 })
 
 const navItems: NavItem[] = [
-  { path: '/app/dashboard', label: 'Dashboard', icon: LayoutGrid },
-  { path: '/app/invoices',  label: 'Invoices',  icon: FileText },
-  { path: '/app/receipts',  label: 'Receipts',  icon: Receipt },
-  { path: '/app/clients',   label: 'Clients',   icon: Users },
-  { path: '/app/templates', label: 'Templates', icon: Palette },
+  { path: '/app/dashboard',       label: 'Dashboard',       icon: LayoutGrid },
+  { path: '/app/invoices',        label: 'Invoices',        icon: FileText },
+  { path: '/app/receipts',        label: 'Receipts',        icon: Receipt },
+  { path: '/app/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart },
+  { path: '/app/clients',         label: 'Clients',         icon: Users },
+  { path: '/app/templates',       label: 'Templates',       icon: Palette },
 ]
 
 const bottomNavItems: NavItem[] = [
@@ -319,9 +320,9 @@ function isActive(path: string) {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #f8fafc;
+  background: #EDE8DE;
 }
-.dark .app-shell { background: #0f172a; }
+.dark .app-shell { background: #111413; }
 
 /* Skip to content link */
 .skip-link {
@@ -330,7 +331,7 @@ function isActive(path: string) {
   left: 8px;
   z-index: 10000;
   padding: 8px 16px;
-  background: #6366f1;
+  background: #1f3a34;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -340,7 +341,7 @@ function isActive(path: string) {
 }
 .skip-link:focus {
   top: 0;
-  outline: 2px solid #6366f1;
+  outline: 2px solid #1f3a34;
   outline-offset: 2px;
 }
 
@@ -348,15 +349,15 @@ function isActive(path: string) {
 .sidebar {
   width: 220px;
   min-width: 220px;
-  background: #ffffff;
-  border-right: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border-right: 1px solid #D6D0C2;
   display: flex;
   flex-direction: column;
   transition: width .2s ease, min-width .2s ease;
   overflow: hidden;
   z-index: 10;
 }
-.dark .sidebar { background: #1e293b; border-color: #334155; }
+.dark .sidebar { background: #1d201f; border-color: #404945; }
 
 .sidebar.collapsed {
   width: 64px;
@@ -368,10 +369,10 @@ function isActive(path: string) {
   align-items: center;
   justify-content: space-between;
   padding: 16px 14px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #D6D0C2;
   min-height: 64px;
 }
-.dark .sidebar-header { border-color: #334155; }
+.dark .sidebar-header { border-color: #404945; }
 
 .brand-logo {
   display: flex;
@@ -386,7 +387,7 @@ function isActive(path: string) {
   width: 32px;
   height: 32px;
   min-width: 32px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: #1f3a34;
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -400,15 +401,16 @@ function isActive(path: string) {
 }
 
 .brand-text {
+  font-family: 'Merriweather', Georgia, serif;
   font-size: 16px;
-  font-weight: 800;
-  color: #0f172a;
+  font-weight: 700;
+  color: #1e1b15;
   white-space: nowrap;
   letter-spacing: -0.3px;
 }
-.dark .brand-text { color: #f1f5f9; }
+.dark .brand-text { color: #e1e3e1; }
 
-.brand-text span { color: #6366f1; }
+.brand-text span { color: #B5652D; }
 
 .collapse-btn {
   width: 28px;
@@ -418,17 +420,17 @@ function isActive(path: string) {
   align-items: center;
   justify-content: center;
   border: none;
-  background: #f1f5f9;
+  background: #EDE8DE;
   border-radius: 6px;
   cursor: pointer;
-  color: #64748b;
+  color: #414846;
   font-size: 14px;
   transition: background .12s, color .12s;
 }
-.dark .collapse-btn { background: #334155; color: #94a3b8; }
+.dark .collapse-btn { background: #323534; color: #c0c8c4; }
 
-.collapse-btn:hover { background: #e2e8f0; color: #0f172a; }
-.dark .collapse-btn:hover { background: #475569; color: #f1f5f9; }
+.collapse-btn:hover { background: #D6D0C2; color: #1e1b15; }
+.dark .collapse-btn:hover { background: #404945; color: #e1e3e1; }
 
 /* Nav */
 .sidebar-nav {
@@ -442,9 +444,9 @@ function isActive(path: string) {
 
 .sidebar-footer {
   padding: 8px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #D6D0C2;
 }
-.dark .sidebar-footer { border-color: #334155; }
+.dark .sidebar-footer { border-color: #404945; }
 
 .nav-item {
   display: flex;
@@ -454,7 +456,7 @@ function isActive(path: string) {
   border-radius: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #64748b;
+  color: #414846;
   text-decoration: none;
   transition: background .12s, color .12s;
   white-space: nowrap;
@@ -467,17 +469,19 @@ function isActive(path: string) {
 }
 
 .nav-item:hover {
-  background: #f1f5f9;
-  color: #0f172a;
+  background: #EDE8DE;
+  color: #1e1b15;
 }
-.dark .nav-item:hover { background: #334155; color: #f1f5f9; }
+.dark .nav-item:hover { background: #323534; color: #e1e3e1; }
 
 .nav-item.active {
-  background: #ede9fe;
-  color: #6366f1;
+  background: #EDE8DE;
+  color: #08241f;
   font-weight: 600;
+  border-left: 3px solid #B5652D;
+  padding-left: 7px;
 }
-.dark .nav-item.active { background: #312e81; color: #818cf8; }
+.dark .nav-item.active { background: #1f3a34; color: #a0d0c2; }
 
 .nav-icon {
   min-width: 18px;
@@ -487,7 +491,7 @@ function isActive(path: string) {
 .nav-label { flex: 1; }
 
 .nav-badge {
-  background: #6366f1;
+  background: #B5652D;
   color: #fff;
   border-radius: 10px;
   font-size: 10px;
@@ -513,14 +517,14 @@ function isActive(path: string) {
   gap: 12px;
   padding: 0 16px;
   height: 56px;
-  background: #ffffff;
-  border-bottom: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border-bottom: 1px solid #D6D0C2;
   position: sticky;
   top: 0;
   z-index: 20;
   flex-shrink: 0;
 }
-.dark .mobile-topbar { background: #1e293b; border-color: #334155; }
+.dark .mobile-topbar { background: #1d201f; border-color: #404945; }
 
 .mobile-menu-btn {
   width: 36px;
@@ -529,23 +533,24 @@ function isActive(path: string) {
   align-items: center;
   justify-content: center;
   border: none;
-  background: #f1f5f9;
+  background: #EDE8DE;
   border-radius: 8px;
   cursor: pointer;
   font-size: 20px;
-  color: #374151;
+  color: #1e1b15;
 }
-.dark .mobile-menu-btn { background: #334155; color: #e2e8f0; }
+.dark .mobile-menu-btn { background: #323534; color: #c0c8c4; }
 
 .mobile-brand {
+  font-family: 'Merriweather', Georgia, serif;
   font-size: 17px;
-  font-weight: 800;
-  color: #0f172a;
+  font-weight: 700;
+  color: #1e1b15;
   letter-spacing: -0.3px;
 }
-.dark .mobile-brand { color: #f1f5f9; }
+.dark .mobile-brand { color: #e1e3e1; }
 
-.mobile-brand span { color: #6366f1; }
+.mobile-brand span { color: #B5652D; }
 
 .mobile-overlay {
   display: none;
@@ -561,12 +566,12 @@ function isActive(path: string) {
   top: 0;
   bottom: 0;
   width: 260px;
-  background: #ffffff;
+  background: #F7F4EC;
   display: flex;
   flex-direction: column;
   box-shadow: 4px 0 24px rgba(0,0,0,.12);
 }
-.dark .mobile-drawer { background: #1e293b; }
+.dark .mobile-drawer { background: #1d201f; }
 
 /* Transitions */
 .overlay-fade-enter-active,
@@ -581,12 +586,12 @@ function isActive(path: string) {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #ffffff;
-  border-top: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border-top: 1px solid #D6D0C2;
   z-index: 50;
   padding: 6px 0 env(safe-area-inset-bottom, 8px);
 }
-.dark .bottom-nav { background: #1e293b; border-color: #334155; }
+.dark .bottom-nav { background: #1d201f; border-color: #404945; }
 
 .bottom-nav-item {
   display: flex;
@@ -595,15 +600,15 @@ function isActive(path: string) {
   gap: 2px;
   font-size: 10px;
   font-weight: 600;
-  color: #94a3b8;
+  color: #414846;
   text-decoration: none;
   padding: 4px 0;
   transition: color .12s;
   flex: 1;
 }
-.bottom-nav-item.active { color: #6366f1; }
-.dark .bottom-nav-item { color: #64748b; }
-.dark .bottom-nav-item.active { color: #818cf8; }
+.bottom-nav-item.active { color: #B5652D; }
+.dark .bottom-nav-item { color: #c0c8c4; }
+.dark .bottom-nav-item.active { color: #ffb787; }
 
 @media (max-width: 768px) {
   .sidebar { display: none; }

@@ -274,7 +274,7 @@
         to="/app/invoices/new"
         class="qa-card animate-in"
       >
-        <div class="qa-icon qa-icon-purple">
+        <div class="qa-icon qa-icon-teal">
           <FilePlus :size="18" />
         </div>
         <div class="qa-content">
@@ -640,31 +640,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/* ── Animations ──────────────────────────────────────────── */
-@keyframes fadeSlideUp {
-  from {
-    opacity: 0;
-    transform: translateY(12px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.animate-in {
-  animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-
-.animate-fade {
-  animation: fadeIn 0.3s ease-out both;
-}
-
 /* Stagger delays for stats cards */
 .stat-card:nth-child(1) { animation-delay: 0ms; }
 .stat-card:nth-child(2) { animation-delay: 60ms; }
@@ -676,41 +651,26 @@ onMounted(async () => {
 .qa-card:nth-child(2) { animation-delay: 50ms; }
 .qa-card:nth-child(3) { animation-delay: 100ms; }
 
-/* Table row stagger */
-.table-row {
-  animation: fadeSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-.table-row:nth-child(1) { animation-delay: 0ms; }
-.table-row:nth-child(2) { animation-delay: 30ms; }
-.table-row:nth-child(3) { animation-delay: 60ms; }
-.table-row:nth-child(4) { animation-delay: 90ms; }
-.table-row:nth-child(5) { animation-delay: 120ms; }
-.table-row:nth-child(6) { animation-delay: 150ms; }
-.table-row:nth-child(7) { animation-delay: 180ms; }
-.table-row:nth-child(8) { animation-delay: 210ms; }
-
 /* Profile banner entrance */
 .profile-banner {
   animation: fadeSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
 }
 
-/* Reduced motion */
-@media (prefers-reduced-motion: reduce) {
-  .animate-in,
-  .animate-fade,
-  .stat-card,
-  .qa-card,
-  .table-row,
-  .profile-banner {
-    animation: none !important;
-  }
-}
-
 .page { gap: 24px; }
+
+/* Paper & Ink heading font */
+.page-title,
+.section-title,
+.qa-title,
+.stat-value,
+.profile-banner-title,
+.empty-title {
+  font-family: 'Merriweather', serif;
+}
 
 .page-eyebrow {
   font-size: 13px;
-  color: #64748b;
+  color: #414846;
   margin: 0 0 4px;
   text-transform: capitalize;
   font-weight: 500;
@@ -724,8 +684,8 @@ onMounted(async () => {
 }
 
 .stat-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   border-radius: 16px;
   padding: 20px;
   display: flex;
@@ -733,7 +693,7 @@ onMounted(async () => {
   gap: 14px;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.dark .stat-card { background: #1e293b; border-color: #334155; }
+.dark .stat-card { background: #1d201f; border-color: #404945; }
 
 .stat-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); transform: translateY(-1px); }
 
@@ -746,17 +706,17 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
 }
-.stat-revenue .stat-icon-wrap  { background: #ede9fe; color: #6366f1; }
-.stat-sent .stat-icon-wrap     { background: #dbeafe; color: #3b82f6; }
-.stat-pending .stat-icon-wrap  { background: #fef3c7; color: #f59e0b; }
-.stat-overdue .stat-icon-wrap  { background: #fee2e2; color: #ef4444; }
+.stat-revenue .stat-icon-wrap  { background: #cbe9e0; color: #08241f; }
+.stat-sent .stat-icon-wrap     { background: #e0f2fe; color: #0284c7; }
+.stat-pending .stat-icon-wrap  { background: #fef3c7; color: #d97706; }
+.stat-overdue .stat-icon-wrap  { background: #fef2f2; color: #dc2626; }
 
 .stat-body { flex: 1; min-width: 0; }
 
 .stat-label {
   font-size: 11px;
   font-weight: 600;
-  color: #64748b;
+  color: #414846;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 4px;
@@ -765,15 +725,16 @@ onMounted(async () => {
 .stat-value {
   font-size: 22px;
   font-weight: 700;
-  color: #0f172a;
+  font-family: 'Merriweather', serif;
+  color: #1e1b15;
   margin: 0;
   letter-spacing: -0.4px;
   font-variant-numeric: tabular-nums;
   line-height: 1.2;
 }
-.dark .stat-value { color: #f1f5f9; }
+.dark .stat-value { color: #e1e3e1; }
 
-.stat-value.overdue { color: #ef4444; }
+.stat-value.overdue { color: #dc2626; }
 
 .stat-trend {
   display: inline-flex;
@@ -786,7 +747,7 @@ onMounted(async () => {
   border-radius: 4px;
 }
 .trend-up   { color: #16a34a; background: #f0fdf4; }
-.trend-down { color: #ef4444; background: #fef2f2; }
+.trend-down { color: #dc2626; background: #fef2f2; }
 
 /* Quick actions */
 .quick-actions {
@@ -800,14 +761,14 @@ onMounted(async () => {
   align-items: center;
   gap: 14px;
   padding: 16px 18px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   border-radius: 14px;
   text-decoration: none;
   transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
-.dark .qa-card { background: #1e293b; border-color: #334155; }
-.qa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: #c7d2fe; transform: translateY(-1px); }
+.dark .qa-card { background: #1d201f; border-color: #404945; }
+.qa-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,.08); border-color: #08241f; transform: translateY(-1px); }
 
 .qa-icon {
   width: 40px;
@@ -818,32 +779,32 @@ onMounted(async () => {
   align-items: center;
   justify-content: center;
 }
-.qa-icon-purple { background: #ede9fe; color: #6366f1; }
-.qa-icon-blue   { background: #dbeafe; color: #3b82f6; }
-.qa-icon-green  { background: #d1fae5; color: #059669; }
+.qa-icon-teal   { background: #cbe9e0; color: #08241f; }
+.qa-icon-blue   { background: #e0f2fe; color: #0284c7; }
+.qa-icon-green  { background: #dcfce7; color: #16a34a; }
 
 .qa-content { flex: 1; min-width: 0; }
 
 .qa-title {
   font-size: 14px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   margin: 0 0 2px;
 }
-.dark .qa-title { color: #f1f5f9; }
+.dark .qa-title { color: #e1e3e1; }
 
 .qa-sub {
   font-size: 12px;
-  color: #94a3b8;
+  color: #414846;
   margin: 0;
 }
 
 .qa-arrow {
-  color: #cbd5e1;
+  color: #414846;
   transition: color .15s, transform .15s;
   flex-shrink: 0;
 }
-.qa-card:hover .qa-arrow { color: #6366f1; transform: translateX(2px); }
+.qa-card:hover .qa-arrow { color: #08241f; transform: translateX(2px); }
 
 /* Profile completion */
 .profile-banner {
@@ -852,21 +813,21 @@ onMounted(async () => {
   justify-content: space-between;
   gap: 20px;
   padding: 16px 20px;
-  background: linear-gradient(135deg, #ede9fe, #dbeafe);
-  border: 1px solid #c7d2fe;
+  background: #EDE8DE;
+  border: 1px solid #cbe9e0;
   border-radius: 14px;
 }
 
 .profile-banner-title {
   font-size: 14px;
   font-weight: 700;
-  color: #374151;
+  color: #1e1b15;
   margin: 0 0 4px;
 }
 
 .profile-banner-sub {
   font-size: 13px;
-  color: #64748b;
+  color: #414846;
   margin: 0;
 }
 
@@ -891,13 +852,13 @@ onMounted(async () => {
 
 .progress-bg {
   fill: none;
-  stroke: #e2e8f0;
+  stroke: #D6D0C2;
   stroke-width: 3;
 }
 
 .progress-fill {
   fill: none;
-  stroke: #6366f1;
+  stroke: #08241f;
   stroke-width: 3;
   stroke-linecap: round;
   transition: stroke-dasharray .4s ease;
@@ -911,7 +872,7 @@ onMounted(async () => {
   justify-content: center;
   font-size: 11px;
   font-weight: 700;
-  color: #6366f1;
+  color: #08241f;
 }
 
 .profile-link {
@@ -920,7 +881,7 @@ onMounted(async () => {
   gap: 4px;
   font-size: 13px;
   font-weight: 600;
-  color: #6366f1;
+  color: #08241f;
   text-decoration: none;
   white-space: nowrap;
   transition: gap .15s;
@@ -932,14 +893,14 @@ onMounted(async () => {
   width: 72px;
   height: 72px;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: #EDE8DE;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #cbd5e1;
+  color: #414846;
   margin-bottom: 8px;
 }
-.dark .empty-icon-wrap { background: #334155; color: #475569; }
+.dark .empty-icon-wrap { background: #404945; color: #6b7a74; }
 
 /* Dashboard-specific table overrides */
 .data-table th {

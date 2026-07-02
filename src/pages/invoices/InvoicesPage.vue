@@ -229,7 +229,7 @@
       <!-- Table -->
       <div
         v-if="filtered.length"
-        class="section-card"
+        class="section-card animate-in"
       >
         <table
           class="data-table"

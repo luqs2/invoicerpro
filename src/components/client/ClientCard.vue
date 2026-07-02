@@ -67,7 +67,7 @@ function go() {
   width: 44px;
   height: 44px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #08241f, #B5652D);
   color: #ffffff;
   display: flex;
   align-items: center;
@@ -103,7 +103,7 @@ function go() {
 .client-company {
   font-size: 11px;
   font-weight: 600;
-  color: #6366f1;
+  color: #08241f;
   margin: 4px 0 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;

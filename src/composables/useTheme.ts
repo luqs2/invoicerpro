@@ -8,13 +8,9 @@ function applyTheme(t: 'light' | 'dark') {
 
 // Apply theme immediately on import so it's set before any render
 if (typeof window !== 'undefined') {
-  const stored = localStorage.getItem('theme') as 'light' | 'dark' | null
-  if (stored) {
-    theme.value = stored
-  } else {
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    theme.value = prefersDark ? 'dark' : 'light'
-  }
+  // Force light mode — dark mode hidden for v1 ship
+  localStorage.removeItem('theme')
+  theme.value = 'light'
   applyTheme(theme.value)
 }
 

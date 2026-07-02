@@ -40,7 +40,7 @@
         <div
           v-for="i in 5"
           :key="i"
-          style="display:flex; align-items:center; gap:12px; padding:14px 0; border-bottom:1px solid #f8fafc;"
+          style="display:flex; align-items:center; gap:12px; padding:14px 0;           border-bottom:1px solid #EDE8DE;"
         >
           <Skeleton
             variant="rect"
@@ -64,7 +64,7 @@
     <!-- Table -->
     <div
       v-else-if="filtered.length"
-      class="section-card"
+      class="section-card animate-in"
     >
       <table
         class="data-table"
@@ -371,8 +371,8 @@ async function deleteClient(client: Client) {
   height: 34px;
   min-width: 34px;
   border-radius: 8px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #ffffff;
+  background: linear-gradient(135deg, #08241f, #B5652D);
+  color: #F7F4EC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -380,12 +380,12 @@ async function deleteClient(client: Client) {
   font-weight: 800;
 }
 
-.client-name { font-weight: 600; color: #0f172a; }
+.client-name { font-weight: 600; color: #1e1b15; }
 
 .company-badge {
   display: inline-block;
-  background: #f5f3ff;
-  color: #6366f1;
+  background: #cbe9e0;
+  color: #08241f;
   border-radius: 5px;
   font-size: 11px;
   font-weight: 700;
@@ -404,7 +404,7 @@ async function deleteClient(client: Client) {
 
 .side-panel {
   width: 440px;
-  background: #ffffff;
+  background: #F7F4EC;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -416,14 +416,14 @@ async function deleteClient(client: Client) {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f4ede3;
   flex-shrink: 0;
 }
 
 .panel-title {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   margin: 0;
   letter-spacing: -0.2px;
 }
@@ -435,14 +435,14 @@ async function deleteClient(client: Client) {
   align-items: center;
   justify-content: center;
   border: none;
-  background: #f1f5f9;
+  background: #f4ede3;
   border-radius: 8px;
   cursor: pointer;
   font-size: 18px;
-  color: #64748b;
+  color: #414846;
   transition: background .12s;
 }
-.panel-close:hover { background: #e2e8f0; color: #0f172a; }
+.panel-close:hover { background: #D6D0C2; color: #1e1b15; }
 
 .panel-body {
   flex: 1;
@@ -457,7 +457,7 @@ async function deleteClient(client: Client) {
   display: flex;
   gap: 10px;
   padding: 16px 24px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #f4ede3;
   flex-shrink: 0;
 }
 

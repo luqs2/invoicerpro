@@ -56,11 +56,11 @@
         <div class="stat-card">
           <div
             class="stat-icon"
-            style="background:#ede9fe;"
+            style="background:#cbe9e0;"
           >
             <Calendar
               :size="16"
-              style="color:#6366f1;"
+              style="color:#08241f;"
             />
           </div>
           <div>
@@ -643,12 +643,12 @@ async function del() {
   gap: 5px;
   font-size: 13px;
   font-weight: 600;
-  color: #64748b;
+  color: #414846;
   text-decoration: none;
   transition: color .12s;
   margin-bottom: 20px;
 }
-.back-link:hover { color: #6366f1; }
+.back-link:hover { color: #08241f; }
 
 .client-identity {
   display: flex;
@@ -660,8 +660,8 @@ async function del() {
   width: 52px;
   height: 52px;
   border-radius: 14px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #ffffff;
+  background: linear-gradient(135deg, #08241f, #B5652D);
+  color: #F7F4EC;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -690,8 +690,8 @@ async function del() {
   align-items: center;
   gap: 7px;
   padding: 9px 16px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #ffffff;
+  background: linear-gradient(135deg, #08241f, #B5652D);
+  color: #F7F4EC;
   border: none;
   border-radius: 9px;
   font-size: 14px;
@@ -717,8 +717,8 @@ async function del() {
   display: flex;
   align-items: center;
   gap: 14px;
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   border-radius: 12px;
   padding: 20px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
@@ -737,7 +737,7 @@ async function del() {
 .stat-label {
   font-size: 11px;
   font-weight: 700;
-  color: #94a3b8;
+  color: #414846;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin: 0 0 4px;
@@ -746,7 +746,7 @@ async function del() {
 .stat-value {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
@@ -764,8 +764,8 @@ async function del() {
 
 .info-card,
 .invoices-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   border-radius: 14px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
   overflow: hidden;
@@ -776,13 +776,13 @@ async function del() {
   align-items: center;
   justify-content: space-between;
   padding: 18px 22px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f4ede3;
 }
 
 .card-title {
   font-size: 14px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   margin: 0;
 }
 
@@ -792,7 +792,7 @@ async function del() {
   gap: 4px;
   font-size: 13px;
   font-weight: 600;
-  color: #6366f1;
+  color: #08241f;
   text-decoration: none;
 }
 .card-link:hover { text-decoration: underline; }
@@ -809,7 +809,7 @@ async function del() {
 
 .info-label {
   font-size: 13px;
-  color: #64748b;
+  color: #414846;
   font-weight: 600;
   min-width: 90px;
   flex-shrink: 0;
@@ -817,20 +817,20 @@ async function del() {
 
 .info-value {
   font-size: 14px;
-  color: #0f172a;
+  color: #1e1b15;
   font-weight: 500;
   text-align: right;
 }
 
 .info-link {
-  color: #6366f1;
+  color: #08241f;
   text-decoration: none;
 }
 .info-link:hover { text-decoration: underline; }
 
 .info-divider {
   height: 1px;
-  background: #f8fafc;
+  background: #EDE8DE;
   margin: 0 20px;
 }
 
@@ -843,7 +843,7 @@ async function del() {
 }
 .card-empty p {
   font-size: 13px;
-  color: #94a3b8;
+  color: #414846;
   margin: 0;
 }
 
@@ -856,11 +856,11 @@ async function del() {
   padding: 16px 20px;
   text-decoration: none;
   color: inherit;
-  border-bottom: 1px solid #f8fafc;
+  border-bottom: 1px solid #EDE8DE;
   transition: background .1s;
 }
 .invoice-row:last-child { border-bottom: none; }
-.invoice-row:hover { background: #fafafa; }
+.invoice-row:hover { background: #EDE8DE; }
 
 .inv-left {
   display: flex;
@@ -868,19 +868,19 @@ async function del() {
   gap: 12px;
 }
 
-.inv-icon { color: #94a3b8; flex-shrink: 0; }
+.inv-icon { color: #414846; flex-shrink: 0; }
 
 .inv-number {
   font-size: 14px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   margin: 0;
   font-variant-numeric: tabular-nums;
 }
 
 .inv-date {
   font-size: 12px;
-  color: #94a3b8;
+  color: #414846;
   margin: 0;
 }
 
@@ -893,7 +893,7 @@ async function del() {
 .inv-amount {
   font-size: 14px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   font-variant-numeric: tabular-nums;
 }
 
@@ -909,7 +909,7 @@ async function del() {
 
 .side-panel {
   width: 440px;
-  background: #ffffff;
+  background: #F7F4EC;
   height: 100%;
   display: flex;
   flex-direction: column;
@@ -921,14 +921,14 @@ async function del() {
   align-items: center;
   justify-content: space-between;
   padding: 20px 24px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid #f4ede3;
   flex-shrink: 0;
 }
 
 .panel-title {
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   margin: 0;
 }
 
@@ -939,13 +939,13 @@ async function del() {
   align-items: center;
   justify-content: center;
   border: none;
-  background: #f1f5f9;
+  background: #f4ede3;
   border-radius: 8px;
   cursor: pointer;
-  color: #64748b;
+  color: #414846;
   transition: background .12s;
 }
-.panel-close:hover { background: #e2e8f0; color: #0f172a; }
+.panel-close:hover { background: #D6D0C2; color: #1e1b15; }
 
 .panel-body {
   flex: 1;
@@ -960,7 +960,7 @@ async function del() {
   display: flex;
   gap: 10px;
   padding: 16px 24px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #f4ede3;
   flex-shrink: 0;
 }
 

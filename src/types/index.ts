@@ -142,6 +142,33 @@ export interface InvoiceTemplate {
   created_at: string
 }
 
+// ── Purchase Order ────────────────────────────────────
+export type PurchaseOrderStatus = 'draft' | 'sent' | 'received' | 'cancelled'
+
+export interface PurchaseOrder {
+  id: string
+  user_id: string
+  client_id?: string
+  client?: Client
+  client_name: string
+  client_email?: string
+  client_phone?: string
+  client_address?: string
+  po_number: string
+  status: PurchaseOrderStatus
+  order_date: string
+  expected_date?: string
+  currency: string
+  line_items: LineItem[]
+  subtotal: number
+  tax_rate: number
+  tax_amount: number
+  total: number
+  notes?: string
+  created_at: string
+  updated_at: string
+}
+
 // ── Dashboard Stats ───────────────────────────────────
 export interface DashboardStats {
   total_revenue: number

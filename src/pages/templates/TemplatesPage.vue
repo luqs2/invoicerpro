@@ -68,7 +68,7 @@
       class="custom-layout"
     >
       <!-- Header Layout -->
-      <div class="settings-card">
+      <div class="settings-card animate-in">
         <div class="card-header">
           <h2 class="card-title">
             Header Layout
@@ -658,7 +658,7 @@
                     cx="7"
                     cy="7"
                     r="7"
-                    fill="#6366f1"
+                    fill="#08241f"
                   />
                   <path
                     d="M4 7l2 2 4-4"
@@ -967,7 +967,7 @@ const saving = ref(false)
 
 const draft = reactive({
   name:              'My Template',
-  primary_color:     '#6366f1',
+  primary_color:     '#08241f',
   secondary_color:   '#0f172a',
   header_text_color: '#ffffff',
   body_text_color:   '#0f172a',
@@ -1096,24 +1096,24 @@ async function save() {
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #D6D0C2;
   border-radius: 12px;
-  background: #f8fafc;
+  background: #EDE8DE;
 }
 
 .custom-layout { display: flex; flex-direction: column; gap: 16px; }
 
 .settings-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   border-radius: 14px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
   overflow: hidden;
 }
 
-.card-header { padding: 16px 20px 12px; border-bottom: 1px solid #f1f5f9; }
-.card-title  { font-size: 14px; font-weight: 700; color: #0f172a; margin: 0 0 2px; }
-.card-desc   { font-size: 12px; color: #94a3b8; margin: 0; }
+.card-header { padding: 16px 20px 12px; border-bottom: 1px solid #f4ede3; }
+.card-title  { font-size: 14px; font-weight: 700; color: #1e1b15; margin: 0 0 2px; }
+.card-desc   { font-size: 12px; color: #414846; margin: 0; }
 .card-body   { padding: 20px; display: flex; flex-direction: column; gap: 16px; }
 
 .header-layout-grid {
@@ -1128,9 +1128,9 @@ async function save() {
   flex-direction: column;
   gap: 8px;
   padding: 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #D6D0C2;
   border-radius: 12px;
-  background: #f8fafc;
+  background: #EDE8DE;
   cursor: pointer;
   text-align: left;
   font-family: inherit;
@@ -1144,8 +1144,8 @@ async function save() {
 }
 
 .header-layout-card--active {
-  border-color: #6366f1;
-  background: #f5f3ff;
+  border-color: #08241f;
+  background: #f0fdfa;
   box-shadow: 0 0 0 3px rgba(99,102,241,.1);
 }
 
@@ -1154,14 +1154,14 @@ async function save() {
   aspect-ratio: 120 / 52;
   border-radius: 6px;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
 }
 
 .header-layout-preview svg { width: 100%; height: 100%; }
 
-.header-layout-label { font-size: 13px; font-weight: 700; color: #0f172a; }
-.header-layout-desc  { font-size: 11px; color: #94a3b8; line-height: 1.4; }
+.header-layout-label { font-size: 13px; font-weight: 700; color: #1e1b15; }
+.header-layout-desc  { font-size: 11px; color: #414846; line-height: 1.4; }
 
 .header-layout-check { position: absolute; top: 10px; right: 10px; }
 
@@ -1176,7 +1176,7 @@ async function save() {
   flex: 1;
   height: 4px;
   appearance: none;
-  background: #e2e8f0;
+  background: #D6D0C2;
   border-radius: 2px;
   outline: none;
   cursor: pointer;
@@ -1187,7 +1187,7 @@ async function save() {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #08241f;
   cursor: pointer;
   box-shadow: 0 1px 4px rgba(99,102,241,.4);
 }
@@ -1196,7 +1196,7 @@ async function save() {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #08241f;
   cursor: pointer;
   border: none;
 }
@@ -1204,7 +1204,7 @@ async function save() {
 .font-size-value {
   font-size: 12px;
   font-weight: 700;
-  color: #6366f1;
+  color: #08241f;
   min-width: 32px;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -1213,11 +1213,11 @@ async function save() {
 .font-size-preview {
   margin-top: 4px;
   padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #EDE8DE;
+  border: 1px solid #D6D0C2;
   border-radius: 8px;
   font-weight: 700;
-  color: #0f172a;
+  color: #1e1b15;
   transition: font-size .1s;
   white-space: nowrap;
   overflow: hidden;
@@ -1231,7 +1231,7 @@ async function save() {
 .color-field label {
   font-size: 12px;
   font-weight: 700;
-  color: #64748b;
+  color: #414846;
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
@@ -1242,9 +1242,9 @@ async function save() {
   gap: 10px;
   height: 38px;
   padding: 0 12px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #D6D0C2;
   border-radius: 9px;
-  background: #f8fafc;
+  background: #EDE8DE;
   cursor: pointer;
   position: relative;
   transition: border-color .15s;
@@ -1261,7 +1261,7 @@ async function save() {
 .color-hex {
   font-size: 13px;
   font-family: 'JetBrains Mono', monospace;
-  color: #374151;
+  color: #1e1b15;
   font-weight: 500;
 }
 
@@ -1274,8 +1274,8 @@ async function save() {
 
 /* Preview */
 .preview-wrap {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
   border-radius: 14px;
   padding: 24px;
   box-shadow: 0 1px 3px rgba(0,0,0,.05);
@@ -1287,13 +1287,13 @@ async function save() {
   align-items: center;
   gap: 10px;
   font-size: 13px;
-  color: #374151;
+  color: #1e1b15;
   cursor: pointer;
 }
 .toggle-input {
   width: 16px;
   height: 16px;
-  accent-color: #6366f1;
+  accent-color: #08241f;
   cursor: pointer;
 }
 
@@ -1303,8 +1303,8 @@ async function save() {
   align-items: center;
   justify-content: space-between;
   padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #EDE8DE;
+  border: 1px solid #D6D0C2;
   border-radius: 8px;
 }
 
@@ -1312,7 +1312,7 @@ async function save() {
   display: flex;
   gap: 12px;
   font-size: 13px;
-  color: #374151;
+  color: #1e1b15;
 }
 
 .bank-add-form {

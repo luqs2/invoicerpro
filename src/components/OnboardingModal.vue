@@ -285,7 +285,7 @@ function skip() {
   transition: all 0.2s;
   flex-shrink: 0;
 }
-.onb-step.active { background: #6366f1; color: #ffffff; }
+.onb-step.active { background: #08241f; color: #ffffff; }
 .onb-step.complete { background: #10b981; color: #ffffff; }
 
 .onb-line {
@@ -294,7 +294,7 @@ function skip() {
   background: #e2e8f0;
   transition: background 0.2s;
 }
-.onb-line.active { background: #6366f1; }
+.onb-line.active { background: #08241f; }
 
 /* Content */
 .onb-content {
@@ -314,8 +314,8 @@ function skip() {
   justify-content: center;
   margin-bottom: 4px;
 }
-.onb-icon-brand { background: #ede9fe; color: #6366f1; }
-.onb-icon-purple { background: #f5f3ff; color: #8b5cf6; }
+.onb-icon-brand { background: #cbe9e0; color: #08241f; }
+.onb-icon-purple { background: #f0fdfa; color: #B5652D; }
 .onb-icon-green { background: #d1fae5; color: #10b981; }
 
 .onb-title {
@@ -371,7 +371,7 @@ function skip() {
   transition: border-color 0.15s;
 }
 .onb-field input:focus {
-  border-color: #6366f1;
+  border-color: #08241f;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
@@ -402,7 +402,7 @@ function skip() {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #6366f1;
+  background: #08241f;
   flex-shrink: 0;
 }
 
@@ -445,7 +445,7 @@ function skip() {
   height: 42px;
   border: none;
   border-radius: 10px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #08241f, #B5652D);
   color: #ffffff;
   font-size: 14px;
   font-weight: 700;

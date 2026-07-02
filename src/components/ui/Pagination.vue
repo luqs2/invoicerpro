@@ -104,14 +104,14 @@ const endItem = computed(() => {
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #f4ede3;
   gap: 16px;
   flex-wrap: wrap;
 }
 
 .pagination-text {
   font-size: 13px;
-  color: #64748b;
+  color: #414846;
   font-weight: 500;
   flex-shrink: 0;
 }
@@ -125,7 +125,7 @@ const endItem = computed(() => {
 
 .pagination-size label {
   font-size: 13px;
-  color: #64748b;
+  color: #414846;
   font-weight: 500;
   white-space: nowrap;
 }
@@ -133,24 +133,24 @@ const endItem = computed(() => {
 .size-select {
   height: 34px;
   padding: 0 28px 0 10px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #D6D0C2;
   border-radius: 8px;
-  background-color: #ffffff;
+  background-color: #F7F4EC;
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: #1e1b15;
   font-family: inherit;
   cursor: pointer;
   outline: none;
   transition: border-color 0.15s;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23414846' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 8px center;
 }
 
 .size-select:focus {
-  border-color: #6366f1;
+  border-color: #08241f;
 }
 
 @media (max-width: 768px) {

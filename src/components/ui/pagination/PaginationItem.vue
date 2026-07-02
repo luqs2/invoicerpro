@@ -31,25 +31,25 @@ const delegatedProps = reactiveOmit(props, "class", "isActive")
   min-width: 36px;
   height: 36px;
   padding: 0 8px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #e5e5e5;
   border-radius: 8px;
   background-color: #ffffff;
   font-size: 13px;
   font-weight: 600;
-  color: #374151;
+  color: #404040;
   cursor: pointer;
   font-family: inherit;
   transition: all 0.15s;
   line-height: 1;
 }
 .pg-btn:hover:not(:disabled):not(.pg-btn-active) {
-  border-color: #c7d2fe;
-  color: #4f46e5;
-  background-color: #f5f3ff;
+  border-color: #08241f;
+  color: #08241f;
+  background-color: #cbe9e0;
 }
 .pg-btn-active {
-  background-color: #6366f1;
-  border-color: #6366f1;
+  background-color: #08241f;
+  border-color: #08241f;
   color: #ffffff;
 }
 .pg-btn:disabled {
@@ -57,18 +57,18 @@ const delegatedProps = reactiveOmit(props, "class", "isActive")
   cursor: not-allowed;
 }
 :deep(.dark) .pg-btn {
-  background-color: #1e293b;
-  border-color: #334155;
-  color: #e2e8f0;
+  background-color: #171717;
+  border-color: #262626;
+  color: #e5e5e5;
 }
 :deep(.dark) .pg-btn:hover:not(:disabled):not(.pg-btn-active) {
-  border-color: #4f46e5;
-  color: #818cf8;
-  background-color: #312e81;
+  border-color: #14b8a6;
+  color: #2dd4bf;
+  background-color: #08241f;
 }
 :deep(.dark) .pg-btn-active {
-  background-color: #6366f1;
-  border-color: #6366f1;
+  background-color: #08241f;
+  border-color: #08241f;
   color: #ffffff;
 }
 </style>

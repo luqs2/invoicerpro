@@ -30,7 +30,7 @@ withDefaults(defineProps<{
 
 <style scoped>
 .skeleton {
-  background: #e2e8f0;
+  background: #D6D0C2;
   border-radius: 8px;
   position: relative;
   overflow: hidden;
@@ -56,6 +56,6 @@ withDefaults(defineProps<{
   100% { transform: translateX(100%); }
 }
 
-.dark .skeleton { background: #334155; }
+.dark .skeleton { background: #404945; }
 .dark .skeleton-shimmer { background: linear-gradient(90deg, transparent, rgba(255,255,255,.08), transparent); }
 </style>

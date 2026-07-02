@@ -26,31 +26,31 @@ defineEmits<{ (e: 'update:modelValue', v: string): void }>()
 .ui-textarea {
   width: 100%;
   padding: 10px 12px;
-  border: 1.5px solid #e2e8f0;
+  border: 1.5px solid #D6D0C2;
   border-radius: 9px;
   font-size: 14px;
-  color: #0f172a;
-  background: #f8fafc;
+  color: #1e1b15;
+  background: #EDE8DE;
   outline: none;
   font-family: inherit;
   resize: vertical;
   min-height: 80px;
   transition: border-color .15s, box-shadow .15s, background .15s;
 }
-.ui-textarea:hover:not(:disabled) { border-color: #c7d2fe; }
+.ui-textarea:hover:not(:disabled) { border-color: #08241f; }
 .ui-textarea:focus {
-  border-color: #6366f1;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(99,102,241,.1);
+  border-color: #08241f;
+  background: #F7F4EC;
+  box-shadow: 0 0 0 3px rgba(8,36,31,.1);
 }
-.ui-textarea::placeholder { color: #94a3b8; }
+.ui-textarea::placeholder { color: #414846; }
 
 .dark .ui-textarea {
-  background: #1e293b;
-  border-color: #334155;
-  color: #f1f5f9;
+  background: #1d201f;
+  border-color: #404945;
+  color: #e1e3e1;
 }
-.dark .ui-textarea::placeholder { color: #64748b; }
-.dark .ui-textarea:focus { border-color: #6366f1; background: #0f172a; }
-.dark .ui-textarea:hover:not(:disabled) { border-color: #4f46e5; }
+.dark .ui-textarea::placeholder { color: #8a938f; }
+.dark .ui-textarea:focus { border-color: #e6c45c; background: #111413; box-shadow: 0 0 0 2px rgba(230,196,92,.2); }
+.dark .ui-textarea:hover:not(:disabled) { border-color: #a0d0c2; }
 </style>
