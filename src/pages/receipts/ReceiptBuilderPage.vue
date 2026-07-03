@@ -24,6 +24,14 @@
           Export PDF
         </UiButton>
         <UiButton
+          variant="outline"
+          :disabled="!form.client_id"
+          @click="openSendDialog"
+        >
+          <Send :size="14" />
+          Send
+        </UiButton>
+        <UiButton
           :loading="saving"
           @click="save"
         >
@@ -314,17 +322,35 @@
         </div>
       </div>
     </div>
+
+    <SendDialog
+      :open="showSendDialog"
+      :client-name="selectedClientName"
+      :client-email="selectedClientEmail"
+      :client-phone="selectedClientPhone"
+      document-type="receipt"
+      :document-number="(form as any).receipt_number ?? '(unsaved)'"
+      :amount="formatCurrency(Number(form.amount), form.currency)"
+      :currency="form.currency"
+      :payment-date="form.payment_date"
+      :business-name="businessProfileStore.profile?.name"
+      :business-email="businessProfileStore.profile?.email"
+      preview-element-id="receipt-preview"
+      @close="showSendDialog = false"
+      @sent="onSendComplete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
-import { ArrowLeft, Download, FileText, Trash2, CheckCircle } from '@lucide/vue'
+import { ArrowLeft, Download, FileText, Trash2, CheckCircle, Send } from '@lucide/vue'
 import confetti from 'canvas-confetti'
 import { useClientStore }   from '@/stores/clients'
 import { useInvoiceStore }  from '@/stores/invoices'
 import { useTemplateStore } from '@/stores/templates'
+import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { receiptService }   from '@/services/receipts'
 import { invoiceService }   from '@/services/invoices'
 import { useAuthStore }     from '@/stores/auth'
@@ -334,6 +360,7 @@ import { useToast }         from '@/composables/useToast'
 import { useConfirm }       from '@/composables/useConfirm'
 import { debounce }         from '@/utils/debounce'
 import UiButton   from '@/components/ui/Button.vue'
+import SendDialog from '@/components/ui/SendDialog.vue'
 
 const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
 import UiTabs     from '@/components/ui/Tabs.vue'
@@ -348,6 +375,7 @@ const clientStore   = useClientStore()
 const invoiceStore  = useInvoiceStore()
 const templateStore = useTemplateStore()
 const auth          = useAuthStore()
+const businessProfileStore = useBusinessProfileStore()
 const { formatCurrency } = useFormatters()
 const { exportToPdf }    = usePdf()
 const { showToast }      = useToast()
@@ -430,6 +458,16 @@ const invoiceOptions = computed(() =>
 const selectedClientName = computed(() =>
   clientStore.clients.find(c => c.id === form.client_id)?.name ?? '—'
 )
+
+const selectedClientEmail = computed(() =>
+  clientStore.clients.find(c => c.id === form.client_id)?.email ?? ''
+)
+
+const selectedClientPhone = computed(() =>
+  clientStore.clients.find(c => c.id === form.client_id)?.phone ?? ''
+)
+
+const showSendDialog = ref(false)
 
 const selectedMethodLabel = computed(() =>
   paymentMethodOptions.find(m => m.value === form.payment_method)?.label ?? '—'
@@ -592,12 +630,25 @@ async function exportPdf() {
   showToast('PDF exported!')
 }
 
+async function openSendDialog() {
+  if (showSendDialog.value) return
+  tab.value = 'preview'
+  await nextTick()
+  showSendDialog.value = true
+}
+
+function onSendComplete(info: { method: 'email' | 'whatsapp' }) {
+  showSendDialog.value = false
+  showToast(`Receipt sent via ${info.method}!`)
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await Promise.all([
     clientStore.fetchAll(),
     invoiceStore.fetchAll(),
     templateStore.fetchAll(),
+    businessProfileStore.fetch(),
   ])
 
   // Check for ?invoice= query param (deep link from invoice list)

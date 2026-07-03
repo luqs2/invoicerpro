@@ -2,6 +2,9 @@ import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import { nextTick } from 'vue'
 
+const A4_WIDTH_MM = 210
+const A4_HEIGHT_MM = 297
+
 function waitForElement(id: string, timeout = 1000): Promise<HTMLElement> {
   return new Promise((resolve, reject) => {
     const el = document.getElementById(id)
@@ -18,64 +21,84 @@ function waitForElement(id: string, timeout = 1000): Promise<HTMLElement> {
   })
 }
 
+async function renderPdf(elementId: string): Promise<jsPDF> {
+  await nextTick()
+  const el = await waitForElement(elementId)
+
+  // Temporarily size the element to A4 proportions for clean capture
+  const origWidth = el.style.width
+  const origMinWidth = el.style.minWidth
+  const origMaxWidth = el.style.maxWidth
+  const targetWidthPx = 794 // ~210mm at 96dpi
+  el.style.width = `${targetWidthPx}px`
+  el.style.minWidth = `${targetWidthPx}px`
+  el.style.maxWidth = `${targetWidthPx}px`
+  await nextTick()
+
+  const canvas = await html2canvas(el, {
+    scale: 1.5,
+    useCORS: true,
+    backgroundColor: '#ffffff',
+    width: targetWidthPx,
+    windowWidth: targetWidthPx,
+  })
+
+  // Restore original styles
+  el.style.width = origWidth
+  el.style.minWidth = origMinWidth
+  el.style.maxWidth = origMaxWidth
+
+  const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
+  const contentW = A4_WIDTH_MM
+  const contentH = (canvas.height * contentW) / canvas.width
+
+  if (contentH <= A4_HEIGHT_MM) {
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, contentW, contentH)
+  } else {
+    // Multi-page: slice the canvas into A4-sized chunks
+    const pxPerPage = (A4_HEIGHT_MM / contentH) * canvas.height
+    const overlap = 4
+    let yPx = 0
+    let pageNum = 0
+
+    while (yPx < canvas.height) {
+      if (pageNum > 0) pdf.addPage()
+
+      const sliceH = Math.min(pxPerPage, canvas.height - yPx)
+
+      const sliceCanvas = document.createElement('canvas')
+      sliceCanvas.width = canvas.width
+      sliceCanvas.height = Math.round(sliceH)
+      const ctx = sliceCanvas.getContext('2d')!
+      ctx.drawImage(
+        canvas,
+        0, Math.round(yPx),
+        canvas.width, Math.round(sliceH),
+        0, 0,
+        canvas.width, Math.round(sliceH),
+      )
+
+      const sliceHt = (sliceH * contentW) / canvas.width
+      pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', 0, 0, contentW, sliceHt)
+
+      yPx += pxPerPage - overlap
+      pageNum++
+    }
+  }
+
+  return pdf
+}
+
 export function usePdf() {
   async function exportToPdf(elementId: string, filename: string) {
-    await nextTick()
-    const el = await waitForElement(elementId)
-
-    const canvas = await html2canvas(el, {
-      scale: 2,
-      useCORS: true,
-      backgroundColor: '#ffffff',
-    })
-
-    const pdf      = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
-    const pdfW     = pdf.internal.pageSize.getWidth()   // 210mm
-    const pdfH     = pdf.internal.pageSize.getHeight()  // 297mm
-    const marginTop = 0
-    const marginBottom = 10
-    const marginLeft = 0
-    const contentW = pdfW - marginLeft * 2
-    const contentH = (canvas.height * contentW) / canvas.width
-    const usableH  = pdfH - marginTop - marginBottom
-
-    if (contentH <= usableH) {
-      // Fits on a single page — draw from top
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', marginLeft, marginTop, contentW, contentH)
-    } else {
-      // Multi-page: no top margin, bottom margin on each page
-      const slicePxPerPage = (usableH / contentH) * canvas.height
-      const overlap = 4
-      let yPx = 0
-      let pageNum = 0
-
-      while (yPx < canvas.height) {
-        if (pageNum > 0) pdf.addPage()
-
-        const sliceH = Math.min(slicePxPerPage, canvas.height - yPx)
-
-        const sliceCanvas = document.createElement('canvas')
-        sliceCanvas.width = canvas.width
-        sliceCanvas.height = Math.round(sliceH)
-        const ctx = sliceCanvas.getContext('2d')!
-        ctx.drawImage(
-          canvas,
-          0, Math.round(yPx),
-          canvas.width, Math.round(sliceH),
-          0, 0,
-          canvas.width, Math.round(sliceH)
-        )
-
-        const sliceHt = (sliceH * contentW) / canvas.width
-        pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', marginLeft, marginTop, contentW, sliceHt)
-
-        yPx += slicePxPerPage - overlap
-        pageNum++
-      }
-    }
-
+    const pdf = await renderPdf(elementId)
     pdf.save(`${filename}.pdf`)
   }
 
-  return { exportToPdf }
+  async function getPdfBase64(elementId: string): Promise<string> {
+    const pdf = await renderPdf(elementId)
+    return pdf.output('datauristring').split(',')[1]
+  }
+
+  return { exportToPdf, getPdfBase64 }
 }

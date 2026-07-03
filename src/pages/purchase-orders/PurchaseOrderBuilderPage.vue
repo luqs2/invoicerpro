@@ -24,6 +24,14 @@
           Export PDF
         </UiButton>
         <UiButton
+          variant="outline"
+          :disabled="!form.client_email"
+          @click="openSendDialog"
+        >
+          <Send :size="14" />
+          Send
+        </UiButton>
+        <UiButton
           :loading="saving"
           @click="save"
         >
@@ -287,13 +295,29 @@
         </div>
       </div>
     </div>
+
+    <SendDialog
+      :open="showSendDialog"
+      :client-name="form.client_name || ''"
+      :client-email="form.client_email || ''"
+      :client-phone="form.client_phone || ''"
+      document-type="invoice"
+      :document-number="form.po_number || ''"
+      :amount="formatCurrency(grandTotal, form.currency)"
+      :currency="form.currency"
+      :business-name="bpStore.profile?.name"
+      :business-email="bpStore.profile?.email"
+      preview-element-id="po-preview"
+      @close="showSendDialog = false"
+      @sent="onSendComplete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Download, Trash2, PlusCircle } from '@lucide/vue'
+import { ArrowLeft, Download, Trash2, PlusCircle, Send } from '@lucide/vue'
 import { usePurchaseOrderStore } from '@/stores/purchaseOrders'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useTemplateStore } from '@/stores/templates'
@@ -304,6 +328,7 @@ import { useFormatters } from '@/composables/useFormatters'
 import { usePdf } from '@/composables/usePdf'
 import { useToast } from '@/composables/useToast'
 import UiButton from '@/components/ui/Button.vue'
+import SendDialog from '@/components/ui/SendDialog.vue'
 import UiTabs from '@/components/ui/Tabs.vue'
 import UiSelect from '@/components/ui/Select.vue'
 import UiInput from '@/components/ui/Input.vue'
@@ -322,6 +347,7 @@ const { showToast } = useToast()
 const tab = ref('form')
 const saving = ref(false)
 const isEdit = ref(false)
+const showSendDialog = ref(false)
 
 // Computed alias so template reactivity tracks store.current changes
 const form = computed(() => store.current)
@@ -399,6 +425,18 @@ async function exportPdf() {
   }
   await exportToPdf('po-preview', store.current.po_number || 'purchase-order')
   showToast('PDF exported!')
+}
+
+async function openSendDialog() {
+  if (showSendDialog.value) return
+  tab.value = 'preview'
+  await nextTick()
+  showSendDialog.value = true
+}
+
+function onSendComplete(info: { method: 'email' | 'whatsapp' }) {
+  showSendDialog.value = false
+  showToast(`Purchase order sent via ${info.method}!`)
 }
 
 onMounted(async () => {

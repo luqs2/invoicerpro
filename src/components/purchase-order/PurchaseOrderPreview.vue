@@ -26,24 +26,36 @@
           <h3
             class="po-brand"
             :style="{ color: primary }"
-          >{{ businessName }}</h3>
-          <p class="po-brand-detail">{{ businessAddress }}</p>
+          >
+            {{ businessName }}
+          </h3>
+          <p class="po-brand-detail">
+            {{ businessAddress }}
+          </p>
           <p
             v-if="businessEmail"
             class="po-brand-detail"
-          >{{ businessEmail }}</p>
+          >
+            {{ businessEmail }}
+          </p>
         </div>
       </div>
       <div class="po-header-right">
         <h2
           class="po-doc-title"
           :style="{ color: primary }"
-        >Purchase Order</h2>
+        >
+          Purchase Order
+        </h2>
         <p
           class="po-doc-no"
           :style="{ color: primary }"
-        >NO: {{ purchaseOrder.po_number || '(unsaved)' }}</p>
-        <p class="po-doc-date">DATE: {{ formatDate(purchaseOrder.order_date) }}</p>
+        >
+          NO: {{ purchaseOrder.po_number || '(unsaved)' }}
+        </p>
+        <p class="po-doc-date">
+          DATE: {{ formatDate(purchaseOrder.order_date) }}
+        </p>
       </div>
     </div>
 
@@ -59,20 +71,30 @@
         <p
           class="po-party-label"
           :style="{ color: primary }"
-        >Bill To</p>
-        <p class="po-party-name">{{ purchaseOrder.client_name || '—' }}</p>
+        >
+          Bill To
+        </p>
+        <p class="po-party-name">
+          {{ purchaseOrder.client_name || '—' }}
+        </p>
         <p
           v-if="purchaseOrder.client_address"
           class="po-party-detail"
-        >{{ purchaseOrder.client_address }}</p>
+        >
+          {{ purchaseOrder.client_address }}
+        </p>
         <p
           v-if="purchaseOrder.client_email"
           class="po-party-detail"
-        >{{ purchaseOrder.client_email }}</p>
+        >
+          {{ purchaseOrder.client_email }}
+        </p>
         <p
           v-if="purchaseOrder.client_phone"
           class="po-party-detail"
-        >{{ purchaseOrder.client_phone }}</p>
+        >
+          {{ purchaseOrder.client_phone }}
+        </p>
       </div>
     </div>
 
@@ -80,19 +102,27 @@
     <table class="po-table">
       <thead>
         <tr :style="{ background: secondary }">
-          <th :style="{ color: headerTextColor }">Description</th>
+          <th :style="{ color: headerTextColor }">
+            Description
+          </th>
           <th
             class="text-center"
             :style="{ color: headerTextColor }"
-          >Qty</th>
+          >
+            Qty
+          </th>
           <th
             class="text-right"
             :style="{ color: headerTextColor }"
-          >Unit</th>
+          >
+            Unit
+          </th>
           <th
             class="text-right"
             :style="{ color: headerTextColor }"
-          >Total</th>
+          >
+            Total
+          </th>
         </tr>
       </thead>
       <tbody>
@@ -101,9 +131,15 @@
           :key="idx"
         >
           <td>{{ item.description || '—' }}</td>
-          <td class="text-center">{{ item.quantity }}</td>
-          <td class="text-right">{{ formatCurrency(item.unit_price, purchaseOrder.currency) }}</td>
-          <td class="text-right font-bold">{{ formatCurrency(item.quantity * item.unit_price, purchaseOrder.currency) }}</td>
+          <td class="text-center">
+            {{ item.quantity }}
+          </td>
+          <td class="text-right">
+            {{ formatCurrency(item.unit_price, purchaseOrder.currency) }}
+          </td>
+          <td class="text-right font-bold">
+            {{ formatCurrency(item.quantity * item.unit_price, purchaseOrder.currency) }}
+          </td>
         </tr>
       </tbody>
     </table>
