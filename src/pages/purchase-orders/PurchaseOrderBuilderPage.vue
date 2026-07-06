@@ -315,7 +315,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, nextTick } from 'vue'
+import { ref, computed, onMounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ArrowLeft, Download, Trash2, PlusCircle, Send } from '@lucide/vue'
 import { usePurchaseOrderStore } from '@/stores/purchaseOrders'
@@ -474,6 +474,20 @@ onMounted(async () => {
       Object.assign(store.current, data)
     }
   } else {
+    store.resetCurrent()
+  }
+})
+
+watch(() => route.params.id, async (newId) => {
+  if (newId) {
+    isEdit.value = true
+    const { data, error } = await purchaseOrderService.getById(newId as string)
+    if (error) { showToast('Failed to load purchase order', 'danger'); return }
+    if (data) {
+      Object.assign(store.current, data)
+    }
+  } else {
+    isEdit.value = false
     store.resetCurrent()
   }
 })

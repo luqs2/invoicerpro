@@ -697,6 +697,31 @@ onMounted(async () => {
     }
   }
 })
+
+watch(() => route.params.id, async (newId) => {
+  if (newId) {
+    isEdit.value = true
+    const { data, error } = await receiptService.getById(newId as string)
+    if (error) { showToast('Failed to load receipt', 'danger'); return }
+    if (data) {
+      form.id             = data.id
+      form.client_id      = data.client_id
+      form.amount         = Number(data.amount)
+      form.payment_date   = data.payment_date
+      form.payment_method = data.payment_method
+      form.currency       = data.currency
+      form.notes          = data.notes ?? ''
+      form.invoice_id     = data.invoice_id ?? undefined
+      ;(form as any).receipt_number = data.receipt_number
+    }
+  } else {
+    isEdit.value = false
+    Object.assign(form, {
+      id: undefined, client_id: '', amount: 0, payment_date: '',
+      payment_method: 'bank_transfer', currency: 'MYR', notes: '', invoice_id: undefined,
+    })
+  }
+})
 </script>
 
 <style scoped>

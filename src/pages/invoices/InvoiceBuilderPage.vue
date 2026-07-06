@@ -541,6 +541,38 @@ onMounted(async () => {
   }
 })
 
+watch(() => route.params.id, async (newId) => {
+  if (newId) {
+    isEdit.value = true
+    const { data, error } = await import('@/services/invoices').then(m =>
+      m.invoiceService.getById(newId as string)
+    )
+    if (error) { showToast('Failed to load invoice', 'danger'); return }
+    if (data) {
+      store.current = {
+        ...data,
+        line_items: (data.line_items ?? []).map((li: any) => ({
+          id: li.id ?? crypto.randomUUID(),
+          description: li.description ?? '',
+          quantity:    Number(li.quantity ?? 1),
+          unit_price:  Number(li.unit_price ?? 0),
+          amount:      Number(li.amount ?? 0),
+          date:        li.date ?? '',
+          vehicle_no:  li.vehicle_no ?? '',
+          uom:         li.uom ?? '',
+        })),
+      }
+    }
+  } else {
+    isEdit.value = false
+    store.resetCurrent()
+    const p = businessProfileStore.profile
+    if (p.default_currency) store.current.currency  = p.default_currency
+    if (p.default_tax_rate) store.current.tax_rate  = p.default_tax_rate
+    store.recalcTotals()
+  }
+})
+
 async function saveInvoice() {
   saving.value = 'save'
   try {
