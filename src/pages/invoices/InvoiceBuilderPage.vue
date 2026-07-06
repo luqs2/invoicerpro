@@ -409,6 +409,7 @@ import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { ArrowLeft, Send, Trash2, Plus, Download, Save } from '@lucide/vue'
 import confetti from 'canvas-confetti'
 import { useInvoiceStore } from '@/stores/invoices'
+import { invoiceService } from '@/services/invoices'
 import { useClientStore } from '@/stores/clients'
 import { useTemplateStore } from '@/stores/templates'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
@@ -510,10 +511,7 @@ onMounted(async () => {
   await businessProfileStore.fetch()
   if (route.params.id) {
     isEdit.value = true
-    // Load existing invoice into store
-    const { data, error } = await import('@/services/invoices').then(m =>
-      m.invoiceService.getById(route.params.id as string)
-    )
+    const { data, error } = await invoiceService.getById(route.params.id as string)
     if (error) { showToast('Failed to load invoice', 'danger'); return }
     if (data) {
       // Ensure every line item has an id (Supabase JSONB may strip them)
@@ -544,9 +542,7 @@ onMounted(async () => {
 watch(() => route.params.id, async (newId) => {
   if (newId) {
     isEdit.value = true
-    const { data, error } = await import('@/services/invoices').then(m =>
-      m.invoiceService.getById(newId as string)
-    )
+    const { data, error } = await invoiceService.getById(newId as string)
     if (error) { showToast('Failed to load invoice', 'danger'); return }
     if (data) {
       store.current = {
