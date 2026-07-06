@@ -300,13 +300,14 @@
       :client-name="form.client_name || ''"
       :client-email="form.client_email || ''"
       :client-phone="form.client_phone || ''"
-      document-type="invoice"
+      document-type="purchase_order"
       :document-number="form.po_number || ''"
       :amount="formatCurrency(grandTotal, form.currency)"
       :currency="form.currency"
       :business-name="bpStore.profile?.name"
       :business-email="bpStore.profile?.email"
       preview-element-id="po-preview"
+      :invoice-id="form.id"
       @close="showSendDialog = false"
       @sent="onSendComplete"
     />
@@ -409,9 +410,13 @@ async function save() {
 
   saving.value = true
   try {
+    const isNew = !store.current.id
+    if (!store.current.status) store.current.status = 'draft'
     await store.save()
+    if (isNew && store.current.id) {
+      router.replace(`/app/purchase-orders/${store.current.id}`)
+    }
     showToast('Purchase order saved!')
-    router.push('/app/purchase-orders')
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to save. Please try again.', 'danger')
   } finally {
@@ -430,13 +435,29 @@ async function exportPdf() {
 
 async function openSendDialog() {
   if (showSendDialog.value) return
+  // Save first if not yet persisted
+  if (!store.current.id) {
+    try {
+      await store.save()
+    } catch {
+      showToast('Please save before sending', 'warning')
+      return
+    }
+  }
   tab.value = 'preview'
   await nextTick()
   showSendDialog.value = true
 }
 
-function onSendComplete(info: { method: 'email' | 'whatsapp' }) {
+async function onSendComplete(info: { method: 'email' | 'whatsapp' }) {
   showSendDialog.value = false
+  if (store.current.id) {
+    await store.updateStatus(store.current.id, 'sent')
+    store.current.status = 'sent'
+  } else {
+    store.current.status = 'sent'
+    await store.save()
+  }
   showToast(`Purchase order sent via ${info.method}!`)
 }
 

@@ -75,7 +75,7 @@
               class="send-section-body"
             >
               <p class="send-phone">
-                {{ clientPhone }}
+                {{ formatPhoneDisplay(clientPhone) }}
               </p>
               <UiButton
                 variant="primary"
@@ -112,6 +112,9 @@ import { useToast } from '@/composables/useToast'
 import { usePdf } from '@/composables/usePdf'
 import { emailSendService } from '@/services/emailSend'
 import { invoiceService } from '@/services/invoices'
+import { purchaseOrderService } from '@/services/purchaseOrders'
+import { receiptService } from '@/services/receipts'
+import { formatPhoneDisplay } from '@/data/countries'
 import { buildWhatsAppUrl } from '@/utils/whatsapp'
 import UiButton from '@/components/ui/Button.vue'
 import UiInput from '@/components/ui/Input.vue'
@@ -228,7 +231,14 @@ async function openWhatsApp() {
   let invoiceLink = ''
   if (props.invoiceId) {
     try {
-      const slug = await invoiceService.getPublicSlug(props.invoiceId)
+      let slug: string | null = null
+      if (props.documentType === 'invoice') {
+        slug = await invoiceService.getPublicSlug(props.invoiceId)
+      } else if (props.documentType === 'purchase_order') {
+        slug = await purchaseOrderService.getPublicSlug(props.invoiceId)
+      } else if (props.documentType === 'receipt') {
+        slug = await receiptService.getPublicSlug(props.invoiceId)
+      }
       if (slug) {
         invoiceLink = `${window.location.origin}/view-invoice/${slug}`
       }

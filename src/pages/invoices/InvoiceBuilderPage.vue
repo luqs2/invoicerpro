@@ -561,6 +561,15 @@ async function saveInvoice() {
 
 async function send() {
   if (showSendDialog.value) return
+  // Save first if not yet persisted
+  if (!store.current.id) {
+    try {
+      await store.save()
+    } catch {
+      showToast('Please save before sending', 'warning')
+      return
+    }
+  }
   tab.value = 'preview'
   await nextTick()
   showSendDialog.value = true

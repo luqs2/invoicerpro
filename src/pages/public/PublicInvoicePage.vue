@@ -1,15 +1,13 @@
 <template>
   <div class="public-page">
-    <!-- Loading -->
     <div
       v-if="loading"
       class="status-box"
     >
       <div class="spinner" />
-      <p>Loading invoice...</p>
+      <p>Loading document...</p>
     </div>
 
-    <!-- Error -->
     <div
       v-else-if="error"
       class="status-box"
@@ -18,17 +16,16 @@
         :size="48"
         class="status-icon error"
       />
-      <h2>Invoice not found</h2>
+      <h2>Document not found</h2>
       <p>{{ error }}</p>
     </div>
 
-    <!-- Invoice -->
-    <template v-else-if="invoice">
+    <template v-else-if="docType">
       <div class="invoice-wrapper">
-        <InvoicePreview
-          id="public-invoice-preview"
-          :invoice="invoice"
-          :template="template"
+        <component
+          :is="previewComponent"
+          :id="previewId"
+          v-bind="previewProps"
         />
       </div>
 
@@ -46,15 +43,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, defineAsyncComponent, shallowRef } from 'vue'
 import { useRoute } from 'vue-router'
 import { Download, AlertCircle } from '@lucide/vue'
 import { supabase } from '@/services/supabase'
 import { usePdf } from '@/composables/usePdf'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
-import type { Invoice, InvoiceTemplate } from '@/types'
+import type { InvoiceTemplate } from '@/types'
 
 const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
+const PurchaseOrderPreview = defineAsyncComponent(() => import('@/components/purchase-order/PurchaseOrderPreview.vue'))
+const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
 
 const route = useRoute()
 const { exportToPdf } = usePdf()
@@ -62,60 +61,115 @@ const bpStore = useBusinessProfileStore()
 
 const loading = ref(true)
 const error = ref('')
-const invoice = ref<Partial<Invoice> | null>(null)
+const docType = ref<'invoice' | 'purchase_order' | 'receipt' | null>(null)
+const docData = shallowRef<any>(null)
 const template = ref<InvoiceTemplate | null>(null)
+const previewId = ref('public-doc-preview')
+
+const previewComponent = computed(() => {
+  if (docType.value === 'invoice') return InvoicePreview
+  if (docType.value === 'purchase_order') return PurchaseOrderPreview
+  if (docType.value === 'receipt') return ReceiptPreview
+  return null
+})
+
+const previewProps = computed(() => {
+  if (docType.value === 'invoice') {
+    return { invoice: docData.value, template: template.value }
+  }
+  if (docType.value === 'purchase_order') {
+    return { purchaseOrder: docData.value, template: template.value }
+  }
+  if (docType.value === 'receipt') {
+    return { receipt: docData.value, template: template.value }
+  }
+  return {}
+})
 
 onMounted(async () => {
   const slug = route.params.slug as string
-
   if (!slug) {
-    error.value = 'Invalid invoice link.'
+    error.value = 'Invalid link.'
     loading.value = false
     return
   }
 
-  // Fetch invoice by slug with client data
-  const { data: inv, error: invErr } = await supabase
+  // Try invoices first
+  const { data: inv } = await supabase
     .from('invoices')
     .select('*, client:clients(name, email, phone, address, company)')
     .eq('public_slug', slug)
     .single()
 
-  if (invErr || !inv) {
-    error.value = 'This invoice link is invalid or has expired.'
+  if (inv) {
+    docType.value = 'invoice'
+    docData.value = inv
+    await loadTemplate(inv.user_id)
     loading.value = false
     return
   }
 
-  invoice.value = inv as Partial<Invoice>
+  // Try purchase orders
+  const { data: po } = await supabase
+    .from('purchase_orders')
+    .select('*, client:clients(name, email, phone, address, company)')
+    .eq('public_slug', slug)
+    .single()
 
-  // Fetch business profile (has active_template_id)
+  if (po) {
+    docType.value = 'purchase_order'
+    docData.value = po
+    await loadTemplate(po.user_id)
+    loading.value = false
+    return
+  }
+
+  // Try receipts
+  const { data: rc } = await supabase
+    .from('receipts')
+    .select('*, client:clients(name, email, phone, address, company)')
+    .eq('public_slug', slug)
+    .single()
+
+  if (rc) {
+    docType.value = 'receipt'
+    docData.value = rc
+    await loadTemplate(rc.user_id)
+    loading.value = false
+    return
+  }
+
+  error.value = 'This link is invalid or has expired.'
+  loading.value = false
+})
+
+async function loadTemplate(userId: string) {
   const { data: bp } = await supabase
     .from('business_profiles')
     .select('*')
-    .eq('user_id', inv.user_id)
+    .eq('user_id', userId)
     .single()
 
   if (bp) {
     bpStore.profile = bp as any
-
-    // Fetch the active template from business profile
-    const activeTemplateId = (bp as any).active_template_id
-    if (activeTemplateId) {
+    const tid = (bp as any).active_template_id
+    if (tid) {
       const { data: tmpl } = await supabase
         .from('invoice_templates')
         .select('*')
-        .eq('id', activeTemplateId)
+        .eq('id', tid)
         .single()
       template.value = tmpl as InvoiceTemplate | null
     }
   }
-
-  loading.value = false
-})
+}
 
 async function downloadPdf() {
-  await exportToPdf('public-invoice-preview', invoice.value?.invoice_number ?? 'invoice')
+  const num = docData.value?.invoice_number
+    || docData.value?.po_number
+    || docData.value?.receipt_number
+    || 'document'
+  await exportToPdf(previewId.value, num)
 }
 </script>
 
@@ -139,9 +193,7 @@ async function downloadPdf() {
   text-align: center;
 }
 
-.status-icon.error {
-  color: #dc2626;
-}
+.status-icon.error { color: #dc2626; }
 
 .status-box h2 {
   font-size: 20px;
@@ -165,9 +217,7 @@ async function downloadPdf() {
   animation: spin 0.6s linear infinite;
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
+@keyframes spin { to { transform: rotate(360deg); } }
 
 .invoice-wrapper {
   width: 100%;
@@ -180,8 +230,6 @@ async function downloadPdf() {
 
 .actions {
   margin-top: 24px;
-  display: flex;
-  gap: 12px;
 }
 
 .download-btn {
@@ -200,17 +248,10 @@ async function downloadPdf() {
   transition: background 0.2s;
 }
 
-.download-btn:hover {
-  background: #2d2a23;
-}
+.download-btn:hover { background: #2d2a23; }
 
 @media (max-width: 640px) {
-  .public-page {
-    padding: 12px;
-  }
-
-  .invoice-wrapper {
-    border-radius: 8px;
-  }
+  .public-page { padding: 12px; }
+  .invoice-wrapper { border-radius: 8px; }
 }
 </style>

@@ -336,6 +336,7 @@
       :business-name="businessProfileStore.profile?.name"
       :business-email="businessProfileStore.profile?.email"
       preview-element-id="receipt-preview"
+      :invoice-id="form.id"
       @close="showSendDialog = false"
       @sent="onSendComplete"
     />
@@ -603,7 +604,6 @@ async function save() {
       if (error) {
         showToast('Receipt saved, but failed to update invoice status', 'warning')
       } else {
-        // Update the store in-memory so the invoice list reflects it immediately
         const idx = invoiceStore.invoices.findIndex(i => i.id === form.invoice_id)
         if (idx > -1) invoiceStore.invoices[idx] = { ...invoiceStore.invoices[idx], status: 'paid' }
         showToast(`Invoice ${form.invoice_number} marked as paid!`)
@@ -611,7 +611,10 @@ async function save() {
       }
     }
 
-    router.push('/app/receipts')
+    // Update URL to include the new ID for future edits
+    if (!isEdit.value && form.id) {
+      router.replace(`/app/receipts/${form.id}`)
+    }
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to save receipt. Please try again.', 'danger')
   } finally {
@@ -632,6 +635,15 @@ async function exportPdf() {
 
 async function openSendDialog() {
   if (showSendDialog.value) return
+  // Save first if not yet persisted
+  if (!form.id) {
+    try {
+      await save()
+    } catch {
+      showToast('Please save before sending', 'warning')
+      return
+    }
+  }
   tab.value = 'preview'
   await nextTick()
   showSendDialog.value = true

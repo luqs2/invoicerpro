@@ -58,3 +58,11 @@ export function combinePhone(countryCode: string, localNumber: string): string {
   if (!digits) return ''
   return `+${country.dialCode}${digits}`
 }
+
+export function formatPhoneDisplay(phone: string): string {
+  if (!phone) return ''
+  const { countryCode, localNumber } = parsePhoneWithCountryCode(phone)
+  const country = getCountryByCode(countryCode)
+  if (!country) return phone
+  return `+${country.dialCode} ${localNumber}`
+}

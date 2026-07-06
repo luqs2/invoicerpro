@@ -157,7 +157,7 @@
               class="info-row"
             >
               <span class="info-label">Phone</span>
-              <span class="info-value">{{ client.phone }}</span>
+              <span class="info-value">{{ formatPhoneDisplay(client.phone) }}</span>
             </div>
             <div
               v-if="client.phone"
@@ -525,6 +525,7 @@ import { invoiceService } from '@/services/invoices'
 import { receiptService } from '@/services/receipts'
 import { useClientStore } from '@/stores/clients'
 import { useFormatters } from '@/composables/useFormatters'
+import { formatPhoneDisplay } from '@/data/countries'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import { useMinDelay } from '@/composables/useMinDelay'

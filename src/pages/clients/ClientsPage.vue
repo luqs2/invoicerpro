@@ -100,7 +100,7 @@
               {{ c.email }}
             </td>
             <td class="td-muted">
-              {{ c.phone || '—' }}
+              {{ c.phone ? formatPhoneDisplay(c.phone) : '—' }}
             </td>
             <td>
               <span
@@ -261,6 +261,7 @@ import { Search, X, Users, Plus, Pencil, Trash2 } from '@lucide/vue'
 import { useClientStore } from '@/stores/clients'
 import { useToast } from '@/composables/useToast'
 import { useFormatters } from '@/composables/useFormatters'
+import { formatPhoneDisplay } from '@/data/countries'
 import { useMinDelay } from '@/composables/useMinDelay'
 import { useConfirm } from '@/composables/useConfirm'
 import Skeleton from '@/components/ui/Skeleton.vue'
