@@ -111,7 +111,8 @@ import { useEscapeKey, useFocusTrap } from '@/composables/useFocusTrap'
 import { useToast } from '@/composables/useToast'
 import { usePdf } from '@/composables/usePdf'
 import { emailSendService } from '@/services/emailSend'
-import { buildWhatsAppUrl, buildWhatsAppDeepLink, isMobile } from '@/utils/whatsapp'
+import { invoiceService } from '@/services/invoices'
+import { buildWhatsAppUrl } from '@/utils/whatsapp'
 import UiButton from '@/components/ui/Button.vue'
 import UiInput from '@/components/ui/Input.vue'
 
@@ -129,6 +130,7 @@ const props = defineProps<{
   businessName?: string
   businessEmail?: string
   previewElementId: string
+  invoiceId?: string
 }>()
 
 const emit = defineEmits<{
@@ -222,8 +224,20 @@ async function sendEmail() {
   }
 }
 
-function openWhatsApp() {
-  const msg = {
+async function openWhatsApp() {
+  let invoiceLink = ''
+  if (props.invoiceId) {
+    try {
+      const slug = await invoiceService.getPublicSlug(props.invoiceId)
+      if (slug) {
+        invoiceLink = `${window.location.origin}/view-invoice/${slug}`
+      }
+    } catch {
+      // slug fetch failed — continue without link
+    }
+  }
+
+  const url = buildWhatsAppUrl(props.clientPhone, {
     clientName: props.clientName,
     documentType: props.documentType,
     documentNumber: props.documentNumber,
@@ -232,19 +246,17 @@ function openWhatsApp() {
     dueDate: props.dueDate,
     paymentDate: props.paymentDate,
     businessName: props.businessName,
-  }
+    invoiceLink,
+  })
 
-  const url = isMobile()
-    ? buildWhatsAppDeepLink(props.clientPhone, msg)
-    : buildWhatsAppUrl(props.clientPhone, msg)
-
-  if (url) {
-    window.location.href = url
-    showToast('WhatsApp opened! Send the message to complete.')
-    emit('sent', { method: 'whatsapp' })
-  } else {
+  if (!url) {
     showToast('Invalid phone number', 'danger')
+    return
   }
+
+  window.open(url, '_blank')
+  showToast('WhatsApp opened!')
+  emit('sent', { method: 'whatsapp' })
 }
 </script>
 

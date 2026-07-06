@@ -36,7 +36,7 @@ async function renderPdf(elementId: string): Promise<jsPDF> {
   await nextTick()
 
   const canvas = await html2canvas(el, {
-    scale: 1.5,
+    scale: 1.25,
     useCORS: true,
     backgroundColor: '#ffffff',
     width: targetWidthPx,
@@ -53,7 +53,7 @@ async function renderPdf(elementId: string): Promise<jsPDF> {
   const contentH = (canvas.height * contentW) / canvas.width
 
   if (contentH <= A4_HEIGHT_MM) {
-    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, 0, contentW, contentH)
+    pdf.addImage(canvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, contentW, contentH)
   } else {
     // Multi-page: slice the canvas into A4-sized chunks
     const pxPerPage = (A4_HEIGHT_MM / contentH) * canvas.height
@@ -79,7 +79,7 @@ async function renderPdf(elementId: string): Promise<jsPDF> {
       )
 
       const sliceHt = (sliceH * contentW) / canvas.width
-      pdf.addImage(sliceCanvas.toDataURL('image/png'), 'PNG', 0, 0, contentW, sliceHt)
+      pdf.addImage(sliceCanvas.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, contentW, sliceHt)
 
       yPx += pxPerPage - overlap
       pageNum++
@@ -100,5 +100,10 @@ export function usePdf() {
     return pdf.output('datauristring').split(',')[1]
   }
 
-  return { exportToPdf, getPdfBase64 }
+  async function getPdfBlob(elementId: string): Promise<Blob> {
+    const pdf = await renderPdf(elementId)
+    return pdf.output('blob')
+  }
+
+  return { exportToPdf, getPdfBase64, getPdfBlob }
 }

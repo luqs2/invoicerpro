@@ -4,6 +4,10 @@ import type { RouteRecordRaw } from 'vue-router'
 const routes: Array<RouteRecordRaw> = [
   { path: '/', redirect: '/app/dashboard' },
   {
+    path: '/view-invoice/:slug',
+    component: () => import('@/pages/public/PublicInvoicePage.vue'),
+  },
+  {
     path: '/auth',
     component: () => import('@/layouts/AuthLayout.vue'),
     children: [

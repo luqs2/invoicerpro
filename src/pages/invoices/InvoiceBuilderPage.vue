@@ -396,6 +396,7 @@
       :business-name="businessProfileStore.profile?.name"
       :business-email="businessProfileStore.profile?.email"
       preview-element-id="invoice-preview"
+      :invoice-id="store.current.id"
       @close="showSendDialog = false"
       @sent="onSendComplete"
     />
@@ -580,6 +581,8 @@ async function onSendComplete(info: { method: 'email' | 'whatsapp' }) {
 }
 
 async function exportPdf() {
+  tab.value = 'preview'
+  await nextTick()
   await exportToPdf('invoice-preview', store.current.invoice_number ?? 'invoice')
   showToast('PDF exported!')
 }

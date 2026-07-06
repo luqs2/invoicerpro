@@ -89,9 +89,8 @@
                 </div>
                 <div class="field">
                   <label>Phone</label>
-                  <UiInput
+                  <CountryPhoneInput
                     v-model="form.client_phone"
-                    placeholder="+60 12-345 6789"
                   />
                 </div>
               </div>
@@ -332,6 +331,7 @@ import SendDialog from '@/components/ui/SendDialog.vue'
 import UiTabs from '@/components/ui/Tabs.vue'
 import UiSelect from '@/components/ui/Select.vue'
 import UiInput from '@/components/ui/Input.vue'
+import CountryPhoneInput from '@/components/ui/CountryPhoneInput.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 
 const route = useRoute()
@@ -422,6 +422,7 @@ async function save() {
 async function exportPdf() {
   if (tab.value !== 'preview') {
     tab.value = 'preview'
+    await nextTick()
   }
   await exportToPdf('po-preview', store.current.po_number || 'purchase-order')
   showToast('PDF exported!')
