@@ -41,4 +41,16 @@ export const purchaseOrderService = {
   async delete(id: string) {
     return supabase.from('purchase_orders').delete().eq('id', id)
   },
+
+  async getPublicSlug(poId: string) {
+    const { data } = await supabase
+      .from('purchase_orders')
+      .select('public_slug')
+      .eq('id', poId)
+      .single()
+    if (data?.public_slug) return data.public_slug
+    const slug = Math.random().toString(36).substring(2, 10)
+    await supabase.from('purchase_orders').update({ public_slug: slug }).eq('id', poId)
+    return slug
+  },
 }

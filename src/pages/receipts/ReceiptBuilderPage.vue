@@ -24,6 +24,14 @@
           Export PDF
         </UiButton>
         <UiButton
+          variant="outline"
+          :disabled="!form.client_id"
+          @click="openSendDialog"
+        >
+          <Send :size="14" />
+          Send
+        </UiButton>
+        <UiButton
           :loading="saving"
           @click="save"
         >
@@ -314,17 +322,36 @@
         </div>
       </div>
     </div>
+
+    <SendDialog
+      :open="showSendDialog"
+      :client-name="selectedClientName"
+      :client-email="selectedClientEmail"
+      :client-phone="selectedClientPhone"
+      document-type="receipt"
+      :document-number="(form as any).receipt_number ?? '(unsaved)'"
+      :amount="formatCurrency(Number(form.amount), form.currency)"
+      :currency="form.currency"
+      :payment-date="form.payment_date"
+      :business-name="businessProfileStore.profile?.name"
+      :business-email="businessProfileStore.profile?.email"
+      preview-element-id="receipt-preview"
+      :invoice-id="form.id"
+      @close="showSendDialog = false"
+      @sent="onSendComplete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, useRouter, onBeforeRouteLeave } from 'vue-router'
-import { ArrowLeft, Download, FileText, Trash2, CheckCircle } from '@lucide/vue'
+import { ArrowLeft, Download, FileText, Trash2, CheckCircle, Send } from '@lucide/vue'
 import confetti from 'canvas-confetti'
 import { useClientStore }   from '@/stores/clients'
 import { useInvoiceStore }  from '@/stores/invoices'
 import { useTemplateStore } from '@/stores/templates'
+import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { receiptService }   from '@/services/receipts'
 import { invoiceService }   from '@/services/invoices'
 import { useAuthStore }     from '@/stores/auth'
@@ -334,6 +361,7 @@ import { useToast }         from '@/composables/useToast'
 import { useConfirm }       from '@/composables/useConfirm'
 import { debounce }         from '@/utils/debounce'
 import UiButton   from '@/components/ui/Button.vue'
+import SendDialog from '@/components/ui/SendDialog.vue'
 
 const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
 import UiTabs     from '@/components/ui/Tabs.vue'
@@ -348,6 +376,7 @@ const clientStore   = useClientStore()
 const invoiceStore  = useInvoiceStore()
 const templateStore = useTemplateStore()
 const auth          = useAuthStore()
+const businessProfileStore = useBusinessProfileStore()
 const { formatCurrency } = useFormatters()
 const { exportToPdf }    = usePdf()
 const { showToast }      = useToast()
@@ -430,6 +459,16 @@ const invoiceOptions = computed(() =>
 const selectedClientName = computed(() =>
   clientStore.clients.find(c => c.id === form.client_id)?.name ?? '—'
 )
+
+const selectedClientEmail = computed(() =>
+  clientStore.clients.find(c => c.id === form.client_id)?.email ?? ''
+)
+
+const selectedClientPhone = computed(() =>
+  clientStore.clients.find(c => c.id === form.client_id)?.phone ?? ''
+)
+
+const showSendDialog = ref(false)
 
 const selectedMethodLabel = computed(() =>
   paymentMethodOptions.find(m => m.value === form.payment_method)?.label ?? '—'
@@ -565,7 +604,6 @@ async function save() {
       if (error) {
         showToast('Receipt saved, but failed to update invoice status', 'warning')
       } else {
-        // Update the store in-memory so the invoice list reflects it immediately
         const idx = invoiceStore.invoices.findIndex(i => i.id === form.invoice_id)
         if (idx > -1) invoiceStore.invoices[idx] = { ...invoiceStore.invoices[idx], status: 'paid' }
         showToast(`Invoice ${form.invoice_number} marked as paid!`)
@@ -573,7 +611,10 @@ async function save() {
       }
     }
 
-    router.push('/app/receipts')
+    // Update URL to include the new ID for future edits
+    if (!isEdit.value && form.id) {
+      router.replace(`/app/receipts/${form.id}`)
+    }
   } catch (err: any) {
     showToast(err?.message ?? 'Failed to save receipt. Please try again.', 'danger')
   } finally {
@@ -592,12 +633,34 @@ async function exportPdf() {
   showToast('PDF exported!')
 }
 
+async function openSendDialog() {
+  if (showSendDialog.value) return
+  // Save first if not yet persisted
+  if (!form.id) {
+    try {
+      await save()
+    } catch {
+      showToast('Please save before sending', 'warning')
+      return
+    }
+  }
+  tab.value = 'preview'
+  await nextTick()
+  showSendDialog.value = true
+}
+
+function onSendComplete(info: { method: 'email' | 'whatsapp' }) {
+  showSendDialog.value = false
+  showToast(`Receipt sent via ${info.method}!`)
+}
+
 // ── Init ──────────────────────────────────────────────────────────────────────
 onMounted(async () => {
   await Promise.all([
     clientStore.fetchAll(),
     invoiceStore.fetchAll(),
     templateStore.fetchAll(),
+    businessProfileStore.fetch(),
   ])
 
   // Check for ?invoice= query param (deep link from invoice list)
@@ -632,6 +695,31 @@ onMounted(async () => {
         }
       }
     }
+  }
+})
+
+watch(() => route.params.id, async (newId) => {
+  if (newId) {
+    isEdit.value = true
+    const { data, error } = await receiptService.getById(newId as string)
+    if (error) { showToast('Failed to load receipt', 'danger'); return }
+    if (data) {
+      form.id             = data.id
+      form.client_id      = data.client_id
+      form.amount         = Number(data.amount)
+      form.payment_date   = data.payment_date
+      form.payment_method = data.payment_method
+      form.currency       = data.currency
+      form.notes          = data.notes ?? ''
+      form.invoice_id     = data.invoice_id ?? undefined
+      ;(form as any).receipt_number = data.receipt_number
+    }
+  } else {
+    isEdit.value = false
+    Object.assign(form, {
+      id: undefined, client_id: '', amount: 0, payment_date: '',
+      payment_method: 'bank_transfer', currency: 'MYR', notes: '', invoice_id: undefined,
+    })
   }
 })
 </script>

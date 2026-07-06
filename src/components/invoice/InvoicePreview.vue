@@ -488,13 +488,20 @@
           >
             {{ idx + 1 }}
           </td>
-          <td v-if="showDate">{{ item.date ? formatDate(item.date) : '' }}</td>
-          <td v-if="showVehicleNo">{{ item.vehicle_no ?? '' }}</td>
+          <td v-if="showDate">
+            {{ item.date ? formatDate(item.date) : '' }}
+          </td>
+          <td v-if="showVehicleNo">
+            {{ item.vehicle_no ?? '' }}
+          </td>
           <td>{{ item.description }}</td>
           <td class="center">
             {{ item.quantity }}
           </td>
-          <td v-if="showUom" class="center">
+          <td
+            v-if="showUom"
+            class="center"
+          >
             {{ item.uom ?? '' }}
           </td>
           <td class="right">

@@ -17,10 +17,19 @@
       <div class="header-actions desktop-only">
         <UiButton
           variant="outline"
-          :loading="saving === 'draft'"
-          @click="saveDraft"
+          :disabled="isSaving"
+          @click="exportPdf"
         >
-          Save Draft
+          <Download :size="14" />
+          Export PDF
+        </UiButton>
+        <UiButton
+          variant="outline"
+          :disabled="!store.current.client_id"
+          @click="send"
+        >
+          <Send :size="14" />
+          Send
         </UiButton>
         <UiButton
           :loading="saving === 'save'"
@@ -28,14 +37,6 @@
         >
           <Save :size="14" />
           Save Invoice
-        </UiButton>
-        <UiButton
-          variant="outline"
-          :loading="saving === 'send'"
-          @click="send"
-        >
-          <Send :size="14" />
-          Send
         </UiButton>
       </div>
     </div>
@@ -141,10 +142,19 @@
                   class="li-header li-header--pro"
                 >
                   <span class="li-col-desc">Description</span>
-                  <span v-if="showDate" class="li-col-date">Date</span>
-                  <span v-if="showVehicleNo" class="li-col-veh">Veh. No.</span>
+                  <span
+                    v-if="showDate"
+                    class="li-col-date"
+                  >Date</span>
+                  <span
+                    v-if="showVehicleNo"
+                    class="li-col-veh"
+                  >Veh. No.</span>
                   <span class="li-col-qty">Qty</span>
-                  <span v-if="showUom" class="li-col-uom">UOM</span>
+                  <span
+                    v-if="showUom"
+                    class="li-col-uom"
+                  >UOM</span>
                   <span class="li-col-rate">Rate</span>
                   <span class="li-col-amt">Amount</span>
                   <span class="li-col-del" />
@@ -372,17 +382,37 @@
         Save
       </UiButton>
     </div>
+
+    <SendDialog
+      :open="showSendDialog"
+      :client-name="selectedClientName"
+      :client-email="selectedClientEmail"
+      :client-phone="selectedClientPhone"
+      document-type="invoice"
+      :document-number="store.current.invoice_number ?? ''"
+      :amount="formatCurrency(store.current.total ?? 0, store.current.currency)"
+      :currency="store.current.currency ?? 'MYR'"
+      :due-date="store.current.due_date"
+      :business-name="businessProfileStore.profile?.name"
+      :business-email="businessProfileStore.profile?.email"
+      preview-element-id="invoice-preview"
+      :invoice-id="store.current.id"
+      @close="showSendDialog = false"
+      @sent="onSendComplete"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch, defineAsyncComponent } from 'vue'
+import { ref, computed, onMounted, watch, nextTick, defineAsyncComponent } from 'vue'
 import { useRoute, onBeforeRouteLeave } from 'vue-router'
 import { ArrowLeft, Send, Trash2, Plus, Download, Save } from '@lucide/vue'
 import confetti from 'canvas-confetti'
 import { useInvoiceStore } from '@/stores/invoices'
+import { invoiceService } from '@/services/invoices'
 import { useClientStore } from '@/stores/clients'
 import { useTemplateStore } from '@/stores/templates'
+import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useFormatters } from '@/composables/useFormatters'
 import { usePdf } from '@/composables/usePdf'
 import { useToast } from '@/composables/useToast'
@@ -390,6 +420,7 @@ import { useRouter } from 'vue-router'
 import { useConfirm } from '@/composables/useConfirm'
 import { debounce } from '@/utils/debounce'
 import UiButton from '@/components/ui/Button.vue'
+import SendDialog from '@/components/ui/SendDialog.vue'
 
 const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
 import UiTabs from '@/components/ui/Tabs.vue'
@@ -402,6 +433,7 @@ const router        = useRouter()
 const store         = useInvoiceStore()
 const clientStore   = useClientStore()
 const templateStore = useTemplateStore()
+const businessProfileStore = useBusinessProfileStore()
 const { formatCurrency } = useFormatters()
 const { exportToPdf }    = usePdf()
 const { showToast }      = useToast()
@@ -416,7 +448,8 @@ const debouncedRecalcTotals = debounce(() => {
 }, 150)
 
 const tab    = ref('form')
-const saving = ref<'draft' | 'save' | 'send' | null>(null)
+const saving = ref<'save' | 'send' | null>(null)
+const isSaving = computed(() => saving.value !== null)
 const isEdit = ref(false)
 const hasUnsavedChanges = ref(false)
 
@@ -455,6 +488,18 @@ const selectedClientName = computed(() => {
   return c?.name ?? '—'
 })
 
+const selectedClientEmail = computed(() => {
+  const c = clientStore.clients.find(c => c.id === store.current.client_id)
+  return c?.email ?? ''
+})
+
+const selectedClientPhone = computed(() => {
+  const c = clientStore.clients.find(c => c.id === store.current.client_id)
+  return c?.phone ?? ''
+})
+
+const showSendDialog = ref(false)
+
 const showDate = computed(() => (templateStore.active as any)?.show_line_item_date ?? false)
 const showVehicleNo = computed(() => (templateStore.active as any)?.show_line_item_vehicle_no ?? false)
 const showUom = computed(() => (templateStore.active as any)?.show_line_item_uom ?? false)
@@ -463,12 +508,10 @@ const hasExtraColumns = computed(() => showDate.value || showVehicleNo.value || 
 onMounted(async () => {
   await clientStore.fetchAll()
   await templateStore.fetchAll()
+  await businessProfileStore.fetch()
   if (route.params.id) {
     isEdit.value = true
-    // Load existing invoice into store
-    const { data, error } = await import('@/services/invoices').then(m =>
-      m.invoiceService.getById(route.params.id as string)
-    )
+    const { data, error } = await invoiceService.getById(route.params.id as string)
     if (error) { showToast('Failed to load invoice', 'danger'); return }
     if (data) {
       // Ensure every line item has an id (Supabase JSONB may strip them)
@@ -488,29 +531,43 @@ onMounted(async () => {
     }
   } else {
     store.resetCurrent()
-    const { useBusinessProfileStore } = await import('@/stores/businessProfile')
-    const bpStore = useBusinessProfileStore()
-    await bpStore.fetch()
-    const p = bpStore.profile
+    await businessProfileStore.fetch()
+    const p = businessProfileStore.profile
     if (p.default_currency) store.current.currency  = p.default_currency
     if (p.default_tax_rate) store.current.tax_rate  = p.default_tax_rate
     store.recalcTotals()
   }
 })
 
-async function saveDraft() {
-  saving.value = 'draft'
-  try {
-    store.current.status = 'draft'
-    await store.save()
-    hasUnsavedChanges.value = false
-    showToast('Saved as draft')
-  } catch (err: any) {
-    showToast(err?.message ?? 'Failed to save draft', 'danger')
-  } finally {
-    saving.value = null
+watch(() => route.params.id, async (newId) => {
+  if (newId) {
+    isEdit.value = true
+    const { data, error } = await invoiceService.getById(newId as string)
+    if (error) { showToast('Failed to load invoice', 'danger'); return }
+    if (data) {
+      store.current = {
+        ...data,
+        line_items: (data.line_items ?? []).map((li: any) => ({
+          id: li.id ?? crypto.randomUUID(),
+          description: li.description ?? '',
+          quantity:    Number(li.quantity ?? 1),
+          unit_price:  Number(li.unit_price ?? 0),
+          amount:      Number(li.amount ?? 0),
+          date:        li.date ?? '',
+          vehicle_no:  li.vehicle_no ?? '',
+          uom:         li.uom ?? '',
+        })),
+      }
+    }
+  } else {
+    isEdit.value = false
+    store.resetCurrent()
+    const p = businessProfileStore.profile
+    if (p.default_currency) store.current.currency  = p.default_currency
+    if (p.default_tax_rate) store.current.tax_rate  = p.default_tax_rate
+    store.recalcTotals()
   }
-}
+})
 
 async function saveInvoice() {
   saving.value = 'save'
@@ -532,26 +589,38 @@ async function saveInvoice() {
 }
 
 async function send() {
-  saving.value = 'send'
-  try {
-    if (store.current.id) {
-      await store.updateStatus(store.current.id, 'sent')
-      store.current.status = 'sent'
-    } else {
-      store.current.status = 'sent'
+  if (showSendDialog.value) return
+  // Save first if not yet persisted
+  if (!store.current.id) {
+    try {
       await store.save()
+    } catch {
+      showToast('Please save before sending', 'warning')
+      return
     }
-    hasUnsavedChanges.value = false
-    showToast('Invoice marked as sent!')
-    confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } })
-  } catch (err: any) {
-    showToast(err?.message ?? 'Failed to update invoice', 'danger')
-  } finally {
-    saving.value = null
   }
+  tab.value = 'preview'
+  await nextTick()
+  showSendDialog.value = true
+}
+
+async function onSendComplete(info: { method: 'email' | 'whatsapp' }) {
+  showSendDialog.value = false
+  if (store.current.id) {
+    await store.updateStatus(store.current.id, 'sent')
+    store.current.status = 'sent'
+  } else {
+    store.current.status = 'sent'
+    await store.save()
+  }
+  hasUnsavedChanges.value = false
+  showToast(`Invoice sent via ${info.method}!`)
+  confetti({ particleCount: 80, spread: 60, origin: { y: 0.7 } })
 }
 
 async function exportPdf() {
+  tab.value = 'preview'
+  await nextTick()
   await exportToPdf('invoice-preview', store.current.invoice_number ?? 'invoice')
   showToast('PDF exported!')
 }

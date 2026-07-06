@@ -55,4 +55,16 @@ export const receiptService = {
     const num = data?.next_receipt_number ?? 1
     return `${p}-${String(num).padStart(4, '0')}`
   },
+
+  async getPublicSlug(receiptId: string) {
+    const { data } = await supabase
+      .from('receipts')
+      .select('public_slug')
+      .eq('id', receiptId)
+      .single()
+    if (data?.public_slug) return data.public_slug
+    const slug = Math.random().toString(36).substring(2, 10)
+    await supabase.from('receipts').update({ public_slug: slug }).eq('id', receiptId)
+    return slug
+  },
 }

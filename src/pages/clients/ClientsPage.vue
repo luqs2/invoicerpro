@@ -100,7 +100,7 @@
               {{ c.email }}
             </td>
             <td class="td-muted">
-              {{ c.phone || '—' }}
+              {{ c.phone ? formatPhoneDisplay(c.phone) : '—' }}
             </td>
             <td>
               <span
@@ -203,21 +203,18 @@
                 placeholder="jane@company.com"
               />
             </div>
-            <div class="field-row">
-              <div class="field">
-                <label>Phone</label>
-                <UiInput
-                  v-model="form.phone"
-                  placeholder="+1 (555) 000-0000"
-                />
-              </div>
-              <div class="field">
-                <label>Company</label>
-                <UiInput
-                  v-model="form.company"
-                  placeholder="Acme Corp"
-                />
-              </div>
+            <div class="field">
+              <label>Phone</label>
+              <CountryPhoneInput
+                v-model="form.phone"
+              />
+            </div>
+            <div class="field">
+              <label>Company</label>
+              <UiInput
+                v-model="form.company"
+                placeholder="Acme Corp"
+              />
             </div>
             <div class="field">
               <label>Address</label>
@@ -264,10 +261,12 @@ import { Search, X, Users, Plus, Pencil, Trash2 } from '@lucide/vue'
 import { useClientStore } from '@/stores/clients'
 import { useToast } from '@/composables/useToast'
 import { useFormatters } from '@/composables/useFormatters'
+import { formatPhoneDisplay } from '@/data/countries'
 import { useMinDelay } from '@/composables/useMinDelay'
 import { useConfirm } from '@/composables/useConfirm'
 import Skeleton from '@/components/ui/Skeleton.vue'
 import UiInput from '@/components/ui/Input.vue'
+import CountryPhoneInput from '@/components/ui/CountryPhoneInput.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 import UiButton from '@/components/ui/Button.vue'
 import Pagination from '@/components/ui/Pagination.vue'

@@ -157,7 +157,7 @@
               class="info-row"
             >
               <span class="info-label">Phone</span>
-              <span class="info-value">{{ client.phone }}</span>
+              <span class="info-value">{{ formatPhoneDisplay(client.phone) }}</span>
             </div>
             <div
               v-if="client.phone"
@@ -464,21 +464,18 @@
                 placeholder="jane@company.com"
               />
             </div>
-            <div class="field-row">
-              <div class="field">
-                <label>Phone</label>
-                <UiInput
-                  v-model="form.phone"
-                  placeholder="+1 (555) 000-0000"
-                />
-              </div>
-              <div class="field">
-                <label>Company</label>
-                <UiInput
-                  v-model="form.company"
-                  placeholder="Acme Corp"
-                />
-              </div>
+            <div class="field">
+              <label>Phone</label>
+              <CountryPhoneInput
+                v-model="form.phone"
+              />
+            </div>
+            <div class="field">
+              <label>Company</label>
+              <UiInput
+                v-model="form.company"
+                placeholder="Acme Corp"
+              />
             </div>
             <div class="field">
               <label>Address</label>
@@ -528,12 +525,14 @@ import { invoiceService } from '@/services/invoices'
 import { receiptService } from '@/services/receipts'
 import { useClientStore } from '@/stores/clients'
 import { useFormatters } from '@/composables/useFormatters'
+import { formatPhoneDisplay } from '@/data/countries'
 import { useToast } from '@/composables/useToast'
 import { useConfirm } from '@/composables/useConfirm'
 import { useMinDelay } from '@/composables/useMinDelay'
 import type { Client, Invoice } from '@/types'
 import UiButton from '@/components/ui/Button.vue'
 import UiInput from '@/components/ui/Input.vue'
+import CountryPhoneInput from '@/components/ui/CountryPhoneInput.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
 
