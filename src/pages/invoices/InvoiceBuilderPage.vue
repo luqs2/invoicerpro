@@ -17,7 +17,7 @@
       <div class="header-actions desktop-only">
         <UiButton
           variant="outline"
-          :disabled="saving"
+          :disabled="isSaving"
           @click="exportPdf"
         >
           <Download :size="14" />
@@ -448,6 +448,7 @@ const debouncedRecalcTotals = debounce(() => {
 
 const tab    = ref('form')
 const saving = ref<'save' | 'send' | null>(null)
+const isSaving = computed(() => saving.value !== null)
 const isEdit = ref(false)
 const hasUnsavedChanges = ref(false)
 

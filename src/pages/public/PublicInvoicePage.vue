@@ -1,64 +1,82 @@
 <template>
   <div class="public-page">
-    <div
-      v-if="loading"
-      class="status-box"
-    >
-      <div class="spinner" />
-      <p>Loading document...</p>
-    </div>
+    <!-- Header -->
+    <header class="public-header">
+      <div class="header-inner">
+        <div class="header-brand">
+          <FileText :size="20" />
+          <span class="header-title">InvoicerPro</span>
+        </div>
+      </div>
+    </header>
 
-    <div
-      v-else-if="error"
-      class="status-box"
-    >
-      <AlertCircle
-        :size="48"
-        class="status-icon error"
-      />
-      <h2>Document not found</h2>
-      <p>{{ error }}</p>
-    </div>
-
-    <template v-else-if="docType">
-      <div class="invoice-wrapper">
-        <InvoicePreview
-          v-if="docType === 'invoice'"
-          id="public-doc-preview"
-          :invoice="docData"
-          :template="template"
-        />
-        <PurchaseOrderPreview
-          v-else-if="docType === 'purchase_order'"
-          id="public-doc-preview"
-          :purchase-order="docData"
-          :template="template"
-        />
-        <ReceiptPreview
-          v-else-if="docType === 'receipt'"
-          id="public-doc-preview"
-          :receipt="docData"
-          :template="template"
-        />
+    <!-- Content -->
+    <main class="public-main">
+      <div
+        v-if="loading"
+        class="status-box"
+      >
+        <div class="spinner" />
+        <p>Loading document...</p>
       </div>
 
-      <div class="actions">
-        <button
-          class="download-btn"
-          @click="downloadPdf"
-        >
-          <Download :size="18" />
-          Download PDF
-        </button>
+      <div
+        v-else-if="error"
+        class="status-box"
+      >
+        <AlertCircle
+          :size="48"
+          class="status-icon error"
+        />
+        <h2>Document not found</h2>
+        <p>{{ error }}</p>
       </div>
-    </template>
+
+      <template v-else-if="docType">
+        <div class="invoice-wrapper">
+          <InvoicePreview
+            v-if="docType === 'invoice'"
+            id="public-doc-preview"
+            :invoice="docData"
+            :template="template"
+          />
+          <PurchaseOrderPreview
+            v-else-if="docType === 'purchase_order'"
+            id="public-doc-preview"
+            :purchase-order="docData"
+            :template="template"
+          />
+          <ReceiptPreview
+            v-else-if="docType === 'receipt'"
+            id="public-doc-preview"
+            :receipt="docData"
+            :template="template"
+          />
+        </div>
+
+        <div class="actions">
+          <button
+            class="download-btn"
+            @click="downloadPdf"
+          >
+            <Download :size="18" />
+            Download PDF
+          </button>
+        </div>
+      </template>
+    </main>
+
+    <!-- Footer -->
+    <footer class="public-footer">
+      <p>Powered by <strong>InvoicerPro</strong></p>
+    </footer>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
-import { Download, AlertCircle } from '@lucide/vue'
+import { Download, AlertCircle, FileText } from '@lucide/vue'
 import { supabase } from '@/services/supabase'
 import { usePdf } from '@/composables/usePdf'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
@@ -168,11 +186,66 @@ async function downloadPdf() {
 <style scoped>
 .public-page {
   min-height: 100vh;
+  height: auto;
   background: #f5f3ee;
-  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  overflow-y: auto;
+}
+
+.public-header {
+  background: #1f3a34;
+  color: white;
+  padding: 14px 24px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.header-inner {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.header-title {
+  font-family: 'Merriweather', Georgia, serif;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.public-main {
+  flex: 1;
+  padding: 40px 24px 80px;
   display: flex;
   flex-direction: column;
   align-items: center;
+}
+
+.public-footer {
+  background: #1e1b15;
+  color: #9a8c7e;
+  padding: 20px 24px;
+  text-align: center;
+  font-size: 13px;
+}
+
+.public-footer p {
+  margin: 0;
+}
+
+.public-footer strong {
+  color: #e1e3e1;
 }
 
 .status-box {
@@ -180,15 +253,16 @@ async function downloadPdf() {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 80px 24px;
+  gap: 16px;
+  padding: 120px 24px;
   text-align: center;
 }
 
 .status-icon.error { color: #dc2626; }
 
 .status-box h2 {
-  font-size: 20px;
+  font-family: 'Merriweather', Georgia, serif;
+  font-size: 22px;
   font-weight: 700;
   color: #1e1b15;
   margin: 0;
@@ -204,7 +278,7 @@ async function downloadPdf() {
   width: 32px;
   height: 32px;
   border: 3px solid #D6D0C2;
-  border-top-color: #1e1b15;
+  border-top-color: #1f3a34;
   border-radius: 50%;
   animation: spin 0.6s linear infinite;
 }
@@ -216,34 +290,49 @@ async function downloadPdf() {
   max-width: 800px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
-  overflow: hidden;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+  border: 1px solid #D6D0C2;
+  overflow: visible;
 }
 
 .actions {
-  margin-top: 24px;
+  margin-top: 32px;
+  padding-bottom: 40px;
 }
 
 .download-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 8px;
   padding: 12px 24px;
-  background: #1e1b15;
+  background: #1f3a34;
   color: white;
   border: none;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 14px;
   font-weight: 600;
   font-family: inherit;
   cursor: pointer;
-  transition: background 0.2s;
+  box-shadow: 0 2px 8px rgba(8, 36, 31, 0.2);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.download-btn:hover { background: #2d2a23; }
+.download-btn:hover {
+  background: #2a4d45;
+  box-shadow: 0 4px 12px rgba(8, 36, 31, 0.25);
+  transform: translateY(-1px);
+}
 
 @media (max-width: 640px) {
-  .public-page { padding: 12px; }
+  .public-main { padding: 16px 12px 60px; }
   .invoice-wrapper { border-radius: 8px; }
+}
+</style>
+
+<style>
+html, body, #app {
+  height: auto !important;
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
 }
 </style>
