@@ -464,21 +464,18 @@
                 placeholder="jane@company.com"
               />
             </div>
-            <div class="field-row">
-              <div class="field">
-                <label>Phone</label>
-                <UiInput
-                  v-model="form.phone"
-                  placeholder="+1 (555) 000-0000"
-                />
-              </div>
-              <div class="field">
-                <label>Company</label>
-                <UiInput
-                  v-model="form.company"
-                  placeholder="Acme Corp"
-                />
-              </div>
+            <div class="field">
+              <label>Phone</label>
+              <CountryPhoneInput
+                v-model="form.phone"
+              />
+            </div>
+            <div class="field">
+              <label>Company</label>
+              <UiInput
+                v-model="form.company"
+                placeholder="Acme Corp"
+              />
             </div>
             <div class="field">
               <label>Address</label>
@@ -534,6 +531,7 @@ import { useMinDelay } from '@/composables/useMinDelay'
 import type { Client, Invoice } from '@/types'
 import UiButton from '@/components/ui/Button.vue'
 import UiInput from '@/components/ui/Input.vue'
+import CountryPhoneInput from '@/components/ui/CountryPhoneInput.vue'
 import UiTextarea from '@/components/ui/Textarea.vue'
 import Skeleton from '@/components/ui/Skeleton.vue'
 

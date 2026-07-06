@@ -1,6 +1,9 @@
 <template>
   <Select v-model="model">
-    <SelectTrigger :class="triggerClass" style="color: #1e1b15; background: #EDE8DE; border-color: #D6D0C2;">
+    <SelectTrigger
+      :class="triggerClass"
+      style="color: #1e1b15; background: #EDE8DE; border-color: #D6D0C2;"
+    >
       <span>{{ selectedLabel || placeholder }}</span>
     </SelectTrigger>
     <SelectContent style="background: #F7F4EC; border-color: #D6D0C2; color: #1e1b15;">
