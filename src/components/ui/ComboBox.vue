@@ -66,18 +66,18 @@
   </div>
 </template>
 
-<script setup lang="ts" generic="T = string">
+<script setup lang="ts">
 import { ref, computed, nextTick } from 'vue'
 import { ChevronDown } from '@lucide/vue'
 
 export interface ComboBoxOption {
-  value: T
+  value: string
   label: string
   description?: string
 }
 
 const props = withDefaults(defineProps<{
-  modelValue: T | null
+  modelValue: string | null
   options: ComboBoxOption[]
   placeholder?: string
   searchPlaceholder?: string
@@ -89,7 +89,7 @@ const props = withDefaults(defineProps<{
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: T]
+  'update:modelValue': [value: string]
 }>()
 
 const rootRef = ref<HTMLElement | null>(null)
@@ -157,7 +157,7 @@ function positionDropdown() {
   })
 }
 
-function select(value: T) {
+function select(value: string) {
   emit('update:modelValue', value)
   close()
 }

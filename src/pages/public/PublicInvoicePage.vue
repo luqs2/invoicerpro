@@ -22,10 +22,23 @@
 
     <template v-else-if="docType">
       <div class="invoice-wrapper">
-        <component
-          :is="previewComponent"
-          :id="previewId"
-          v-bind="previewProps"
+        <InvoicePreview
+          v-if="docType === 'invoice'"
+          id="public-doc-preview"
+          :invoice="docData"
+          :template="template"
+        />
+        <PurchaseOrderPreview
+          v-else-if="docType === 'purchase_order'"
+          id="public-doc-preview"
+          :purchase-order="docData"
+          :template="template"
+        />
+        <ReceiptPreview
+          v-else-if="docType === 'receipt'"
+          id="public-doc-preview"
+          :receipt="docData"
+          :template="template"
         />
       </div>
 
@@ -43,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, defineAsyncComponent, shallowRef } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
 import { useRoute } from 'vue-router'
 import { Download, AlertCircle } from '@lucide/vue'
 import { supabase } from '@/services/supabase'
@@ -62,29 +75,8 @@ const bpStore = useBusinessProfileStore()
 const loading = ref(true)
 const error = ref('')
 const docType = ref<'invoice' | 'purchase_order' | 'receipt' | null>(null)
-const docData = shallowRef<any>(null)
+const docData = ref<any>(null)
 const template = ref<InvoiceTemplate | null>(null)
-const previewId = ref('public-doc-preview')
-
-const previewComponent = computed(() => {
-  if (docType.value === 'invoice') return InvoicePreview
-  if (docType.value === 'purchase_order') return PurchaseOrderPreview
-  if (docType.value === 'receipt') return ReceiptPreview
-  return null
-})
-
-const previewProps = computed(() => {
-  if (docType.value === 'invoice') {
-    return { invoice: docData.value, template: template.value }
-  }
-  if (docType.value === 'purchase_order') {
-    return { purchaseOrder: docData.value, template: template.value }
-  }
-  if (docType.value === 'receipt') {
-    return { receipt: docData.value, template: template.value }
-  }
-  return {}
-})
 
 onMounted(async () => {
   const slug = route.params.slug as string
@@ -169,7 +161,7 @@ async function downloadPdf() {
     || docData.value?.po_number
     || docData.value?.receipt_number
     || 'document'
-  await exportToPdf(previewId.value, num)
+  await exportToPdf('public-doc-preview', num)
 }
 </script>
 

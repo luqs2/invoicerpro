@@ -303,7 +303,7 @@
       document-type="purchase_order"
       :document-number="form.po_number || ''"
       :amount="formatCurrency(grandTotal, form.currency)"
-      :currency="form.currency"
+      :currency="form.currency || 'MYR'"
       :business-name="bpStore.profile?.name"
       :business-email="bpStore.profile?.email"
       preview-element-id="po-preview"
