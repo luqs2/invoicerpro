@@ -426,6 +426,16 @@
 
     <!-- Line items -->
     <table class="inv-table">
+      <colgroup>
+        <col v-if="hasExtraColumns" :style="{ width: hasExtraColumns ? '6%' : '0' }">
+        <col v-if="showDate" :style="{ width: '12%' }">
+        <col v-if="showVehicleNo" :style="{ width: '10%' }">
+        <col :style="{ width: 'auto' }">
+        <col :style="{ width: '7%' }">
+        <col v-if="showUom" :style="{ width: '7%' }">
+        <col :style="{ width: '10%' }">
+        <col :style="{ width: '12%' }">
+      </colgroup>
       <thead>
         <tr>
           <th

@@ -140,6 +140,7 @@
                 <div
                   v-if="hasExtraColumns"
                   class="li-header li-header--pro"
+                  :style="{ gridTemplateColumns: proGridCols }"
                 >
                   <span class="li-col-desc">Description</span>
                   <span
@@ -173,54 +174,74 @@
                   v-for="(item, idx) in store.current.line_items"
                   :key="item.id"
                   :class="['li-row', { 'li-row--pro': hasExtraColumns }]"
+                  :style="hasExtraColumns ? { gridTemplateColumns: proGridCols } : undefined"
                 >
-                  <input
-                    class="li-input"
-                    :value="item.description"
-                    placeholder="Service or product…"
-                    @input="debouncedUpdateLineItem(idx, { description: ($event.target as HTMLInputElement).value })"
-                  >
+                  <div class="li-field">
+                    <label class="li-label">Description</label>
+                    <input
+                      class="li-input"
+                      :value="item.description"
+                      placeholder="Service or product…"
+                      @input="debouncedUpdateLineItem(idx, { description: ($event.target as HTMLInputElement).value })"
+                    >
+                  </div>
                   <template v-if="showDate || showVehicleNo">
-                    <input
-                      v-if="showDate"
-                      class="li-input"
-                      type="date"
-                      :value="item.date"
-                      @input="debouncedUpdateLineItem(idx, { date: ($event.target as HTMLInputElement).value })"
-                    >
-                    <input
-                      v-if="showVehicleNo"
-                      class="li-input"
-                      :value="item.vehicle_no"
-                      placeholder="—"
-                      @input="debouncedUpdateLineItem(idx, { vehicle_no: ($event.target as HTMLInputElement).value })"
-                    >
+                    <div v-if="showDate" class="li-field">
+                      <label class="li-label">Date</label>
+                      <input
+                        class="li-input"
+                        type="date"
+                        :value="item.date"
+                        @input="debouncedUpdateLineItem(idx, { date: ($event.target as HTMLInputElement).value })"
+                      >
+                    </div>
+                    <div v-if="showVehicleNo" class="li-field">
+                      <label class="li-label">Veh. No.</label>
+                      <input
+                        class="li-input"
+                        :value="item.vehicle_no"
+                        placeholder="—"
+                        @input="debouncedUpdateLineItem(idx, { vehicle_no: ($event.target as HTMLInputElement).value })"
+                      >
+                    </div>
                   </template>
-                  <input
-                    class="li-input li-input-num"
-                    type="number"
-                    :value="item.quantity"
-                    min="0"
-                    @input="debouncedUpdateLineItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
-                  >
+                  <div class="li-field">
+                    <label class="li-label">Qty</label>
+                    <input
+                      class="li-input li-input-num"
+                      type="number"
+                      :value="item.quantity"
+                      min="0"
+                      @input="debouncedUpdateLineItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
+                    >
+                  </div>
                   <template v-if="showUom">
-                    <input
-                      class="li-input"
-                      :value="item.uom"
-                      placeholder="MT"
-                      @input="debouncedUpdateLineItem(idx, { uom: ($event.target as HTMLInputElement).value })"
-                    >
+                    <div class="li-field">
+                      <label class="li-label">UOM</label>
+                      <input
+                        class="li-input"
+                        :value="item.uom"
+                        placeholder="MT"
+                        @input="debouncedUpdateLineItem(idx, { uom: ($event.target as HTMLInputElement).value })"
+                      >
+                    </div>
                   </template>
-                  <input
-                    class="li-input li-input-num"
-                    type="number"
-                    :value="item.unit_price"
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
-                    @input="debouncedUpdateLineItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
-                  >
-                  <span class="li-amount">{{ formatCurrency(item.amount, store.current.currency) }}</span>
+                  <div class="li-field">
+                    <label class="li-label">Rate</label>
+                    <input
+                      class="li-input li-input-num"
+                      type="number"
+                      :value="item.unit_price"
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      @input="debouncedUpdateLineItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
+                    >
+                  </div>
+                  <div class="li-field">
+                    <label class="li-label">Amount</label>
+                    <span class="li-amount">{{ formatCurrency(item.amount, store.current.currency) }}</span>
+                  </div>
                   <button
                     class="li-del"
                     title="Remove"
@@ -369,19 +390,15 @@
     </div>
 
     <!-- Mobile floating summary bar -->
-    <div class="mobile-summary-bar">
-      <div class="msb-left">
-        <span class="msb-label">Total</span>
-        <span class="msb-value">{{ formatCurrency(store.current.total ?? 0, store.current.currency) }}</span>
-      </div>
-      <UiButton
-        size="sm"
-        :loading="saving === 'save'"
-        @click="saveInvoice"
-      >
-        Save
-      </UiButton>
-    </div>
+    <MobileActionBar
+      :formatted-total="formatCurrency(store.current.total ?? 0, store.current.currency)"
+      :saving="saving === 'save'"
+      :export-disabled="isSaving"
+      :send-disabled="!store.current.client_id"
+      @export="exportPdf"
+      @send="send"
+      @save="saveInvoice"
+    />
 
     <SendDialog
       :open="showSendDialog"
@@ -420,6 +437,7 @@ import { useRouter } from 'vue-router'
 import { useConfirm } from '@/composables/useConfirm'
 import { debounce } from '@/utils/debounce'
 import UiButton from '@/components/ui/Button.vue'
+import MobileActionBar from '@/components/ui/MobileActionBar.vue'
 import SendDialog from '@/components/ui/SendDialog.vue'
 
 const InvoicePreview = defineAsyncComponent(() => import('@/components/invoice/InvoicePreview.vue'))
@@ -504,6 +522,19 @@ const showDate = computed(() => (templateStore.active as any)?.show_line_item_da
 const showVehicleNo = computed(() => (templateStore.active as any)?.show_line_item_vehicle_no ?? false)
 const showUom = computed(() => (templateStore.active as any)?.show_line_item_uom ?? false)
 const hasExtraColumns = computed(() => showDate.value || showVehicleNo.value || showUom.value)
+
+function buildProGridCols(date: boolean, veh: boolean, uom: boolean): string {
+  const cols: string[] = ['1.2fr'] // description always first, flexible
+  if (date) cols.push('0.7fr')
+  if (veh) cols.push('0.55fr')
+  cols.push('0.4fr')  // qty
+  if (uom) cols.push('0.4fr')
+  cols.push('0.6fr')  // rate
+  cols.push('0.7fr')  // amount
+  cols.push('36px')   // delete
+  return cols.join(' ')
+}
+const proGridCols = computed(() => buildProGridCols(showDate.value, showVehicleNo.value, showUom.value))
 
 onMounted(async () => {
   await clientStore.fetchAll()
@@ -594,6 +625,7 @@ async function send() {
   if (!store.current.id) {
     try {
       await store.save()
+      await nextTick()
     } catch {
       showToast('Please save before sending', 'warning')
       return
@@ -732,12 +764,12 @@ async function exportPdf() {
 .line-items-table {
   border: 1px solid #D6D0C2;
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .li-header {
   display: grid;
-  grid-template-columns: 1fr 70px 90px 100px 36px;
+  grid-template-columns: 1fr 60px 90px 130px 36px;
   gap: 0;
   background: #EDE8DE;
   border-bottom: 1px solid #D6D0C2;
@@ -748,25 +780,24 @@ async function exportPdf() {
   letter-spacing: 0.5px;
 }
 
-.li-header--pro {
-  grid-template-columns: 1fr 100px 80px 50px 50px 70px 80px 36px;
-}
-
-.li-row--pro {
-  grid-template-columns: 1fr 100px 80px 50px 50px 70px 80px 36px;
-}
-
 .li-header span {
   padding: 8px 10px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .li-header span:first-child {
   padding-left: 12px;
 }
 
+.li-header--pro span {
+  padding: 8px 6px;
+}
+
 .li-row {
   display: grid;
-  grid-template-columns: 1fr 70px 90px 100px 36px;
+  grid-template-columns: 1fr 60px 90px 130px 36px;
   gap: 0;
   align-items: center;
   border-bottom: 1px solid #f4ede3;
@@ -783,7 +814,25 @@ async function exportPdf() {
   background: transparent;
   width: 100%;
   min-width: 0;
+  overflow: hidden;
   transition: background .1s;
+}
+
+/* Field wrapper — transparent on desktop, shows label on mobile */
+.li-field { display: contents; }
+.li-label { display: none; }
+
+.li-row--pro .li-input {
+  padding: 10px 6px;
+}
+
+.li-row--pro .li-input[type="date"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.li-row--pro .li-input-num {
+  padding: 10px 4px;
 }
 .li-input:focus { background: #fafbff; }
 .li-input::placeholder { color: #414846; }
@@ -801,6 +850,11 @@ async function exportPdf() {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.li-row--pro .li-amount {
+  padding: 10px 6px;
+  font-size: 12px;
 }
 
 .li-del {
@@ -933,68 +987,63 @@ async function exportPdf() {
   .field-row { grid-template-columns: 1fr; }
   .line-items-table { border: none; background: none; }
   .li-header { display: none; }
+  .li-header--pro { grid-template-columns: 1fr !important; }
   .li-row {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    padding: 16px;
     background: #EDE8DE;
     border: 1px solid #D6D0C2;
     border-radius: 10px;
     margin-bottom: 8px;
+    position: relative;
   }
-  .li-input { padding: 8px 0; background: transparent; }
+  .li-row--pro {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  .li-row--pro .li-field:first-child {
+    grid-column: 1;
+  }
+  .li-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .li-field:first-child {
+    grid-column: 1 / -1;
+  }
+  .li-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #8a8578;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .li-input {
+    padding: 8px 0;
+    background: transparent;
+    font-size: 15px;
+    border-bottom: 1px solid #D6D0C2;
+  }
+  .li-input:focus { border-bottom-color: #08241f; }
   .li-input-num { text-align: left; }
   .li-amount {
     padding: 8px 0;
     text-align: left;
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 700;
     color: #08241f;
+    border-bottom: 1px solid #D6D0C2;
   }
   .li-del {
     position: absolute;
-    top: 12px;
-    right: 12px;
+    top: 14px;
+    right: 14px;
   }
-  .li-row { position: relative; }
   .add-item-btn { width: 100%; justify-content: center; }
-}
-
-/* Mobile floating summary */
-.mobile-summary-bar {
-  display: none;
-  position: fixed;
-  bottom: 60px;
-  left: 0;
-  right: 0;
-  background: #F7F4EC;
-  border-top: 1px solid #D6D0C2;
-  padding: 12px 16px;
-  align-items: center;
-  justify-content: space-between;
-  z-index: 60;
-  box-shadow: 0 -2px 10px rgba(0,0,0,.08);
-}
-
-.msb-left {
-  display: flex;
-  flex-direction: column;
-}
-
-.msb-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: #414846;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
-
-.msb-value {
-  font-size: 20px;
-  font-weight: 800;
-  color: #08241f;
-  font-variant-numeric: tabular-nums;
 }
 
 /* ── Dark mode (Nocturnal Ledger) ─────────────────────── */
@@ -1023,6 +1072,9 @@ async function exportPdf() {
 .dark .add-item-btn { background: #282b29; border: 1px solid rgba(255,255,255,.05); color: #a0d0c2; }
 .dark .add-item-btn:hover { background: #323534; }
 
+/* Mobile labels dark mode */
+.dark .li-label { color: #c0c8c4; }
+
 /* Totals */
 .dark .t-label { color: #c0c8c4; }
 .dark .t-value { color: #e1e3e1; }
@@ -1040,13 +1092,7 @@ async function exportPdf() {
 .dark .form-actions .btn-outline { border-color: rgba(255,255,255,.05); color: #c0c8c4; }
 .dark .form-actions .btn-outline:hover { border-color: #a0d0c2; color: #a0d0c2; }
 
-/* Mobile summary */
-.dark .mobile-summary-bar { background: #1d201f; border-color: rgba(255,255,255,.05); }
-.dark .msb-label { color: #c0c8c4; }
-.dark .msb-value { color: #a0d0c2; }
-
 @media (max-width: 900px) {
-  .mobile-summary-bar { display: flex; }
-  .page { padding-bottom: 140px; }
+  .page { padding-bottom: 80px; }
 }
 </style>

@@ -64,9 +64,10 @@
     <!-- Table -->
     <div
       v-else-if="filtered.length"
-      class="section-card animate-in"
+      :class="isMobile ? '' : 'section-card animate-in'"
     >
       <table
+        v-if="!isMobile"
         class="data-table"
         aria-live="polite"
       >
@@ -133,6 +134,33 @@
           </tr>
         </tbody>
       </table>
+
+      <!-- Mobile cards -->
+      <div v-if="isMobile" class="card-list">
+        <div
+          v-for="c in paginated"
+          :key="c.id"
+          class="client-card"
+          @click="$router.push(`/app/clients/${c.id}`)"
+        >
+          <div class="client-card-top">
+            <div class="client-cell">
+              <div class="avatar">{{ getInitials(c.name) }}</div>
+              <span class="client-card-name">{{ c.name }}</span>
+            </div>
+          </div>
+          <p class="client-card-meta">{{ c.email }}</p>
+          <p v-if="c.phone" class="client-card-meta">{{ formatPhoneDisplay(c.phone) }}</p>
+          <div class="client-card-bottom">
+            <span v-if="c.company" class="company-badge">{{ c.company }}</span>
+            <div class="client-card-actions">
+              <button class="act-btn" title="Edit" @click.stop="openEdit(c)"><Pencil :size="14" /></button>
+              <button class="act-btn act-del" title="Delete" @click.stop="deleteClient(c)"><Trash2 :size="14" /></button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <Pagination
         :current-page="currentPage"
         :total="filtered.length"
@@ -261,6 +289,7 @@ import { Search, X, Users, Plus, Pencil, Trash2 } from '@lucide/vue'
 import { useClientStore } from '@/stores/clients'
 import { useToast } from '@/composables/useToast'
 import { useFormatters } from '@/composables/useFormatters'
+import { useBreakpoint } from '@/composables/useBreakpoint'
 import { formatPhoneDisplay } from '@/data/countries'
 import { useMinDelay } from '@/composables/useMinDelay'
 import { useConfirm } from '@/composables/useConfirm'
@@ -275,6 +304,7 @@ import type { Client } from '@/types'
 const store = useClientStore()
 const { showToast } = useToast()
 const { getInitials } = useFormatters()
+const { isMobile } = useBreakpoint()
 const { wrap } = useMinDelay()
 const { confirm } = useConfirm()
 
@@ -474,4 +504,77 @@ async function deleteClient(client: Client) {
 @media (max-width: 768px) {
   .side-panel { width: 100%; }
 }
+
+/* ── Mobile card list ───────────────────────────────────── */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.client-card {
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.client-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.client-card-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e1b15;
+}
+
+.client-card-meta {
+  font-size: 13px;
+  color: #8a8578;
+  margin: 2px 0;
+}
+
+.client-card-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e3d8;
+}
+
+.client-card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #D6D0C2;
+  background: #EDE8DE;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #414846;
+  transition: color .12s, background .12s;
+}
+.act-btn:hover  { color: #1e1b15; background: #D6D0C2; }
+.act-del:hover  { color: #ef4444; background: #fee2e2; border-color: #fecaca; }
+
+.dark .client-card { background: #1d201f; border-color: rgba(255,255,255,.05); }
+.dark .client-card-name { color: #e1e3e1; }
+.dark .client-card-meta { color: #8a938f; }
+.dark .client-card-bottom { border-color: rgba(255,255,255,.05); }
+.dark .act-btn { background: #282b29; border-color: rgba(255,255,255,.05); color: #c0c8c4; }
+.dark .act-btn:hover { color: #e1e3e1; background: #323534; }
+.dark .act-del:hover { color: #ffb4ab; background: rgba(255,180,171,.1); }
 </style>

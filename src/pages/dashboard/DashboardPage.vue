@@ -330,6 +330,26 @@
           class="qa-arrow"
         />
       </router-link>
+      <router-link
+        to="/app/purchase-orders/new"
+        class="qa-card animate-in"
+      >
+        <div class="qa-icon qa-icon-amber">
+          <ClipboardList :size="18" />
+        </div>
+        <div class="qa-content">
+          <p class="qa-title">
+            New PO
+          </p>
+          <p class="qa-sub">
+            Create a purchase order
+          </p>
+        </div>
+        <ArrowRight
+          :size="14"
+          class="qa-arrow"
+        />
+      </router-link>
     </div>
 
     <!-- Quick actions skeleton -->
@@ -338,7 +358,7 @@
       class="quick-actions"
     >
       <div
-        v-for="i in 3"
+        v-for="i in 4"
         :key="i"
         class="qa-card"
       >
@@ -365,7 +385,7 @@
     </div>
 
     <!-- Recent invoices table -->
-    <div class="section-card">
+    <div :class="isMobile ? '' : 'section-card'">
       <div class="section-head">
         <div class="section-head-left">
           <h2 class="section-title">
@@ -449,7 +469,8 @@
         </table>
       </div>
       <div v-else-if="invoiceStore.invoices.length">
-        <table class="data-table">
+        <!-- Desktop table -->
+        <table v-if="!isMobile" class="data-table">
           <caption class="sr-only">
             Recent invoices
           </caption>
@@ -516,6 +537,29 @@
             </tr>
           </tbody>
         </table>
+
+        <!-- Mobile cards -->
+        <div v-if="isMobile" class="card-list">
+          <div
+            v-for="inv in invoiceStore.invoices.slice(0, 8)"
+            :key="inv.id"
+            class="inv-card"
+            @click="$router.push(`/app/invoices/${inv.id}`)"
+          >
+            <div class="inv-card-top">
+              <span class="inv-card-number">{{ inv.invoice_number }}</span>
+              <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
+            </div>
+            <p class="inv-card-meta">Client: {{ inv.client?.name ?? '—' }}</p>
+            <p class="inv-card-meta">Issued: {{ formatDate(inv.issue_date) }}</p>
+            <div class="inv-card-bottom">
+              <div>
+                <p class="inv-card-amount-label">TOTAL AMOUNT</p>
+                <p class="inv-card-amount">{{ formatCurrency(inv.total, inv.currency) }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       <div
@@ -546,16 +590,18 @@
 
 <script setup lang="ts">
 import { ref, onMounted, reactive, computed } from 'vue'
-import { DollarSign, FileText, Clock, AlertCircle, ArrowRight, TrendingUp, TrendingDown, FilePlus, UserPlus, Receipt, Plus, ChevronRight } from '@lucide/vue'
+import { DollarSign, FileText, Clock, AlertCircle, ArrowRight, TrendingUp, TrendingDown, FilePlus, UserPlus, Receipt, Plus, ChevronRight, ClipboardList } from '@lucide/vue'
 import { useInvoiceStore } from '@/stores/invoices'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useFormatters } from '@/composables/useFormatters'
+import { useBreakpoint } from '@/composables/useBreakpoint'
 import { useMinDelay } from '@/composables/useMinDelay'
 import Skeleton from '@/components/ui/Skeleton.vue'
 
 const invoiceStore = useInvoiceStore()
 const bpStore = useBusinessProfileStore()
 const { formatCurrency, formatDate } = useFormatters()
+const { isMobile } = useBreakpoint()
 const { loading: skeletonLoading, wrap } = useMinDelay()
 
 const fetched = ref(false)
@@ -650,6 +696,7 @@ onMounted(async () => {
 .qa-card:nth-child(1) { animation-delay: 0ms; }
 .qa-card:nth-child(2) { animation-delay: 50ms; }
 .qa-card:nth-child(3) { animation-delay: 100ms; }
+.qa-card:nth-child(4) { animation-delay: 150ms; }
 
 /* Profile banner entrance */
 .profile-banner {
@@ -752,7 +799,7 @@ onMounted(async () => {
 /* Quick actions */
 .quick-actions {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 12px;
 }
 
@@ -782,6 +829,7 @@ onMounted(async () => {
 .qa-icon-teal   { background: #cbe9e0; color: #08241f; }
 .qa-icon-blue   { background: #e0f2fe; color: #0284c7; }
 .qa-icon-green  { background: #dcfce7; color: #16a34a; }
+.qa-icon-amber  { background: #fef3c7; color: #d97706; }
 
 .qa-content { flex: 1; min-width: 0; }
 
@@ -914,7 +962,7 @@ onMounted(async () => {
 /* Responsive */
 @media (max-width: 1024px) {
   .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .quick-actions { grid-template-columns: repeat(3, 1fr); }
+  .quick-actions { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
@@ -932,4 +980,72 @@ onMounted(async () => {
   .profile-banner { flex-direction: column; align-items: stretch; gap: 12px; }
   .profile-banner-right { justify-content: space-between; }
 }
+
+/* ── Mobile card list ───────────────────────────────────── */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+}
+
+.inv-card {
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.inv-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.inv-card-number {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e1b15;
+}
+
+.inv-card-meta {
+  font-size: 13px;
+  color: #8a8578;
+  margin: 2px 0;
+}
+
+.inv-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e3d8;
+}
+
+.inv-card-amount-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #8a8578;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin: 0 0 3px;
+}
+
+.inv-card-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #08241f;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.dark .inv-card { background: #1d201f; border-color: rgba(255,255,255,.05); }
+.dark .inv-card-number { color: #e1e3e1; }
+.dark .inv-card-meta { color: #8a938f; }
+.dark .inv-card-bottom { border-color: rgba(255,255,255,.05); }
+.dark .inv-card-amount-label { color: #8a938f; }
+.dark .inv-card-amount { color: #a0d0c2; }
 </style>
