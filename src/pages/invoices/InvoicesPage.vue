@@ -226,9 +226,9 @@
         </div>
       </div>
 
-      <!-- Table -->
+      <!-- ── Desktop table ───────────────────────────────── -->
       <div
-        v-if="filtered.length"
+        v-if="filtered.length && !isMobile"
         class="section-card animate-in"
       >
         <table
@@ -251,30 +251,13 @@
                   aria-label="Select all"
                 >
               </th>
-              <th scope="col">
-                Invoice #
-              </th>
-              <th scope="col">
-                Client
-              </th>
-              <th scope="col">
-                Issue Date
-              </th>
-              <th scope="col">
-                Due Date
-              </th>
-              <th scope="col">
-                Amount
-              </th>
-              <th scope="col">
-                Status
-              </th>
-              <th
-                scope="col"
-                style="width:120px; text-align:right; padding-right:20px;"
-              >
-                Actions
-              </th>
+              <th scope="col">Invoice #</th>
+              <th scope="col">Client</th>
+              <th scope="col">Issue Date</th>
+              <th scope="col">Due Date</th>
+              <th scope="col">Amount</th>
+              <th scope="col">Status</th>
+              <th scope="col" style="width:120px; text-align:right; padding-right:20px;">Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -292,56 +275,56 @@
                   @change="toggleSelect(inv.id)"
                 >
               </td>
-              <td class="td-mono">
-                {{ inv.invoice_number }}
-              </td>
-              <td class="td-client">
-                {{ inv.client?.name ?? '—' }}
-              </td>
-              <td class="td-muted">
-                {{ formatDate(inv.issue_date) }}
-              </td>
-              <td class="td-muted">
-                {{ formatDate(inv.due_date) }}
-              </td>
-              <td class="td-mono td-bold">
-                {{ formatCurrency(inv.total, inv.currency) }}
-              </td>
+              <td class="td-mono">{{ inv.invoice_number }}</td>
+              <td class="td-client">{{ inv.client?.name ?? '—' }}</td>
+              <td class="td-muted">{{ formatDate(inv.issue_date) }}</td>
+              <td class="td-muted">{{ formatDate(inv.due_date) }}</td>
+              <td class="td-mono td-bold">{{ formatCurrency(inv.total, inv.currency) }}</td>
               <td>
-                <span
-                  class="status-badge"
-                  :class="`status-${inv.status}`"
-                >{{ inv.status }}</span>
+                <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
               </td>
               <td class="td-actions">
-                <button
-                  class="act-btn act-view"
-                  title="View"
-                  :aria-label="`View ${inv.invoice_number}`"
-                  @click="viewInvoice(inv)"
-                >
-                  <Eye :size="14" />
-                </button>
-                <button
-                  class="act-btn act-edit"
-                  title="Edit"
-                  :aria-label="`Edit ${inv.invoice_number}`"
-                  @click="editInvoice(inv)"
-                >
-                  <Pencil :size="14" />
-                </button>
-                <button
-                  class="act-btn act-del"
-                  title="Delete"
-                  :aria-label="`Delete ${inv.invoice_number}`"
-                  @click="deleteInvoice(inv)"
-                >
-                  <Trash2 :size="14" />
-                </button>
+                <button class="act-btn act-view" title="View" @click="viewInvoice(inv)"><Eye :size="14" /></button>
+                <button class="act-btn act-edit" title="Edit" @click="editInvoice(inv)"><Pencil :size="14" /></button>
+                <button class="act-btn act-del"  title="Delete" @click="deleteInvoice(inv)"><Trash2 :size="14" /></button>
               </td>
             </tr>
           </tbody>
         </table>
+        <Pagination
+          :current-page="currentPage"
+          :total="filtered.length"
+          :page-size="pageSize"
+          @update:current-page="currentPage = $event"
+          @update:page-size="pageSize = $event; currentPage = 1"
+        />
+      </div>
+
+      <!-- ── Mobile cards ────────────────────────────────── -->
+      <div v-if="filtered.length && isMobile" class="card-list animate-in">
+        <div
+          v-for="inv in paginated"
+          :key="inv.id"
+          class="inv-card"
+        >
+          <div class="inv-card-top">
+            <span class="inv-card-number">{{ inv.invoice_number }}</span>
+            <span class="status-badge" :class="`status-${inv.status}`">{{ inv.status }}</span>
+          </div>
+          <p class="inv-card-meta">Issued: {{ formatDate(inv.issue_date) }}</p>
+          <p class="inv-card-meta">Client: {{ inv.client?.name ?? '—' }}</p>
+          <div class="inv-card-bottom">
+            <div>
+              <p class="inv-card-amount-label">TOTAL AMOUNT</p>
+              <p class="inv-card-amount">{{ formatCurrency(inv.total, inv.currency) }}</p>
+            </div>
+            <div class="inv-card-actions">
+              <button class="act-btn act-view" title="View"   @click="viewInvoice(inv)"><Eye :size="16" /></button>
+              <button class="act-btn act-edit" title="Edit"   @click="editInvoice(inv)"><Pencil :size="16" /></button>
+              <button class="act-btn act-del"  title="Delete" @click="deleteInvoice(inv)"><Trash2 :size="16" /></button>
+            </div>
+          </div>
+        </div>
         <Pagination
           :current-page="currentPage"
           :total="filtered.length"
@@ -445,6 +428,7 @@ import { usePdf }           from '@/composables/usePdf'
 import { useConfirm }       from '@/composables/useConfirm'
 import { useEscapeKey }     from '@/composables/useFocusTrap'
 import { useMinDelay }      from '@/composables/useMinDelay'
+import { useBreakpoint }    from '@/composables/useBreakpoint'
 import Skeleton from '@/components/ui/Skeleton.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 import type { Invoice } from '@/types'
@@ -459,6 +443,7 @@ const { showToast } = useToast()
 const { exportToPdf } = usePdf()
 const { confirm } = useConfirm()
 const { wrap } = useMinDelay()
+const { isMobile } = useBreakpoint()
 
 const fetched = ref(false)
 const search  = ref('')
@@ -609,5 +594,116 @@ async function exportInvoicePdf(inv: Invoice) {
 </script>
 
 <style scoped>
-/* No page-specific overrides needed — all shared styles from utilities.css */
+/* ── Mobile card list ───────────────────────────────────── */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.inv-card {
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.inv-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.inv-card-number {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e1b15;
+}
+
+.inv-card-meta {
+  font-size: 13px;
+  color: #8a8578;
+  margin: 2px 0;
+}
+
+.inv-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e3d8;
+}
+
+.inv-card-amount-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #8a8578;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin: 0 0 3px;
+}
+
+.inv-card-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #08241f;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.inv-card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+/* Status badge (shared) */
+.status-badge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 6px;
+  text-transform: capitalize;
+  letter-spacing: 0.2px;
+}
+.status-draft     { background: #f4ede3; color: #414846; }
+.status-sent      { background: #dbeafe; color: #1d4ed8; }
+.status-paid      { background: #d1fae5; color: #065f46; }
+.status-overdue   { background: #fee2e2; color: #991b1b; }
+.status-cancelled { background: #f4ede3; color: #414846; }
+
+.act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #D6D0C2;
+  background: #EDE8DE;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #414846;
+  transition: color .12s, background .12s;
+}
+.act-btn:hover     { color: #1e1b15; background: #D6D0C2; }
+.act-del:hover     { color: #ef4444; background: #fee2e2; border-color: #fecaca; }
+
+/* ── Dark mode ──────────────────────────────────────────── */
+.dark .inv-card { background: #1d201f; border-color: rgba(255,255,255,.05); }
+.dark .inv-card-number { color: #e1e3e1; }
+.dark .inv-card-meta { color: #8a938f; }
+.dark .inv-card-bottom { border-color: rgba(255,255,255,.05); }
+.dark .inv-card-amount-label { color: #8a938f; }
+.dark .inv-card-amount { color: #a0d0c2; }
+.dark .status-draft     { background: #282b29; color: #c0c8c4; }
+.dark .status-sent      { background: #1e3a5f; color: #93c5fd; }
+.dark .status-paid      { background: #14532d; color: #6ee7b7; }
+.dark .status-overdue   { background: #450a0a; color: #fca5a5; }
+.dark .status-cancelled { background: #282b29; color: #c0c8c4; }
+.dark .act-btn { background: #282b29; border-color: rgba(255,255,255,.05); color: #c0c8c4; }
+.dark .act-btn:hover { color: #e1e3e1; background: #323534; }
+.dark .act-del:hover { color: #ffb4ab; background: rgba(255,180,171,.1); }
 </style>

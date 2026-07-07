@@ -100,8 +100,27 @@
 
     <!-- Items Table -->
     <table class="po-table">
+      <colgroup>
+        <col v-if="hasExtraColumns" :style="{ width: '6%' }">
+        <col v-if="showDate" :style="{ width: '12%' }">
+        <col v-if="showVehicleNo" :style="{ width: '10%' }">
+        <col :style="{ width: 'auto' }">
+        <col :style="{ width: '7%' }">
+        <col v-if="showUom" :style="{ width: '7%' }">
+        <col :style="{ width: '10%' }">
+        <col :style="{ width: '12%' }">
+      </colgroup>
       <thead>
         <tr :style="{ background: secondary }">
+          <th v-if="hasExtraColumns" :style="{ color: headerTextColor }" class="text-center">
+            S/N
+          </th>
+          <th v-if="showDate" :style="{ color: headerTextColor }">
+            Date
+          </th>
+          <th v-if="showVehicleNo" :style="{ color: headerTextColor }">
+            Veh. No.
+          </th>
           <th :style="{ color: headerTextColor }">
             Description
           </th>
@@ -111,11 +130,14 @@
           >
             Qty
           </th>
+          <th v-if="showUom" :style="{ color: headerTextColor }" class="text-center">
+            UOM
+          </th>
           <th
             class="text-right"
             :style="{ color: headerTextColor }"
           >
-            Unit
+            Unit Price
           </th>
           <th
             class="text-right"
@@ -130,10 +152,14 @@
           v-for="(item, idx) in (purchaseOrder.line_items ?? [])"
           :key="idx"
         >
+          <td v-if="hasExtraColumns" class="text-center">{{ idx + 1 }}</td>
+          <td v-if="showDate">{{ (item as any).date ? formatDate((item as any).date) : '' }}</td>
+          <td v-if="showVehicleNo">{{ (item as any).vehicle_no ?? '' }}</td>
           <td>{{ item.description || '—' }}</td>
           <td class="text-center">
             {{ item.quantity }}
           </td>
+          <td v-if="showUom" class="text-center">{{ (item as any).uom ?? '' }}</td>
           <td class="text-right">
             {{ formatCurrency(item.unit_price, purchaseOrder.currency) }}
           </td>
@@ -213,6 +239,11 @@ const businessInitials = computed(() => {
   const name = bpStore.profile?.name || 'MB'
   return name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
 })
+
+const showDate = computed(() => (props.template as any)?.show_line_item_date ?? false)
+const showVehicleNo = computed(() => (props.template as any)?.show_line_item_vehicle_no ?? false)
+const showUom = computed(() => (props.template as any)?.show_line_item_uom ?? false)
+const hasExtraColumns = computed(() => showDate.value || showVehicleNo.value || showUom.value)
 
 function formatDate(dateStr?: string) {
   if (!dateStr) return '—'

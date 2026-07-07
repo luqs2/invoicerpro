@@ -114,7 +114,24 @@
             </div>
             <div class="card-body">
               <div class="line-items-table">
-                <div class="li-header">
+                <div
+                  v-if="hasExtraColumns"
+                  class="li-header li-header--pro"
+                  :style="{ gridTemplateColumns: proGridCols }"
+                >
+                  <span class="li-col-desc">Item Description</span>
+                  <span v-if="showDate" class="li-col-date">Date</span>
+                  <span v-if="showVehicleNo" class="li-col-veh">Veh. No.</span>
+                  <span class="li-col-qty">Qty</span>
+                  <span v-if="showUom" class="li-col-uom">UOM</span>
+                  <span class="li-col-rate">Unit Price</span>
+                  <span class="li-col-amt">Total</span>
+                  <span class="li-col-del" />
+                </div>
+                <div
+                  v-else
+                  class="li-header"
+                >
                   <span class="li-col-desc">Item Description</span>
                   <span class="li-col-qty">Qty</span>
                   <span class="li-col-rate">Unit Price</span>
@@ -124,31 +141,75 @@
                 <div
                   v-for="(item, idx) in form.line_items"
                   :key="idx"
-                  class="li-row"
+                  :class="['li-row', { 'li-row--pro': hasExtraColumns }]"
+                  :style="hasExtraColumns ? { gridTemplateColumns: proGridCols } : undefined"
                 >
-                  <input
-                    class="li-input"
-                    :value="item.description"
-                    placeholder="Description…"
-                    @input="updateItem(idx, { description: ($event.target as HTMLInputElement).value })"
-                  >
-                  <input
-                    class="li-input li-input-num"
-                    type="number"
-                    :value="item.quantity"
-                    min="0"
-                    @input="updateItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
-                  >
-                  <input
-                    class="li-input li-input-num"
-                    type="number"
-                    :value="item.unit_price"
-                    min="0"
-                    step="0.01"
-                    placeholder="0.00"
-                    @input="updateItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
-                  >
-                  <span class="li-amount">{{ formatCurrency(item.quantity * item.unit_price, form.currency) }}</span>
+                  <div class="li-field">
+                    <label class="li-label">Description</label>
+                    <input
+                      class="li-input"
+                      :value="item.description"
+                      placeholder="Description…"
+                      @input="updateItem(idx, { description: ($event.target as HTMLInputElement).value })"
+                    >
+                  </div>
+                  <template v-if="showDate || showVehicleNo">
+                    <div v-if="showDate" class="li-field">
+                      <label class="li-label">Date</label>
+                      <input
+                        class="li-input"
+                        type="date"
+                        :value="(item as any).date"
+                        @input="updateItem(idx, { date: ($event.target as HTMLInputElement).value } as any)"
+                      >
+                    </div>
+                    <div v-if="showVehicleNo" class="li-field">
+                      <label class="li-label">Veh. No.</label>
+                      <input
+                        class="li-input"
+                        :value="(item as any).vehicle_no"
+                        placeholder="—"
+                        @input="updateItem(idx, { vehicle_no: ($event.target as HTMLInputElement).value } as any)"
+                      >
+                    </div>
+                  </template>
+                  <div class="li-field">
+                    <label class="li-label">Qty</label>
+                    <input
+                      class="li-input li-input-num"
+                      type="number"
+                      :value="item.quantity"
+                      min="0"
+                      @input="updateItem(idx, { quantity: Number(($event.target as HTMLInputElement).value) })"
+                    >
+                  </div>
+                  <template v-if="showUom">
+                    <div class="li-field">
+                      <label class="li-label">UOM</label>
+                      <input
+                        class="li-input"
+                        :value="(item as any).uom"
+                        placeholder="MT"
+                        @input="updateItem(idx, { uom: ($event.target as HTMLInputElement).value } as any)"
+                      >
+                    </div>
+                  </template>
+                  <div class="li-field">
+                    <label class="li-label">Rate</label>
+                    <input
+                      class="li-input li-input-num"
+                      type="number"
+                      :value="item.unit_price"
+                      min="0"
+                      step="0.01"
+                      placeholder="0.00"
+                      @input="updateItem(idx, { unit_price: Number(($event.target as HTMLInputElement).value) })"
+                    >
+                  </div>
+                  <div class="li-field">
+                    <label class="li-label">Amount</label>
+                    <span class="li-amount">{{ formatCurrency(item.quantity * item.unit_price, form.currency) }}</span>
+                  </div>
                   <button
                     class="li-del"
                     title="Remove"
@@ -295,6 +356,17 @@
       </div>
     </div>
 
+    <!-- Mobile floating summary bar -->
+    <MobileActionBar
+      :formatted-total="formatCurrency(grandTotal, form.currency)"
+      :saving="saving"
+      :export-disabled="saving"
+      :send-disabled="!form.client_email"
+      @export="exportPdf"
+      @send="openSendDialog"
+      @save="save"
+    />
+
     <SendDialog
       :open="showSendDialog"
       :client-name="form.client_name || ''"
@@ -328,6 +400,7 @@ import { useFormatters } from '@/composables/useFormatters'
 import { usePdf } from '@/composables/usePdf'
 import { useToast } from '@/composables/useToast'
 import UiButton from '@/components/ui/Button.vue'
+import MobileActionBar from '@/components/ui/MobileActionBar.vue'
 import SendDialog from '@/components/ui/SendDialog.vue'
 import UiTabs from '@/components/ui/Tabs.vue'
 import UiSelect from '@/components/ui/Select.vue'
@@ -349,6 +422,24 @@ const tab = ref('form')
 const saving = ref(false)
 const isEdit = ref(false)
 const showSendDialog = ref(false)
+
+const showDate = computed(() => (templateStore.active as any)?.show_line_item_date ?? false)
+const showVehicleNo = computed(() => (templateStore.active as any)?.show_line_item_vehicle_no ?? false)
+const showUom = computed(() => (templateStore.active as any)?.show_line_item_uom ?? false)
+const hasExtraColumns = computed(() => showDate.value || showVehicleNo.value || showUom.value)
+
+function buildProGridCols(date: boolean, veh: boolean, uom: boolean): string {
+  const cols: string[] = ['1.2fr']
+  if (date) cols.push('0.7fr')
+  if (veh) cols.push('0.55fr')
+  cols.push('0.4fr')
+  if (uom) cols.push('0.4fr')
+  cols.push('0.6fr')
+  cols.push('0.7fr')
+  cols.push('36px')
+  return cols.join(' ')
+}
+const proGridCols = computed(() => buildProGridCols(showDate.value, showVehicleNo.value, showUom.value))
 
 // Computed alias so template reactivity tracks store.current changes
 const form = computed(() => store.current)
@@ -439,6 +530,7 @@ async function openSendDialog() {
   if (!store.current.id) {
     try {
       await store.save()
+      await nextTick()
     } catch {
       showToast('Please save before sending', 'warning')
       return
@@ -593,7 +685,7 @@ watch(() => route.params.id, async (newId) => {
 .line-items-table {
   border: 1px solid #D6D0C2;
   border-radius: 8px;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .li-header {
@@ -607,6 +699,16 @@ watch(() => route.params.id, async (newId) => {
   color: #414846;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+.li-header span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.li-header--pro span {
+  padding: 8px 6px;
 }
 
 .li-row {
@@ -626,8 +728,27 @@ watch(() => route.params.id, async (newId) => {
   color: #1e1b15;
   background: transparent;
   width: 100%;
+  min-width: 0;
+  overflow: hidden;
   transition: background .1s;
 }
+
+.li-field { display: contents; }
+.li-label { display: none; }
+
+.li-row--pro .li-input {
+  padding: 10px 6px;
+}
+
+.li-row--pro .li-input[type="date"] {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.li-row--pro .li-input-num {
+  padding: 10px 4px;
+}
+
 .li-input:focus { background: rgba(8,36,31,.02); }
 .li-input::placeholder { color: #414846; }
 .li-input-num { text-align: right; }
@@ -639,6 +760,15 @@ watch(() => route.params.id, async (newId) => {
   color: #1e1b15;
   font-variant-numeric: tabular-nums;
   text-align: right;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.li-row--pro .li-amount {
+  padding: 10px 6px;
+  font-size: 12px;
 }
 
 .li-del {
@@ -922,7 +1052,67 @@ watch(() => route.params.id, async (newId) => {
 @media (max-width: 768px) {
   .page { padding: 20px 16px; }
   .field-row { grid-template-columns: 1fr; }
-  .li-header, .li-row { grid-template-columns: 1fr 60px 80px 36px; }
-  .li-col-amt, .li-amount { display: none; }
+  .line-items-table { border: none; background: none; }
+  .li-header { display: none; }
+  .li-header--pro { grid-template-columns: 1fr !important; }
+  .li-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 14px;
+    padding: 16px;
+    background: #EDE8DE;
+    border: 1px solid #D6D0C2;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    position: relative;
+  }
+  .li-row--pro {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+  .li-row--pro .li-field:first-child {
+    grid-column: 1;
+  }
+  .li-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .li-field:first-child {
+    grid-column: 1 / -1;
+  }
+  .li-label {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    color: #8a8578;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .li-input {
+    padding: 8px 0;
+    background: transparent;
+    font-size: 15px;
+    border-bottom: 1px solid #D6D0C2;
+  }
+  .li-input:focus { border-bottom-color: #08241f; }
+  .li-input-num { text-align: left; }
+  .li-amount {
+    padding: 8px 0;
+    text-align: left;
+    font-size: 16px;
+    font-weight: 700;
+    color: #08241f;
+    border-bottom: 1px solid #D6D0C2;
+  }
+  .li-del {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+  }
+}
+
+@media (max-width: 900px) {
+  .page { padding-bottom: 80px; }
 }
 </style>

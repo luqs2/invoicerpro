@@ -211,111 +211,74 @@
         </div>
       </div>
 
+      <!-- ── Desktop table ───────────────────────────────── -->
       <div
-        v-if="filtered.length"
+        v-if="filtered.length && !isMobile"
         class="section-card animate-in"
       >
         <table class="data-table">
-          <caption class="sr-only">
-            Receipts
-          </caption>
+          <caption class="sr-only">Receipts</caption>
           <thead>
             <tr>
-              <th
-                scope="col"
-                style="width:40px; padding-left:16px;"
-              >
-                <input
-                  v-model="selectAll"
-                  type="checkbox"
-                  class="select-cb"
-                  aria-label="Select all"
-                >
+              <th scope="col" style="width:40px; padding-left:16px;">
+                <input v-model="selectAll" type="checkbox" class="select-cb" aria-label="Select all">
               </th>
-              <th scope="col">
-                Receipt #
-              </th>
-              <th scope="col">
-                Client
-              </th>
-              <th scope="col">
-                Payment Date
-              </th>
-              <th scope="col">
-                Method
-              </th>
-              <th scope="col">
-                Amount
-              </th>
-              <th
-                scope="col"
-                style="width:120px; text-align:right; padding-right:20px;"
-              >
-                Actions
-              </th>
+              <th scope="col">Receipt #</th>
+              <th scope="col">Client</th>
+              <th scope="col">Payment Date</th>
+              <th scope="col">Method</th>
+              <th scope="col">Amount</th>
+              <th scope="col" style="width:120px; text-align:right; padding-right:20px;">Actions</th>
             </tr>
           </thead>
           <tbody>
-            <tr
-              v-for="r in paginated"
-              :key="r.id"
-              class="table-row"
-            >
+            <tr v-for="r in paginated" :key="r.id" class="table-row">
               <td style="padding-left:16px;">
-                <input
-                  type="checkbox"
-                  :checked="selectedIds.has(r.id)"
-                  class="select-cb"
-                  :aria-label="`Select ${r.receipt_number}`"
-                  @change="toggleSelect(r.id)"
-                >
+                <input type="checkbox" :checked="selectedIds.has(r.id)" class="select-cb" @change="toggleSelect(r.id)">
               </td>
-              <td class="td-mono">
-                {{ r.receipt_number }}
-              </td>
-              <td class="td-client">
-                {{ r.client?.name ?? '—' }}
-              </td>
-              <td class="td-muted">
-                {{ formatDate(r.payment_date) }}
-              </td>
-              <td>
-                <UiBadge :variant="methodVariant(r.payment_method)">
-                  {{ methodLabel(r.payment_method) }}
-                </UiBadge>
-              </td>
-              <td class="td-mono td-bold">
-                {{ formatCurrency(r.amount, r.currency) }}
-              </td>
+              <td class="td-mono">{{ r.receipt_number }}</td>
+              <td class="td-client">{{ r.client?.name ?? '—' }}</td>
+              <td class="td-muted">{{ formatDate(r.payment_date) }}</td>
+              <td><UiBadge :variant="methodVariant(r.payment_method)">{{ methodLabel(r.payment_method) }}</UiBadge></td>
+              <td class="td-mono td-bold">{{ formatCurrency(r.amount, r.currency) }}</td>
               <td class="td-actions">
-                <button
-                  class="act-btn act-view"
-                  title="View"
-                  :aria-label="`View ${r.receipt_number}`"
-                  @click="viewReceipt(r)"
-                >
-                  <Eye :size="14" />
-                </button>
-                <button
-                  class="act-btn act-edit"
-                  title="Edit"
-                  :aria-label="`Edit ${r.receipt_number}`"
-                  @click="editReceipt(r)"
-                >
-                  <Pencil :size="14" />
-                </button>
-                <button
-                  class="act-btn act-del"
-                  title="Delete"
-                  :aria-label="`Delete ${r.receipt_number}`"
-                  @click="deleteReceipt(r)"
-                >
-                  <Trash2 :size="14" />
-                </button>
+                <button class="act-btn act-view" title="View"   @click="viewReceipt(r)"><Eye :size="14" /></button>
+                <button class="act-btn act-edit" title="Edit"   @click="editReceipt(r)"><Pencil :size="14" /></button>
+                <button class="act-btn act-del"  title="Delete" @click="deleteReceipt(r)"><Trash2 :size="14" /></button>
               </td>
             </tr>
           </tbody>
         </table>
+        <Pagination
+          :current-page="currentPage"
+          :total="filtered.length"
+          :page-size="pageSize"
+          @update:current-page="currentPage = $event"
+          @update:page-size="pageSize = $event; currentPage = 1"
+        />
+      </div>
+
+      <!-- ── Mobile cards ────────────────────────────────── -->
+      <div v-if="filtered.length && isMobile" class="card-list animate-in">
+        <div v-for="r in paginated" :key="r.id" class="rcp-card">
+          <div class="rcp-card-top">
+            <span class="rcp-card-number">{{ r.receipt_number }}</span>
+            <UiBadge :variant="methodVariant(r.payment_method)">{{ methodLabel(r.payment_method) }}</UiBadge>
+          </div>
+          <p class="rcp-card-meta">{{ formatDate(r.payment_date) }}</p>
+          <p class="rcp-card-meta">Client: {{ r.client?.name ?? '—' }}</p>
+          <div class="rcp-card-bottom">
+            <div>
+              <p class="rcp-card-amount-label">TOTAL AMOUNT</p>
+              <p class="rcp-card-amount">{{ formatCurrency(r.amount, r.currency) }}</p>
+            </div>
+            <div class="rcp-card-actions">
+              <button class="act-btn act-view" title="View"   @click="viewReceipt(r)"><Eye :size="16" /></button>
+              <button class="act-btn act-edit" title="Edit"   @click="editReceipt(r)"><Pencil :size="16" /></button>
+              <button class="act-btn act-del"  title="Delete" @click="deleteReceipt(r)"><Trash2 :size="16" /></button>
+            </div>
+          </div>
+        </div>
         <Pagination
           :current-page="currentPage"
           :total="filtered.length"
@@ -408,17 +371,18 @@
 import { ref, computed, onMounted, defineAsyncComponent, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { Plus, FileText, Search, Eye, Pencil, Trash2, Download, CheckSquare, SlidersHorizontal } from '@lucide/vue'
-import { receiptService }  from '@/services/receipts'
-import { useAuthStore }    from '@/stores/auth'
+import { receiptService }   from '@/services/receipts'
+import { useAuthStore }     from '@/stores/auth'
 import { useTemplateStore } from '@/stores/templates'
-import { useFormatters }   from '@/composables/useFormatters'
-import { useToast }        from '@/composables/useToast'
-import { usePdf }          from '@/composables/usePdf'
-import { useConfirm }      from '@/composables/useConfirm'
-import { useEscapeKey }    from '@/composables/useFocusTrap'
-import { useMinDelay }     from '@/composables/useMinDelay'
-import UiBadge       from '@/components/ui/Badge.vue'
-import Skeleton from '@/components/ui/Skeleton.vue'
+import { useFormatters }    from '@/composables/useFormatters'
+import { useToast }         from '@/composables/useToast'
+import { usePdf }           from '@/composables/usePdf'
+import { useConfirm }       from '@/composables/useConfirm'
+import { useEscapeKey }     from '@/composables/useFocusTrap'
+import { useMinDelay }      from '@/composables/useMinDelay'
+import { useBreakpoint }    from '@/composables/useBreakpoint'
+import UiBadge    from '@/components/ui/Badge.vue'
+import Skeleton   from '@/components/ui/Skeleton.vue'
 import Pagination from '@/components/ui/Pagination.vue'
 
 const ReceiptPreview = defineAsyncComponent(() => import('@/components/receipt/ReceiptPreview.vue'))
@@ -431,6 +395,7 @@ const { showToast } = useToast()
 const { exportToPdf } = usePdf()
 const { confirm } = useConfirm()
 const { wrap } = useMinDelay()
+const { isMobile } = useBreakpoint()
 
 const receipts = ref<any[]>([])
 const fetched  = ref(false)
@@ -577,5 +542,95 @@ function methodVariant(m: string): 'success' | 'default' | 'sent' | 'warning' {
 </script>
 
 <style scoped>
-/* No page-specific overrides needed — all shared styles from utilities.css */
+/* ── Mobile card list ───────────────────────────────────── */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rcp-card {
+  background: #F7F4EC;
+  border: 1px solid #D6D0C2;
+  border-radius: 14px;
+  padding: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+
+.rcp-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.rcp-card-number {
+  font-size: 15px;
+  font-weight: 700;
+  color: #1e1b15;
+}
+
+.rcp-card-meta {
+  font-size: 13px;
+  color: #8a8578;
+  margin: 2px 0;
+}
+
+.rcp-card-bottom {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e8e3d8;
+}
+
+.rcp-card-amount-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: #8a8578;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin: 0 0 3px;
+}
+
+.rcp-card-amount {
+  font-size: 20px;
+  font-weight: 800;
+  color: #08241f;
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+}
+
+.rcp-card-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.act-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid #D6D0C2;
+  background: #EDE8DE;
+  cursor: pointer;
+  border-radius: 8px;
+  color: #414846;
+  transition: color .12s, background .12s, border-color .12s;
+}
+.act-btn:hover  { color: #1e1b15; background: #D6D0C2; }
+.act-del:hover  { color: #ef4444; background: #fee2e2; border-color: #fecaca; }
+
+/* ── Dark mode ──────────────────────────────────────────── */
+.dark .rcp-card { background: #1d201f; border-color: rgba(255,255,255,.05); }
+.dark .rcp-card-number { color: #e1e3e1; }
+.dark .rcp-card-meta { color: #8a938f; }
+.dark .rcp-card-bottom { border-color: rgba(255,255,255,.05); }
+.dark .rcp-card-amount-label { color: #8a938f; }
+.dark .rcp-card-amount { color: #a0d0c2; }
+.dark .act-btn { background: #282b29; border-color: rgba(255,255,255,.05); color: #c0c8c4; }
+.dark .act-btn:hover { color: #e1e3e1; background: #323534; }
+.dark .act-del:hover { color: #ffb4ab; background: rgba(255,180,171,.1); }
 </style>

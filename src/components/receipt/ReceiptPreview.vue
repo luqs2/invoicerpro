@@ -104,13 +104,26 @@
       class="rcp-table"
     >
       <colgroup>
-        <col style="width: auto;">
-        <col style="width: 52px;">
-        <col style="width: 90px;">
-        <col style="width: 90px;">
+        <col v-if="hasExtraColumns" :style="{ width: '6%' }">
+        <col v-if="showDate" :style="{ width: '12%' }">
+        <col v-if="showVehicleNo" :style="{ width: '10%' }">
+        <col :style="{ width: 'auto' }">
+        <col :style="{ width: '7%' }">
+        <col v-if="showUom" :style="{ width: '7%' }">
+        <col :style="{ width: '10%' }">
+        <col :style="{ width: '12%' }">
       </colgroup>
       <thead>
         <tr>
+          <th v-if="hasExtraColumns" :style="{ background: secondary }" class="center">
+            S/N
+          </th>
+          <th v-if="showDate" :style="{ background: secondary }">
+            Date
+          </th>
+          <th v-if="showVehicleNo" :style="{ background: secondary }">
+            Veh. No.
+          </th>
           <th :style="{ background: secondary }">
             Description
           </th>
@@ -119,6 +132,9 @@
             class="center"
           >
             Qty
+          </th>
+          <th v-if="showUom" :style="{ background: secondary }" class="center">
+            UOM
           </th>
           <th
             :style="{ background: secondary }"
@@ -136,13 +152,17 @@
       </thead>
       <tbody>
         <tr
-          v-for="item in receipt.line_items"
+          v-for="(item, idx) in receipt.line_items"
           :key="item.id"
         >
+          <td v-if="hasExtraColumns" class="center">{{ idx + 1 }}</td>
+          <td v-if="showDate">{{ item.date ? formatDate(item.date) : '' }}</td>
+          <td v-if="showVehicleNo">{{ item.vehicle_no ?? '' }}</td>
           <td>{{ item.description }}</td>
           <td class="center">
             {{ item.quantity }}
           </td>
+          <td v-if="showUom" class="center">{{ item.uom ?? '' }}</td>
           <td class="right">
             {{ formatCurrency(item.unit_price, receipt.currency) }}
           </td>
@@ -215,6 +235,11 @@ const primary   = computed(() => props.template?.primary_color   ?? '#c8f04a')
 const secondary = computed(() => props.template?.secondary_color ?? '#0f0f0f')
 const font      = computed(() => props.template?.font_family     ?? "'Syne', sans-serif")
 const radius    = computed(() => props.template?.border_radius   ?? '4px')
+
+const showDate = computed(() => (props.template as any)?.show_line_item_date ?? false)
+const showVehicleNo = computed(() => (props.template as any)?.show_line_item_vehicle_no ?? false)
+const showUom = computed(() => (props.template as any)?.show_line_item_uom ?? false)
+const hasExtraColumns = computed(() => showDate.value || showVehicleNo.value || showUom.value)
 
 const businessName    = computed(() => bpStore.profile.name    || 'My Business')
 const businessLogo    = computed(() => bpStore.profile.logo_url || '')
