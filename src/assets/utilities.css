@@ -670,9 +670,4 @@ textarea:focus-visible {
   .search-wrap { max-width: 100%; }
   .filter-tabs { overflow-x: auto; padding-bottom: 2px; }
   .filter-tab { flex-shrink: 0; }
-  .data-table th:nth-child(3),
-  .data-table th:nth-child(4),
-  .data-table td:nth-child(3),
-  .data-table td:nth-child(4) { display: none; }
-  .th-action, .td-action { display: none; }
 }
