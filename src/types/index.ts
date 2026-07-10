@@ -1,9 +1,12 @@
 // ── Auth ──────────────────────────────────────────────
+export type AdminRole = 'user' | 'super_admin' | 'admin' | 'viewer' | 'banned'
+
 export interface User {
   id: string
   email?: string
   full_name: string
   avatar_url?: string
+  role?: AdminRole
   created_at?: string
 }
 
@@ -176,4 +179,72 @@ export interface DashboardStats {
   pending_amount: number
   overdue_amount: number
   recent_invoices: Invoice[]
+}
+
+// ── Notifications ─────────────────────────────────────
+export type NotificationType = 'info' | 'warning' | 'announcement'
+
+export interface Notification {
+  id: string
+  title: string
+  body: string
+  type: NotificationType
+  target_users: string
+  send_email: boolean
+  is_read_by: string[]
+  created_by?: string
+  created_at: string
+}
+
+// ── News ──────────────────────────────────────────────
+export interface News {
+  id: string
+  title: string
+  content: string
+  category: string
+  is_published: boolean
+  created_by?: string
+  created_at: string
+  updated_at: string
+}
+
+// ── Admin Types ───────────────────────────────────────
+export interface AdminGlobalStats {
+  total_users: number
+  total_invoices: number
+  total_receipts: number
+  total_purchase_orders: number
+  total_revenue: number
+  users_trend: number
+  invoices_trend: number
+  revenue_trend: number
+  receipts_trend: number
+}
+
+export interface UserWithStats extends User {
+  business_name?: string
+  invoice_count: number
+  receipt_count: number
+  po_count: number
+  total_revenue: number
+}
+
+export interface MonthlyData {
+  month: string
+  count: number
+  revenue?: number
+}
+
+export interface StatusBreakdown {
+  status: string
+  count: number
+  total: number
+}
+
+export interface AdminDocumentStats {
+  total_count: number
+  total_value: number
+  avg_value: number
+  monthly_trend: MonthlyData[]
+  status_breakdown: StatusBreakdown[]
 }

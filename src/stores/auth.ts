@@ -9,6 +9,12 @@ export const useAuthStore = defineStore('auth', () => {
   const initialized = ref(false)
 
   const isAuthed = computed(() => !!user.value)
+  const isAdmin = computed(() => {
+    const role = user.value?.role
+    return role === 'super_admin' || role === 'admin' || role === 'viewer'
+  })
+  const isSuperAdmin = computed(() => user.value?.role === 'super_admin')
+  const adminLevel = computed(() => user.value?.role ?? 'user')
 
   // Called once by the router guard on first navigation
   async function init() {
@@ -30,7 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function fetchProfile(id: string) {
     const { data } = await supabase
       .from('profiles')
-      .select('id, full_name, avatar_url')
+      .select('id, full_name, avatar_url, role')
       .eq('id', id)
       .single()
     user.value = data
@@ -39,9 +45,13 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(email: string, password: string) {
     if (!email || !password) throw new Error('Email and password are required')
     loading.value = true
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     loading.value = false
     if (error) throw error
+    // Fetch profile to get role (needed for banned check)
+    if (data.user) {
+      await fetchProfile(data.user.id)
+    }
   }
 
   async function register(email: string, password: string, fullName: string) {
@@ -82,5 +92,5 @@ export const useAuthStore = defineStore('auth', () => {
     initialized.value = false
   }
 
-  return { user, loading, isAuthed, initialized, init, login, register, resetPassword, logout }
+  return { user, loading, isAuthed, isAdmin, isSuperAdmin, adminLevel, initialized, init, login, register, resetPassword, logout }
 })

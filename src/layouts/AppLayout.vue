@@ -83,34 +83,53 @@
       </div>
 
       <nav class="sidebar-nav">
-        <router-link
-          v-for="item in navItems"
-          :key="item.path"
-          :to="item.path"
-          class="nav-item"
-          :class="{ active: isActive(item.path) }"
-          :title="sidebarCollapsed ? item.label : ''"
-        >
-          <component
-            :is="item.icon"
-            :size="18"
-            class="nav-icon"
-          />
-          <span
-            v-show="!sidebarCollapsed"
-            class="nav-label"
-          >{{ item.label }}</span>
-          <span
-            v-if="item.badge && !sidebarCollapsed"
-            class="nav-badge"
-          >{{ item.badge }}</span>
-        </router-link>
+        <template v-for="item in navItems" :key="item.path">
+          <!-- Admin section separator -->
+          <div
+            v-if="item.path === '/app/admin'"
+            class="nav-section-separator"
+          >
+            <span v-show="!sidebarCollapsed" class="nav-section-label">Admin</span>
+            <hr v-show="!sidebarCollapsed" class="nav-section-line" />
+          </div>
+          <router-link
+            :to="item.path"
+            class="nav-item"
+            :class="{ active: isActive(item.path) }"
+            :title="sidebarCollapsed ? item.label : ''"
+          >
+            <component
+              :is="item.icon"
+              :size="18"
+              class="nav-icon"
+            />
+            <span
+              v-show="!sidebarCollapsed"
+              class="nav-label"
+            >{{ item.label }}</span>
+            <span
+              v-if="item.badge && !sidebarCollapsed"
+              class="nav-badge"
+            >{{ item.badge }}</span>
+          </router-link>
+        </template>
       </nav>
 
       <div
         v-show="!sidebarCollapsed"
         class="sidebar-footer"
       >
+        <router-link
+          to="/app/notifications"
+          class="nav-item"
+          :class="{ active: isActive('/app/notifications') }"
+        >
+          <div class="nav-icon-wrapper">
+            <Bell :size="18" class="nav-icon" />
+            <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+          </div>
+          <span class="nav-label">Notifications</span>
+        </router-link>
         <router-link
           to="/app/settings"
           class="nav-item"
@@ -183,23 +202,42 @@
             </button>
           </div>
           <nav class="sidebar-nav">
-            <router-link
-              v-for="item in navItems"
-              :key="item.path"
-              :to="item.path"
-              class="nav-item"
-              :class="{ active: isActive(item.path) }"
-              @click="mobileOpen = false"
-            >
-              <component
-                :is="item.icon"
-                :size="18"
-                class="nav-icon"
-              />
-              <span class="nav-label">{{ item.label }}</span>
-            </router-link>
+            <template v-for="item in navItems" :key="item.path">
+              <div
+                v-if="item.path === '/app/admin'"
+                class="nav-section-separator"
+              >
+                <span class="nav-section-label">Admin</span>
+                <hr class="nav-section-line" />
+              </div>
+              <router-link
+                :to="item.path"
+                class="nav-item"
+                :class="{ active: isActive(item.path) }"
+                @click="mobileOpen = false"
+              >
+                <component
+                  :is="item.icon"
+                  :size="18"
+                  class="nav-icon"
+                />
+                <span class="nav-label">{{ item.label }}</span>
+              </router-link>
+            </template>
           </nav>
           <div class="sidebar-footer">
+            <router-link
+              to="/app/notifications"
+              class="nav-item"
+              :class="{ active: isActive('/app/notifications') }"
+              @click="mobileOpen = false"
+            >
+              <div class="nav-icon-wrapper">
+                <Bell :size="18" class="nav-icon" />
+                <span v-if="unreadCount > 0" class="notification-badge">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
+              </div>
+              <span class="nav-label">Notifications</span>
+            </router-link>
             <router-link
               to="/app/settings"
               class="nav-item"
@@ -240,16 +278,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, RouterView } from 'vue-router'
 import {
   LayoutGrid, FileText, Receipt, Users, Palette, ShoppingCart,
   ChevronLeft, ChevronRight,
-  Menu, X, Settings,
+  Menu, X, Settings, LayoutDashboard, Bell,
 } from '@lucide/vue'
 import { useBusinessProfileStore } from '@/stores/businessProfile'
 import { useInvoiceStore } from '@/stores/invoices'
 import { useClientStore } from '@/stores/clients'
+import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notifications'
 import { useKeyboardShortcuts } from '@/composables/useKeyboardShortcuts'
 
 interface NavItem {
@@ -278,6 +318,8 @@ watch(sidebarCollapsed, (v) => {
 const bpStore = useBusinessProfileStore()
 const invoiceStore = useInvoiceStore()
 const clientStore = useClientStore()
+const authStore = useAuthStore()
+const notificationStore = useNotificationStore()
 useKeyboardShortcuts()
 
 onMounted(() => {
@@ -286,6 +328,9 @@ onMounted(() => {
   clientStore.fetchAll()
   invoiceStore.subscribe()
   clientStore.subscribe()
+  if (authStore.user) {
+    notificationStore.fetchNotifications()
+  }
 })
 
 onUnmounted(() => {
@@ -293,14 +338,34 @@ onUnmounted(() => {
   clientStore.unsubscribe()
 })
 
-const navItems: NavItem[] = [
-  { path: '/app/dashboard',       label: 'Dashboard',       icon: LayoutGrid },
-  { path: '/app/invoices',        label: 'Invoices',        icon: FileText },
-  { path: '/app/receipts',        label: 'Receipts',        icon: Receipt },
-  { path: '/app/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart },
-  { path: '/app/clients',         label: 'Clients',         icon: Users },
-  { path: '/app/templates',       label: 'Templates',       icon: Palette },
-]
+const navItems = computed<NavItem[]>(() => {
+  const items: NavItem[] = [
+    { path: '/app/dashboard',       label: 'Dashboard',       icon: LayoutGrid },
+    { path: '/app/invoices',        label: 'Invoices',        icon: FileText },
+    { path: '/app/receipts',        label: 'Receipts',        icon: Receipt },
+    { path: '/app/purchase-orders', label: 'Purchase Orders', icon: ShoppingCart },
+    { path: '/app/clients',         label: 'Clients',         icon: Users },
+    { path: '/app/templates',       label: 'Templates',       icon: Palette },
+  ]
+
+  if (authStore.isAdmin) {
+    const adminItems: NavItem[] = [
+      { path: '/app/admin',              label: 'Admin Dashboard', icon: LayoutDashboard },
+    ]
+    if (authStore.isSuperAdmin) {
+      adminItems.push({ path: '/app/admin/users', label: 'Users', icon: Users })
+    }
+    adminItems.push(
+      { path: '/app/admin/invoices',        label: 'All Invoices',   icon: FileText },
+      { path: '/app/admin/receipts',        label: 'All Receipts',   icon: Receipt },
+      { path: '/app/admin/purchase-orders', label: 'All POs',        icon: ShoppingCart },
+      { path: '/app/admin/notifications',   label: 'Notifications',  icon: Bell },
+    )
+    items.push(...adminItems)
+  }
+
+  return items
+})
 
 const bottomNavItems: NavItem[] = [
   { path: '/app/dashboard', label: 'Home',    icon: LayoutGrid },
@@ -308,6 +373,8 @@ const bottomNavItems: NavItem[] = [
   { path: '/app/clients',   label: 'Clients', icon: Users },
   { path: '/app/settings',  label: 'More',    icon: Settings },
 ]
+
+const unreadCount = computed(() => notificationStore.unreadCount)
 
 function isActive(path: string) {
   return route.path === path || route.path.startsWith(path + '/')
@@ -499,6 +566,56 @@ function isActive(path: string) {
   padding: 1px 6px;
   min-width: 18px;
   text-align: center;
+}
+
+/* Admin section separator */
+.nav-section-separator {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 10px 4px;
+}
+
+.nav-section-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #B5652D;
+  white-space: nowrap;
+}
+
+.nav-section-line {
+  flex: 1;
+  border: none;
+  border-top: 1px solid #D6D0C2;
+  margin: 0;
+}
+.dark .nav-section-line { border-color: #404945; }
+
+/* Notification bell */
+.nav-icon-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.notification-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  background: #dc2626;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 9px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
 }
 
 /* ── Main content ──────────────────────────────────────────── */

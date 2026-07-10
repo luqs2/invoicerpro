@@ -125,14 +125,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { useRouter } from 'vue-router'
+import { ref, computed, watch } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useToast } from '@/composables/useToast'
 import { LogIn, Mail, Lock, Eye, EyeOff, Zap } from '@lucide/vue'
 import UiButton from '@/components/ui/Button.vue'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAuthStore()
 const { showToast } = useToast()
 
@@ -140,6 +141,15 @@ const email       = ref('')
 const password    = ref('')
 const loading     = ref(false)
 const showPassword = ref(false)
+
+// Show banned message when route has ?banned=1
+watch(() => route.query.banned, (val) => {
+  if (val === '1') {
+    showToast('Your account has been banned. Please contact support.', 'danger', 8000)
+    // Clear the query param so it doesn't show again on refresh
+    router.replace({ query: {} })
+  }
+}, { immediate: true })
 
 const errors = ref<{ email?: string; password?: string }>({})
 
@@ -179,6 +189,14 @@ async function login() {
   try {
     loading.value = true
     await auth.login(email.value, password.value)
+
+    // Check if user is banned before navigating
+    if (auth.user?.role === 'banned') {
+      await auth.logout()
+      showToast('Your account has been banned. Please contact support.', 'danger', 8000)
+      return
+    }
+
     router.replace('/app/dashboard')
   } catch (e: any) {
     const msg = e.message ?? 'Login failed'

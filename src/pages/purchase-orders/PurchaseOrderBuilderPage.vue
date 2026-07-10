@@ -399,6 +399,7 @@ import PurchaseOrderPreview from '@/components/purchase-order/PurchaseOrderPrevi
 import { useFormatters } from '@/composables/useFormatters'
 import { usePdf } from '@/composables/usePdf'
 import { useToast } from '@/composables/useToast'
+import { useConfirm } from '@/composables/useConfirm'
 import UiButton from '@/components/ui/Button.vue'
 import MobileActionBar from '@/components/ui/MobileActionBar.vue'
 import SendDialog from '@/components/ui/SendDialog.vue'
@@ -417,6 +418,7 @@ const clientStore = useClientStore()
 const { formatCurrency } = useFormatters()
 const { exportToPdf } = usePdf()
 const { showToast } = useToast()
+const { confirm } = useConfirm()
 
 const tab = ref('form')
 const saving = ref(false)
@@ -487,11 +489,16 @@ function updateItem(idx: number, patch: { description?: string; quantity?: numbe
   store.updateLineItem(idx, patch)
 }
 
-function discard() {
-  if (confirm('Discard this draft?')) {
-    store.resetCurrent()
-    router.push('/app/purchase-orders')
-  }
+async function discard() {
+  const ok = await confirm({
+    title: 'Discard draft',
+    message: 'Are you sure you want to discard this draft? This cannot be undone.',
+    confirmText: 'Discard',
+    variant: 'danger',
+  })
+  if (!ok) return
+  store.resetCurrent()
+  router.push('/app/purchase-orders')
 }
 
 async function save() {
