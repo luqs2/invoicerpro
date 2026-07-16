@@ -63,7 +63,9 @@ export const receiptService = {
       .eq('id', receiptId)
       .single()
     if (data?.public_slug) return data.public_slug
-    const slug = Math.random().toString(36).substring(2, 10)
+    const bytes = new Uint8Array(6)
+    crypto.getRandomValues(bytes)
+    const slug = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').substring(0, 8)
     await supabase.from('receipts').update({ public_slug: slug }).eq('id', receiptId)
     return slug
   },

@@ -73,7 +73,9 @@ export const invoiceService = {
     if (data?.public_slug) return data.public_slug
 
     // Generate one for existing invoices that don't have a slug yet
-    const slug = Math.random().toString(36).substring(2, 10)
+    const bytes = new Uint8Array(6)
+    crypto.getRandomValues(bytes)
+    const slug = Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('').substring(0, 8)
     await supabase
       .from('invoices')
       .update({ public_slug: slug })

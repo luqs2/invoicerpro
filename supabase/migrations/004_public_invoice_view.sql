@@ -39,7 +39,7 @@ CREATE OR REPLACE FUNCTION public.generate_slug()
 RETURNS trigger language plpgsql as $$
 begin
   if new.public_slug is null or new.public_slug = '' then
-    new.public_slug := lower(substr(encode(gen_random_bytes(6), 'base64'), 1, 8));
+    new.public_slug := lower(substr(encode(gen_random_bytes(6), 'hex'), 1, 8));
   end if;
   return new;
 end;
